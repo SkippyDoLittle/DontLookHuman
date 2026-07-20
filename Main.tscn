@@ -1,0 +1,852 @@
+[gd_scene format=3 uid="uid://cqow47bch5ocs"]
+
+[ext_resource type="Script" uid="uid://b0gd8hrqpvtbb" path="res://player.gd" id="2_uu6xs"]
+[ext_resource type="Script" uid="uid://dy1bj0d1l136i" path="res://npc_animal.gd" id="3_r0du0"]
+[ext_resource type="Script" uid="uid://cqvl4a5y5bpjp" path="res://ranger.gd" id="4_cm0pq"]
+[ext_resource type="Script" uid="uid://s8x4yqy1rlay" path="res://picnic_food.gd" id="5_fos0i"]
+[ext_resource type="Script" uid="uid://dpjy1itkpqr4o" path="res://escape_zone.gd" id="6_3dxm6"]
+[ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="7_lgr22"]
+[ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="8_gtmr1"]
+[ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="9_vgnt1"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
+radius = 0.22
+height = 0.38
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgbody"]
+albedo_color = Color(0.53333, 0.6, 0.73333, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_pghead"]
+radius = 0.13
+height = 0.26
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pghead"]
+albedo_color = Color(0.6, 0.66667, 0.73333, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgbeak"]
+size = Vector3(0.04, 0.04, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgbeak"]
+albedo_color = Color(0.8, 0.53333, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgtail"]
+size = Vector3(0.18, 0.05, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgtail"]
+albedo_color = Color(0.4, 0.46667, 0.53333, 1)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4bddv"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_u0gv2"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4bddv"]
+size = Vector3(20, 0.2, 20)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4bddv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fos0i"]
+albedo_color = Color(0.8509804, 0.2901961, 0.22745098, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgnt1"]
+shader = ExtResource("9_vgnt1")
+shader_parameter/intensity = 0.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_4bddv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trn2v"]
+albedo_color = Color(0.99999994, 0.50747, 0.24935254, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_food2"]
+albedo_color = Color(0.25, 0.78, 0.3, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_food3"]
+albedo_color = Color(0.95, 0.85, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_bread"]
+radius = 0.18
+height = 0.26
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bread"]
+albedo_color = Color(0.92, 0.80, 0.58, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fry"]
+size = Vector3(0.35, 0.07, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fry"]
+albedo_color = Color(0.97, 0.82, 0.22, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_grape"]
+radius = 0.10
+height = 0.16
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grape"]
+albedo_color = Color(0.42, 0.12, 0.52, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_body"]
+size = Vector3(0.34, 0.38, 0.20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_shirt"]
+albedo_color = Color(0.50, 0.56, 0.30, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_pants"]
+size = Vector3(0.30, 0.35, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_pants"]
+albedo_color = Color(0.28, 0.35, 0.20, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_ranger_head"]
+radius = 0.15
+height = 0.24
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_skin"]
+albedo_color = Color(0.89, 0.72, 0.56, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ranger_hatbrim"]
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.03
+radial_segments = 12
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ranger_hatcrown"]
+top_radius = 0.11
+bottom_radius = 0.13
+height = 0.22
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_hat"]
+albedo_color = Color(0.42, 0.38, 0.22, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_01hvr"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lgr22"]
+albedo_color = Color(0, 1, 0, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_u0gv2"]
+size = Vector3(2, 1, 2)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_u0gv2"]
+top_radius = 0.25
+bottom_radius = 0.25
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_01hvr"]
+albedo_color = Color(0.41960785, 0.24313726, 0.14901961, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_u0gv2"]
+radius = 1.1
+height = 1.6
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frefy"]
+albedo_color = Color(0.24705882, 0.49803922, 0.24705882, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_trk01"]
+radius = 0.25
+
+[sub_resource type="BoxMesh" id="BoxMesh_frefy"]
+size = Vector3(2, 0.1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3dxm6"]
+albedo_color = Color(0.54509807, 0.36862746, 0.23529412, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_03owx"]
+albedo_color = Color(0.54509807, 0.36862746, 0.23529412, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_3dxm6"]
+material = SubResource("StandardMaterial3D_03owx")
+size = Vector3(2, 0.5, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tjudx"]
+size = Vector3(0.1, 0.45, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gqfw4"]
+albedo_color = Color(0.54509807, 0.36862746, 0.23529412, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_01hvr"]
+size = Vector3(2, 0.9, 0.5)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_01hvr"]
+top_radius = 0.2
+bottom_radius = 0.18
+height = 0.7
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ducdo"]
+albedo_color = Color(0.33333334, 0.33333334, 0.33333334, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_frefy"]
+top_radius = 0.22
+bottom_radius = 0.22
+height = 0.5
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tjudx"]
+albedo_color = Color(0.2, 0.2, 0.2, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_4bddv"]
+height = 0.75
+radius = 0.22
+
+[sub_resource type="BoxMesh" id="BoxMesh_gqfw4"]
+size = Vector3(1.8, 0.08, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_djtk3"]
+albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_djtk3"]
+size = Vector3(1.6, 0.06, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dl2gx"]
+albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dl2gx"]
+size = Vector3(0.08, 0.72, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cwewh"]
+albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_frefy"]
+size = Vector3(1.8, 0.72, 0.9)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cwewh"]
+size = Vector3(3, 0.8, 2.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ldbx0"]
+transparency = 1
+albedo_color = Color(0.22745098, 0.49803922, 0.75686276, 1)
+
+[node name="Main" type="Node3D" unique_id=1807496603]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=769087889]
+transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1684290428]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 0)
+script = ExtResource("2_uu6xs")
+
+[node name="PigeonVisual" type="Node3D" parent="Player" unique_id=-1894967295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="Player/PigeonVisual" unique_id=-1894967294]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="Player/PigeonVisual" unique_id=-1894967293]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="Player/PigeonVisual" unique_id=-1894967292]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="Player/PigeonVisual" unique_id=-1894967291]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player" unique_id=1028143189]
+shape = SubResource("CapsuleShape3D_4bddv")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player" unique_id=525982240]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 2, 0)
+spring_length = 6.0
+
+[node name="Camera3D" type="Camera3D" parent="Player/SpringArm3D" unique_id=1467477192]
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=842927293]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=317072825]
+mesh = SubResource("BoxMesh_u0gv2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=527956252]
+shape = SubResource("BoxShape3D_4bddv")
+
+[node name="NPC_Animal" type="Node3D" parent="." unique_id=1435028878]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 0)
+script = ExtResource("3_r0du0")
+
+[node name="PigeonVisual" type="Node3D" parent="NPC_Animal" unique_id=-1894967290]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="NPC_Animal/PigeonVisual" unique_id=-1894967289]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="NPC_Animal/PigeonVisual" unique_id=-1894967288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="NPC_Animal/PigeonVisual" unique_id=-1894967287]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="NPC_Animal/PigeonVisual" unique_id=-1894967286]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="NPC_Animal2" type="Node3D" parent="." unique_id=1537741569]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, -3)
+script = ExtResource("3_r0du0")
+
+[node name="PigeonVisual" type="Node3D" parent="NPC_Animal2" unique_id=-1894967285]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="NPC_Animal2/PigeonVisual" unique_id=-1894967284]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="NPC_Animal2/PigeonVisual" unique_id=-1894967283]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="NPC_Animal2/PigeonVisual" unique_id=-1894967282]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="NPC_Animal2/PigeonVisual" unique_id=-1894967281]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="NPC_Animal3" type="Node3D" parent="." unique_id=1611165329]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, -3)
+script = ExtResource("3_r0du0")
+
+[node name="PigeonVisual" type="Node3D" parent="NPC_Animal3" unique_id=-1894967280]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="NPC_Animal3/PigeonVisual" unique_id=-1894967279]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="NPC_Animal3/PigeonVisual" unique_id=-1894967278]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="NPC_Animal3/PigeonVisual" unique_id=-1894967277]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="NPC_Animal3/PigeonVisual" unique_id=-1894967276]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="Ranger" type="Node3D" parent="." unique_id=733888097]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -5)
+script = ExtResource("4_cm0pq")
+
+[node name="RangerPants" type="MeshInstance3D" parent="Ranger" unique_id=1666393544]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("BoxMesh_ranger_pants")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_pants")
+
+[node name="RangerBody" type="MeshInstance3D" parent="Ranger" unique_id=2777777701]
+mesh = SubResource("BoxMesh_ranger_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_shirt")
+
+[node name="RangerHead" type="MeshInstance3D" parent="Ranger" unique_id=2777777702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("SphereMesh_ranger_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_skin")
+
+[node name="RangerHatBrim" type="MeshInstance3D" parent="Ranger" unique_id=2777777703]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.47, 0)
+mesh = SubResource("CylinderMesh_ranger_hatbrim")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_hat")
+
+[node name="RangerHatCrown" type="MeshInstance3D" parent="Ranger" unique_id=2777777704]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.60, 0)
+mesh = SubResource("CylinderMesh_ranger_hatcrown")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_hat")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=289501067]
+
+[node name="VignetteRect" type="ColorRect" parent="HUD" unique_id=-1961633996]
+material = SubResource("ShaderMaterial_vgnt1")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="RangerStatus" type="Label" parent="HUD" unique_id=1135019159]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Ranger: Calm"
+
+[node name="ObjectiveStatus" type="Label" parent="HUD" unique_id=2095195455]
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 258.0
+offset_bottom = 63.0
+text = "Steal all 3 items, then reach the exit!"
+
+[node name="SuspicionBar" type="ProgressBar" parent="HUD" unique_id=1212068772]
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 320.0
+offset_bottom = 97.0
+
+[node name="TimerLabel" type="Label" parent="HUD" unique_id=-2072745094]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -150.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = 30.0
+text = "1:30"
+horizontal_alignment = 2
+
+[node name="WarnLabel" type="Label" parent="HUD" unique_id=-1850522896]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 105.0
+offset_right = 160.0
+offset_bottom = 145.0
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+
+[node name="ResultBackground" type="ColorRect" parent="HUD" unique_id=-2072745093]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -150.0
+offset_right = 250.0
+offset_bottom = 150.0
+color = Color(0.05, 0.05, 0.05, 0.82)
+
+[node name="ResultLabel" type="Label" parent="HUD" unique_id=-2072745092]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -130.0
+offset_right = 230.0
+offset_bottom = 130.0
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="GameTimer" type="Node" parent="." unique_id=-2072745095]
+script = ExtResource("8_gtmr1")
+
+[node name="PicnicFood" type="Node3D" parent="." unique_id=1835955883]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, -3)
+script = ExtResource("5_fos0i")
+
+[node name="FoodMesh" type="MeshInstance3D" parent="PicnicFood" unique_id=1737984624]
+mesh = SubResource("SphereMesh_bread")
+surface_material_override/0 = SubResource("StandardMaterial3D_bread")
+
+[node name="PicnicFood2" type="Node3D" parent="." unique_id=1111111101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.04, 3)
+script = ExtResource("5_fos0i")
+
+[node name="Fry1" type="MeshInstance3D" parent="PicnicFood2" unique_id=1111111102]
+mesh = SubResource("BoxMesh_fry")
+surface_material_override/0 = SubResource("StandardMaterial3D_fry")
+
+[node name="Fry2" type="MeshInstance3D" parent="PicnicFood2" unique_id=2666666601]
+transform = Transform3D(0.8192, 0, 0.5736, 0, 1, 0, -0.5736, 0, 0.8192, 0, 0.02, 0)
+mesh = SubResource("BoxMesh_fry")
+surface_material_override/0 = SubResource("StandardMaterial3D_fry")
+
+[node name="Fry3" type="MeshInstance3D" parent="PicnicFood2" unique_id=2666666602]
+transform = Transform3D(0.9063, 0, -0.4226, 0, 1, 0, 0.4226, 0, 0.9063, 0, 0.04, 0)
+mesh = SubResource("BoxMesh_fry")
+surface_material_override/0 = SubResource("StandardMaterial3D_fry")
+
+[node name="PicnicFood3" type="Node3D" parent="." unique_id=1111111103]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.13, -2)
+script = ExtResource("5_fos0i")
+
+[node name="Grape1" type="MeshInstance3D" parent="PicnicFood3" unique_id=1111111104]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10, -0.05, -0.10)
+mesh = SubResource("SphereMesh_grape")
+surface_material_override/0 = SubResource("StandardMaterial3D_grape")
+
+[node name="Grape2" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.10, -0.05, -0.10)
+mesh = SubResource("SphereMesh_grape")
+surface_material_override/0 = SubResource("StandardMaterial3D_grape")
+
+[node name="Grape3" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666604]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10, -0.05, 0.10)
+mesh = SubResource("SphereMesh_grape")
+surface_material_override/0 = SubResource("StandardMaterial3D_grape")
+
+[node name="Grape4" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666605]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.10, -0.05, 0.10)
+mesh = SubResource("SphereMesh_grape")
+surface_material_override/0 = SubResource("StandardMaterial3D_grape")
+
+[node name="Grape5" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666606]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.10, 0)
+mesh = SubResource("SphereMesh_grape")
+surface_material_override/0 = SubResource("StandardMaterial3D_grape")
+
+[node name="EscapeZone" type="Node3D" parent="." unique_id=1636446841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 7)
+
+[node name="ExitMarker" type="MeshInstance3D" parent="EscapeZone" unique_id=106654799]
+mesh = SubResource("BoxMesh_01hvr")
+surface_material_override/0 = SubResource("StandardMaterial3D_lgr22")
+script = ExtResource("6_3dxm6")
+
+[node name="ExitArea" type="Area3D" parent="EscapeZone" unique_id=1598190625]
+script = ExtResource("7_lgr22")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EscapeZone/ExitArea" unique_id=636492439]
+shape = SubResource("BoxShape3D_u0gv2")
+
+[node name="Tree" type="Node3D" parent="." unique_id=1823333013]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -5)
+
+[node name="Trunk" type="MeshInstance3D" parent="Tree" unique_id=1944866396]
+transform = Transform3D(1, 0, 0, 0, 0.9999055, -0.013745184, 0, 0.013745184, 0.9999055, -0.041769728, 1.0329406, -0.09601802)
+mesh = SubResource("CylinderMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_01hvr")
+
+[node name="Leaves" type="MeshInstance3D" parent="Tree" unique_id=981471472]
+transform = Transform3D(0.9997473, 0, 0.022481043, 0, 1, 0, -0.022481043, 0, 0.9997473, 0, 2.4, 0)
+mesh = SubResource("SphereMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_frefy")
+
+[node name="TrunkCollider" type="StaticBody3D" parent="Tree" unique_id=-1994967295]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree/TrunkCollider" unique_id=-1994967294]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_trk01")
+
+[node name="Tree2" type="Node3D" parent="." unique_id=250401476]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -4)
+
+[node name="Trunk" type="MeshInstance3D" parent="Tree2" unique_id=639449870]
+transform = Transform3D(1, 0, 0, 0, 0.9999055, -0.013745184, 0, 0.013745184, 0.9999055, -0.041769728, 1.0329406, -0.09601802)
+mesh = SubResource("CylinderMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_01hvr")
+
+[node name="Leaves" type="MeshInstance3D" parent="Tree2" unique_id=597815016]
+transform = Transform3D(0.9997473, 0, 0.022481043, 0, 1, 0, -0.022481043, 0, 0.9997473, 0, 2.4, 0)
+mesh = SubResource("SphereMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_frefy")
+
+[node name="TrunkCollider" type="StaticBody3D" parent="Tree2" unique_id=-1994967293]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree2/TrunkCollider" unique_id=-1994967292]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_trk01")
+
+[node name="Tree3" type="Node3D" parent="." unique_id=1468838541]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+
+[node name="Trunk" type="MeshInstance3D" parent="Tree3" unique_id=525691365]
+transform = Transform3D(1, 0, 0, 0, 0.9999055, -0.013745184, 0, 0.013745184, 0.9999055, -0.041769728, 1.0329406, -0.09601802)
+mesh = SubResource("CylinderMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_01hvr")
+
+[node name="Leaves" type="MeshInstance3D" parent="Tree3" unique_id=1821507864]
+transform = Transform3D(0.9997473, 0, 0.022481043, 0, 1, 0, -0.022481043, 0, 0.9997473, 0, 2.4, 0)
+mesh = SubResource("SphereMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_frefy")
+
+[node name="TrunkCollider" type="StaticBody3D" parent="Tree3" unique_id=-1994967291]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree3/TrunkCollider" unique_id=-1994967290]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_trk01")
+
+[node name="Tree4" type="Node3D" parent="." unique_id=677370158]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 5)
+
+[node name="Trunk" type="MeshInstance3D" parent="Tree4" unique_id=886943886]
+transform = Transform3D(1, 0, 0, 0, 0.9999055, -0.013745184, 0, 0.013745184, 0.9999055, -0.041769728, 1.0329406, -0.09601802)
+mesh = SubResource("CylinderMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_01hvr")
+
+[node name="Leaves" type="MeshInstance3D" parent="Tree4" unique_id=24085772]
+transform = Transform3D(0.9997473, 0, 0.022481043, 0, 1, 0, -0.022481043, 0, 0.9997473, 0, 2.4, 0)
+mesh = SubResource("SphereMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_frefy")
+
+[node name="TrunkCollider" type="StaticBody3D" parent="Tree4" unique_id=-1994967289]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree4/TrunkCollider" unique_id=-1994967288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_trk01")
+
+[node name="Tree5" type="Node3D" parent="." unique_id=861064724]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 2)
+
+[node name="Trunk" type="MeshInstance3D" parent="Tree5" unique_id=138443231]
+transform = Transform3D(1, 0, 0, 0, 0.9999055, -0.013745184, 0, 0.013745184, 0.9999055, -0.041769728, 1.0329406, -0.09601802)
+mesh = SubResource("CylinderMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_01hvr")
+
+[node name="Leaves" type="MeshInstance3D" parent="Tree5" unique_id=521721372]
+transform = Transform3D(0.9997473, 0, 0.022481043, 0, 1, 0, -0.022481043, 0, 0.9997473, 0, 2.4, 0)
+mesh = SubResource("SphereMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_frefy")
+
+[node name="TrunkCollider" type="StaticBody3D" parent="Tree5" unique_id=-1994967287]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree5/TrunkCollider" unique_id=-1994967286]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_trk01")
+
+[node name="Bench" type="StaticBody3D" parent="." unique_id=658051120]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 2)
+
+[node name="BenchSeat" type="MeshInstance3D" parent="Bench" unique_id=273615741]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("BoxMesh_frefy")
+surface_material_override/0 = SubResource("StandardMaterial3D_3dxm6")
+
+[node name="BenchBack" type="MeshInstance3D" parent="Bench" unique_id=1949764687]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -0.22)
+mesh = SubResource("BoxMesh_3dxm6")
+
+[node name="LegL" type="MeshInstance3D" parent="Bench" unique_id=1299713301]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_tjudx")
+surface_material_override/0 = SubResource("StandardMaterial3D_gqfw4")
+
+[node name="LegR" type="MeshInstance3D" parent="Bench" unique_id=958373668]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_tjudx")
+surface_material_override/0 = SubResource("StandardMaterial3D_gqfw4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Bench" unique_id=514339164]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("BoxShape3D_01hvr")
+
+[node name="Bench2" type="StaticBody3D" parent="." unique_id=155134267]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -3, 0, -0.4)
+
+[node name="BenchSeat" type="MeshInstance3D" parent="Bench2" unique_id=726432912]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("BoxMesh_frefy")
+surface_material_override/0 = SubResource("StandardMaterial3D_3dxm6")
+
+[node name="BenchBack" type="MeshInstance3D" parent="Bench2" unique_id=1510155448]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -0.22)
+mesh = SubResource("BoxMesh_3dxm6")
+
+[node name="LegL" type="MeshInstance3D" parent="Bench2" unique_id=243767041]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_tjudx")
+surface_material_override/0 = SubResource("StandardMaterial3D_gqfw4")
+
+[node name="LegR" type="MeshInstance3D" parent="Bench2" unique_id=2057545948]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_tjudx")
+surface_material_override/0 = SubResource("StandardMaterial3D_gqfw4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Bench2" unique_id=1908545851]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("BoxShape3D_01hvr")
+
+[node name="Bench3" type="StaticBody3D" parent="." unique_id=2068775244]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -9, 0, 9)
+
+[node name="BenchSeat" type="MeshInstance3D" parent="Bench3" unique_id=2117877452]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("BoxMesh_frefy")
+surface_material_override/0 = SubResource("StandardMaterial3D_3dxm6")
+
+[node name="BenchBack" type="MeshInstance3D" parent="Bench3" unique_id=795513016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -0.22)
+mesh = SubResource("BoxMesh_3dxm6")
+
+[node name="LegL" type="MeshInstance3D" parent="Bench3" unique_id=1966421072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_tjudx")
+surface_material_override/0 = SubResource("StandardMaterial3D_gqfw4")
+
+[node name="LegR" type="MeshInstance3D" parent="Bench3" unique_id=1200348836]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_tjudx")
+surface_material_override/0 = SubResource("StandardMaterial3D_gqfw4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Bench3" unique_id=2110843542]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("BoxShape3D_01hvr")
+
+[node name="TrashCan" type="StaticBody3D" parent="." unique_id=657523628]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
+
+[node name="CanBody" type="MeshInstance3D" parent="TrashCan" unique_id=2072438409]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("CylinderMesh_01hvr")
+surface_material_override/0 = SubResource("StandardMaterial3D_ducdo")
+
+[node name="CanLid" type="MeshInstance3D" parent="TrashCan" unique_id=1024295001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.73, 0)
+mesh = SubResource("CylinderMesh_frefy")
+surface_material_override/0 = SubResource("StandardMaterial3D_tjudx")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TrashCan" unique_id=2081992990]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+shape = SubResource("CylinderShape3D_4bddv")
+
+[node name="TrashCan2" type="StaticBody3D" parent="." unique_id=1396704319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 4)
+
+[node name="CanBody" type="MeshInstance3D" parent="TrashCan2" unique_id=1077162786]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("CylinderMesh_01hvr")
+surface_material_override/0 = SubResource("StandardMaterial3D_ducdo")
+
+[node name="CanLid" type="MeshInstance3D" parent="TrashCan2" unique_id=665247330]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.73, 0)
+mesh = SubResource("CylinderMesh_frefy")
+surface_material_override/0 = SubResource("StandardMaterial3D_tjudx")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TrashCan2" unique_id=236797899]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+shape = SubResource("CylinderShape3D_4bddv")
+
+[node name="PicnicTable" type="StaticBody3D" parent="." unique_id=1593453455]
+
+[node name="TableTop" type="MeshInstance3D" parent="PicnicTable" unique_id=425453887]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 0)
+mesh = SubResource("BoxMesh_gqfw4")
+surface_material_override/0 = SubResource("StandardMaterial3D_djtk3")
+
+[node name="SeatLeft" type="MeshInstance3D" parent="PicnicTable" unique_id=948346839]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0.65)
+mesh = SubResource("BoxMesh_djtk3")
+surface_material_override/0 = SubResource("StandardMaterial3D_dl2gx")
+
+[node name="SeatRight" type="MeshInstance3D" parent="PicnicTable" unique_id=1318149975]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -0.65)
+mesh = SubResource("BoxMesh_djtk3")
+surface_material_override/0 = SubResource("StandardMaterial3D_dl2gx")
+
+[node name="LegA" type="MeshInstance3D" parent="PicnicTable" unique_id=1196805245]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.36, 0)
+mesh = SubResource("BoxMesh_dl2gx")
+surface_material_override/0 = SubResource("StandardMaterial3D_cwewh")
+
+[node name="LegB" type="MeshInstance3D" parent="PicnicTable" unique_id=750670769]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.36, 0)
+mesh = SubResource("BoxMesh_dl2gx")
+surface_material_override/0 = SubResource("StandardMaterial3D_cwewh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PicnicTable" unique_id=1384064515]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
+shape = SubResource("BoxShape3D_frefy")
+
+[node name="TitleScreen" type="CanvasLayer" parent="." unique_id=-1739411796]
+layer = 10
+
+[node name="Background" type="ColorRect" parent="TitleScreen" unique_id=-1739411795]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.04, 0.07, 0.04, 0.94)
+
+[node name="TitleLabel" type="Label" parent="TitleScreen" unique_id=-1739411794]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.22
+anchor_right = 0.5
+anchor_bottom = 0.22
+offset_left = -300.0
+offset_top = -30.0
+offset_right = 300.0
+offset_bottom = 30.0
+theme_override_font_sizes/font_size = 48
+text = "Don't Look Human"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="TitleScreen" unique_id=-1739411793]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.32
+anchor_right = 0.5
+anchor_bottom = 0.32
+offset_left = -250.0
+offset_top = -15.0
+offset_right = 250.0
+offset_bottom = 15.0
+theme_override_font_sizes/font_size = 20
+text = "A pigeon stealth game"
+horizontal_alignment = 1
+
+[node name="ControlsLabel" type="Label" parent="TitleScreen" unique_id=-1739411792]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -90.0
+offset_right = 220.0
+offset_bottom = 90.0
+theme_override_font_sizes/font_size = 16
+text = "WASD        — Move
+Shift       — Sprint  (attracts suspicion!)
+E           — Peck
+
+Steal all 3 items, then reach the green exit zone.
+Act like a pigeon.  Don't look human."
+
+[node name="StartLabel" type="Label" parent="TitleScreen" unique_id=-1739411791]
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.78
+anchor_right = 0.5
+anchor_bottom = 0.78
+offset_left = -180.0
+offset_top = -18.0
+offset_right = 180.0
+offset_bottom = 18.0
+theme_override_font_sizes/font_size = 22
+text = "Press SPACE to start"
+horizontal_alignment = 1
+
+[node name="Pond" type="Node3D" parent="." unique_id=1543891791]
+
+[node name="WaterSurface" type="MeshInstance3D" parent="Pond" unique_id=2098430698]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -7)
+mesh = SubResource("BoxMesh_cwewh")
+surface_material_override/0 = SubResource("StandardMaterial3D_ldbx0")

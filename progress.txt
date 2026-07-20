@@ -1,0 +1,97 @@
+PROJECT: Don’t Look Human
+ENGINE: Godot 4.7, low-poly 3D, single-player prototype.
+
+CORE PITCH:
+You play as a suspiciously smart animal blending in with NPC animals. Walk normally near a ranger to appear natural; sprinting near the ranger raises suspicion. Steal food and escape.
+
+CURRENT PLAYABLE LOOP:
+1. Player moves with WASD.
+2. Hold Shift to sprint.
+3. Ranger slowly patrols.
+4. Walking normally near ranger is safe.
+5. Sprinting within ranger range fills suspicion bar.
+6. At 100% suspicion: “CAUGHT! Press R to retry.”
+7. Collect yellow/orange picnic food.
+8. Reach green exit pad.
+9. “YOU ESCAPED! Press R to play again.”
+10. R reloads the scene after either catch or win.
+
+CONTROLS / INPUT MAP:
+- move_left = A
+- move_right = D
+- move_forward = W
+- move_back = S
+- run = Shift
+- restart = R
+
+CURRENT SCENE STRUCTURE:
+Main (Node3D)
+- Cube (old spinning test cube; can be removed later)
+- DirectionalLight3D
+- Player (CharacterBody3D)
+  - PlayerMesh (CapsuleMesh)
+  - CollisionShape3D (CapsuleShape3D)
+  - SpringArm3D
+	- Camera3D
+  - player.gd
+- Ground (StaticBody3D)
+  - GroundMesh
+  - CollisionShape3D
+- NPC_Animal, NPC_Animal2, NPC_Animal3 (Node3D)
+  - AnimalMesh (CapsuleMesh)
+  - npc_animal.gd
+- Ranger (Node3D)
+  - RangerMesh (red CylinderMesh)
+  - ranger.gd
+- HUD (CanvasLayer)
+  - RangerStatus (Label)
+  - ObjectiveStatus (Label)
+  - SuspicionBar (ProgressBar)
+- PicnicFood (Node3D)
+  - FoodMesh (SphereMesh, yellow/orange)
+  - picnic_food.gd
+- EscapeZone (Node3D)
+  - ExitMarker (green BoxMesh visual)
+  - ExitArea (Area3D)
+	- CollisionShape3D (BoxShape3D, size 2, 1, 2)
+	- exit_area.gd
+- Tree (Node3D) — currently being built
+  - Trunk (CylinderMesh: radius 0.25, height 2, Y position 1, brown #6B3E26)
+  - Leaves are the next unfinished step:
+	SphereMesh, radius 1.1, height 1.6, Y position 2.4, green #3F7F3F
+
+WORKING SYSTEMS:
+- player.gd:
+  - CharacterBody3D movement
+  - Walk speed 1.2
+  - Run speed 4.0
+  - Gravity and ground handling
+- npc_animal.gd:
+  - NPC animals randomly walk, pause, change direction, and stay inside a radius.
+- ranger.gd:
+  - Ranger patrols randomly at speed 0.8 inside radius 7.
+  - Detection range = 4.
+  - Sprint speed threshold = 2.
+  - Suspicion gain = 35/sec; decay = 15/sec.
+  - Updates RangerStatus and SuspicionBar.
+- picnic_food.gd:
+  - Food disappears when player is within 1.2 units.
+  - Updates ObjectiveStatus.
+- exit_area.gd:
+  - Uses Area3D body_entered signal.
+  - Refuses exit until PicnicFood is gone.
+  - Wins when Player enters after food is collected.
+  - R restarts after escaping.
+
+IMPORTANT:
+- There may still be an older `escape_zone.gd` file from a failed distance-check exit system. The actual working exit system is `ExitArea` with `exit_area.gd`.
+- Player and NPCs are still placeholder white capsules.
+- The ranger does not use line-of-sight, obstacles, or advanced “act natural” behavior yet; it currently detects only sprinting while nearby.
+- No menus, sounds, proper animal models, props, or polished map yet.
+
+BEST NEXT STEPS:
+1. Finish the tree leaves, duplicate trees, and position them around the park.
+2. Add simple park props: benches, trash cans, picnic table, water.
+3. Replace capsule animals with simple low-poly pigeon/raccoon visuals while keeping player and NPCs visually similar.
+4. Add real behavior-stealth signals: moving too straight, staring at ranger, standing still too long, sprinting.
+5. Add additional objectives after the one-food prototype is polished.
