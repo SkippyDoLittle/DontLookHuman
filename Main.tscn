@@ -4,10 +4,64 @@
 [ext_resource type="Script" uid="uid://dy1bj0d1l136i" path="res://npc_animal.gd" id="3_r0du0"]
 [ext_resource type="Script" uid="uid://cqvl4a5y5bpjp" path="res://ranger.gd" id="4_cm0pq"]
 [ext_resource type="Script" uid="uid://s8x4yqy1rlay" path="res://picnic_food.gd" id="5_fos0i"]
-[ext_resource type="Script" uid="uid://dpjy1itkpqr4o" path="res://escape_zone.gd" id="6_3dxm6"]
+[ext_resource type="Script" path="res://escape_zone.gd" id="6_escz"]
 [ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="7_lgr22"]
 [ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="8_gtmr1"]
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="9_vgnt1"]
+[ext_resource type="Script" path="res://park_visitor.gd" id="10_pvst"]
+[ext_resource type="Script" path="res://minimap.gd" id="11_mmap"]
+[ext_resource type="Script" path="res://pause_menu.gd" id="12_pmenu"]
+
+; ── PAUSE MENU BUTTON STYLES ─────────────────────────────────────────────────
+; Same dark-green colour scheme as the main menu.
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
+bg_color = Color(0.06, 0.13, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
+bg_color = Color(0.11, 0.24, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.70, 0.35, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
+bg_color = Color(0.03, 0.07, 0.03, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.40, 0.18, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
 radius = 0.22
@@ -41,67 +95,33 @@ albedo_color = Color(0.4, 0.46667, 0.53333, 1)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4bddv"]
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ranger"]
+radius = 0.28
+height = 1.0
+
 [sub_resource type="BoxMesh" id="BoxMesh_u0gv2"]
 size = Vector3(20, 0.2, 20)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4bddv"]
 size = Vector3(20, 0.2, 20)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_4bddv"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ns"]
+size = Vector3(21, 3, 0.5)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fos0i"]
-albedo_color = Color(0.8509804, 0.2901961, 0.22745098, 1)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgnt1"]
-shader = ExtResource("9_vgnt1")
-shader_parameter/intensity = 0.0
-
-[sub_resource type="SphereMesh" id="SphereMesh_4bddv"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trn2v"]
-albedo_color = Color(0.99999994, 0.50747, 0.24935254, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_food2"]
-albedo_color = Color(0.25, 0.78, 0.3, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_food3"]
-albedo_color = Color(0.95, 0.85, 0.15, 1)
-
-[sub_resource type="SphereMesh" id="SphereMesh_bread"]
-radius = 0.18
-height = 0.26
-radial_segments = 8
-rings = 4
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bread"]
-albedo_color = Color(0.92, 0.80, 0.58, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_fry"]
-size = Vector3(0.35, 0.07, 0.07)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fry"]
-albedo_color = Color(0.97, 0.82, 0.22, 1)
-
-[sub_resource type="SphereMesh" id="SphereMesh_grape"]
-radius = 0.10
-height = 0.16
-radial_segments = 6
-rings = 3
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grape"]
-albedo_color = Color(0.42, 0.12, 0.52, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_body"]
-size = Vector3(0.34, 0.38, 0.20)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_shirt"]
-albedo_color = Color(0.50, 0.56, 0.30, 1)
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ew"]
+size = Vector3(0.5, 3, 21)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ranger_pants"]
-size = Vector3(0.30, 0.35, 0.18)
+size = Vector3(0.3, 0.35, 0.18)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_pants"]
-albedo_color = Color(0.28, 0.35, 0.20, 1)
+albedo_color = Color(0.28, 0.35, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_body"]
+size = Vector3(0.34, 0.38, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_shirt"]
+albedo_color = Color(0.5, 0.56, 0.3, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_ranger_head"]
 radius = 0.15
@@ -118,14 +138,67 @@ bottom_radius = 0.25
 height = 0.03
 radial_segments = 12
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_hat"]
+albedo_color = Color(0.42, 0.38, 0.22, 1)
+
 [sub_resource type="CylinderMesh" id="CylinderMesh_ranger_hatcrown"]
 top_radius = 0.11
 bottom_radius = 0.13
 height = 0.22
-radial_segments = 8
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_hat"]
-albedo_color = Color(0.42, 0.38, 0.22, 1)
+; ── RANGER UPGRADED MODEL PARTS ──────────────────────────────────────────────
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_arm"]
+size = Vector3(0.10, 0.30, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_leg"]
+size = Vector3(0.12, 0.32, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_boot"]
+size = Vector3(0.15, 0.10, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_belt"]
+size = Vector3(0.36, 0.06, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_badge"]
+size = Vector3(0.07, 0.07, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_boot"]
+albedo_color = Color(0.22, 0.14, 0.08, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_belt"]
+albedo_color = Color(0.15, 0.10, 0.05, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_badge"]
+albedo_color = Color(0.85, 0.72, 0.08, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgnt1"]
+shader = ExtResource("9_vgnt1")
+shader_parameter/intensity = 0.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_bread"]
+radius = 0.18
+height = 0.26
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bread"]
+albedo_color = Color(0.92, 0.8, 0.58, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fry"]
+size = Vector3(0.35, 0.07, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fry"]
+albedo_color = Color(0.97, 0.82, 0.22, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_grape"]
+radius = 0.1
+height = 0.16
+radial_segments = 6
+rings = 3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grape"]
+albedo_color = Color(0.42, 0.12, 0.52, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_01hvr"]
 size = Vector3(2, 0.5, 2)
@@ -227,6 +300,49 @@ size = Vector3(3, 0.8, 2.2)
 transparency = 1
 albedo_color = Color(0.22745098, 0.49803922, 0.75686276, 1)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_color = Color(0.29, 0.52, 0.19, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v1body"]
+albedo_color = Color(0.25, 0.45, 0.8, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v1pants"]
+albedo_color = Color(0.2, 0.25, 0.45, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v2body"]
+albedo_color = Color(0.8, 0.25, 0.25, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v2pants"]
+albedo_color = Color(0.7, 0.6, 0.4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v3body"]
+albedo_color = Color(0.2, 0.6, 0.5, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v3pants"]
+albedo_color = Color(0.4, 0.4, 0.45, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_fill"]
+bg_color = Color(1, 0.85, 0.1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_bg"]
+bg_color = Color(0.08, 0.08, 0.08, 0.85)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
+radius = 0.15
+height = 2.0
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_visitor"]
+radius = 0.25
+height = 1.0
+
 [node name="Main" type="Node3D" unique_id=1807496603]
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=769087889]
@@ -273,13 +389,37 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=317072825]
 mesh = SubResource("BoxMesh_u0gv2")
+surface_material_override/0 = SubResource("StandardMaterial3D_grass")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=527956252]
 shape = SubResource("BoxShape3D_4bddv")
 
-[node name="NPC_Animal" type="Node3D" parent="." unique_id=1435028878]
+[node name="WallNorth" type="StaticBody3D" parent="." unique_id=1901000001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10.25)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth" unique_id=1901000002]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallSouth" type="StaticBody3D" parent="." unique_id=1901000003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -10.25)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth" unique_id=1901000004]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallEast" type="StaticBody3D" parent="." unique_id=1901000005]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 1.5, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast" unique_id=1901000006]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="WallWest" type="StaticBody3D" parent="." unique_id=1901000007]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.25, 1.5, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest" unique_id=1901000008]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="NPC_Animal" type="CharacterBody3D" parent="." unique_id=1435028878]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 0)
 script = ExtResource("3_r0du0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPC_Animal" unique_id=1903000001]
+shape = SubResource("CapsuleShape3D_npc")
 
 [node name="PigeonVisual" type="Node3D" parent="NPC_Animal" unique_id=-1894967290]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
@@ -304,9 +444,12 @@ transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.965
 mesh = SubResource("BoxMesh_pgtail")
 surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
 
-[node name="NPC_Animal2" type="Node3D" parent="." unique_id=1537741569]
+[node name="NPC_Animal2" type="CharacterBody3D" parent="." unique_id=1537741569]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, -3)
 script = ExtResource("3_r0du0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPC_Animal2" unique_id=1903000002]
+shape = SubResource("CapsuleShape3D_npc")
 
 [node name="PigeonVisual" type="Node3D" parent="NPC_Animal2" unique_id=-1894967285]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
@@ -331,9 +474,12 @@ transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.965
 mesh = SubResource("BoxMesh_pgtail")
 surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
 
-[node name="NPC_Animal3" type="Node3D" parent="." unique_id=1611165329]
+[node name="NPC_Animal3" type="CharacterBody3D" parent="." unique_id=1611165329]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, -3)
 script = ExtResource("3_r0du0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPC_Animal3" unique_id=1903000003]
+shape = SubResource("CapsuleShape3D_npc")
 
 [node name="PigeonVisual" type="Node3D" parent="NPC_Animal3" unique_id=-1894967280]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
@@ -358,31 +504,81 @@ transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.965
 mesh = SubResource("BoxMesh_pgtail")
 surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
 
-[node name="Ranger" type="Node3D" parent="." unique_id=733888097]
+[node name="Ranger" type="CharacterBody3D" parent="." unique_id=733888097]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -5)
 script = ExtResource("4_cm0pq")
 
-[node name="RangerPants" type="MeshInstance3D" parent="Ranger" unique_id=1666393544]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
-mesh = SubResource("BoxMesh_ranger_pants")
-surface_material_override/0 = SubResource("StandardMaterial3D_ranger_pants")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ranger" unique_id=1891000001]
+shape = SubResource("CapsuleShape3D_ranger")
 
-[node name="RangerBody" type="MeshInstance3D" parent="Ranger" unique_id=2777777701]
+[node name="AlertLabel" type="Label3D" parent="Ranger" unique_id=1902000002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+visible = false
+text = ""
+font_size = 96
+outline_size = 8
+billboard = 1
+
+; ── RANGER BODY ──────────────────────────────────────────────────────────────
+; Two separate legs replace the old single-block pants so the silhouette reads
+; more like a person. Arms, boots, belt, and badge are all new additions.
+
+[node name="RangerBody" type="MeshInstance3D" parent="Ranger" unique_id=-1517189595]
 mesh = SubResource("BoxMesh_ranger_body")
 surface_material_override/0 = SubResource("StandardMaterial3D_ranger_shirt")
 
-[node name="RangerHead" type="MeshInstance3D" parent="Ranger" unique_id=2777777702]
+[node name="RangerLeftArm" type="MeshInstance3D" parent="Ranger" unique_id=2004000001]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.02, 0)
+mesh = SubResource("BoxMesh_ranger_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_shirt")
+
+[node name="RangerRightArm" type="MeshInstance3D" parent="Ranger" unique_id=2004000002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 0.02, 0)
+mesh = SubResource("BoxMesh_ranger_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_shirt")
+
+[node name="RangerBelt" type="MeshInstance3D" parent="Ranger" unique_id=2004000007]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.17, 0)
+mesh = SubResource("BoxMesh_ranger_belt")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_belt")
+
+[node name="RangerBadge" type="MeshInstance3D" parent="Ranger" unique_id=2004000008]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.08, -0.11)
+mesh = SubResource("BoxMesh_ranger_badge")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_badge")
+
+[node name="RangerLeftLeg" type="MeshInstance3D" parent="Ranger" unique_id=2004000003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, -0.35, 0)
+mesh = SubResource("BoxMesh_ranger_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_pants")
+
+[node name="RangerRightLeg" type="MeshInstance3D" parent="Ranger" unique_id=2004000004]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, -0.35, 0)
+mesh = SubResource("BoxMesh_ranger_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_pants")
+
+[node name="RangerLeftBoot" type="MeshInstance3D" parent="Ranger" unique_id=2004000005]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, -0.52, 0.01)
+mesh = SubResource("BoxMesh_ranger_boot")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_boot")
+
+[node name="RangerRightBoot" type="MeshInstance3D" parent="Ranger" unique_id=2004000006]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, -0.52, 0.01)
+mesh = SubResource("BoxMesh_ranger_boot")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_boot")
+
+[node name="RangerHead" type="MeshInstance3D" parent="Ranger" unique_id=-1517189594]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
 mesh = SubResource("SphereMesh_ranger_head")
 surface_material_override/0 = SubResource("StandardMaterial3D_ranger_skin")
 
-[node name="RangerHatBrim" type="MeshInstance3D" parent="Ranger" unique_id=2777777703]
+[node name="RangerHatBrim" type="MeshInstance3D" parent="Ranger" unique_id=-1517189593]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.47, 0)
 mesh = SubResource("CylinderMesh_ranger_hatbrim")
 surface_material_override/0 = SubResource("StandardMaterial3D_ranger_hat")
 
-[node name="RangerHatCrown" type="MeshInstance3D" parent="Ranger" unique_id=2777777704]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.60, 0)
+[node name="RangerHatCrown" type="MeshInstance3D" parent="Ranger" unique_id=-1517189592]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 mesh = SubResource("CylinderMesh_ranger_hatcrown")
 surface_material_override/0 = SubResource("StandardMaterial3D_ranger_hat")
 
@@ -412,6 +608,22 @@ offset_left = 20.0
 offset_top = 70.0
 offset_right = 320.0
 offset_bottom = 97.0
+
+[node name="StaminaBar" type="ProgressBar" parent="HUD" unique_id=1902000001]
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -100.0
+offset_right = 36.0
+offset_bottom = -20.0
+max_value = 100.0
+value = 100.0
+fill_mode = 3
+show_percentage = false
+theme_override_styles/fill = SubResource("StyleBoxFlat_stam_fill")
+theme_override_styles/background = SubResource("StyleBoxFlat_stam_bg")
 
 [node name="TimerLabel" type="Label" parent="HUD" unique_id=-2072745094]
 anchors_preset = 1
@@ -464,6 +676,69 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
+[node name="FadeOverlay" type="ColorRect" parent="HUD" unique_id=1881000001]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+z_index = 100
+color = Color(0, 0, 0, 1)
+
+[node name="CountdownLabel" type="Label" parent="HUD" unique_id=2001000001]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -70.0
+offset_right = 120.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 96
+theme_override_colors/font_color = Color(0.85, 1.0, 0.85, 1.0)
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Minimap" type="Control" parent="HUD" unique_id=1882000001]
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -130.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 130.0
+script = ExtResource("11_mmap")
+
+[node name="MapBackground" type="ColorRect" parent="HUD/Minimap" unique_id=1882000002]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.1, 0.82)
+
+[node name="PlayerDot" type="ColorRect" parent="HUD/Minimap" unique_id=1882000003]
+size = Vector2(10, 10)
+color = Color(1, 1, 1, 1)
+
+[node name="RangerDot" type="ColorRect" parent="HUD/Minimap" unique_id=1882000004]
+size = Vector2(8, 8)
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="FoodDot1" type="ColorRect" parent="HUD/Minimap" unique_id=1882000005]
+size = Vector2(6, 6)
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="FoodDot2" type="ColorRect" parent="HUD/Minimap" unique_id=1882000006]
+size = Vector2(6, 6)
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="FoodDot3" type="ColorRect" parent="HUD/Minimap" unique_id=1882000007]
+size = Vector2(6, 6)
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="ExitDot" type="ColorRect" parent="HUD/Minimap" unique_id=1882000008]
+visible = false
+size = Vector2(8, 8)
+color = Color(0.2, 1, 0.3, 1)
+
 [node name="GameTimer" type="Node" parent="." unique_id=-2072745095]
 script = ExtResource("8_gtmr1")
 
@@ -483,12 +758,12 @@ script = ExtResource("5_fos0i")
 mesh = SubResource("BoxMesh_fry")
 surface_material_override/0 = SubResource("StandardMaterial3D_fry")
 
-[node name="Fry2" type="MeshInstance3D" parent="PicnicFood2" unique_id=2666666601]
+[node name="Fry2" type="MeshInstance3D" parent="PicnicFood2" unique_id=-1628300695]
 transform = Transform3D(0.8192, 0, 0.5736, 0, 1, 0, -0.5736, 0, 0.8192, 0, 0.02, 0)
 mesh = SubResource("BoxMesh_fry")
 surface_material_override/0 = SubResource("StandardMaterial3D_fry")
 
-[node name="Fry3" type="MeshInstance3D" parent="PicnicFood2" unique_id=2666666602]
+[node name="Fry3" type="MeshInstance3D" parent="PicnicFood2" unique_id=-1628300694]
 transform = Transform3D(0.9063, 0, -0.4226, 0, 1, 0, 0.4226, 0, 0.9063, 0, 0.04, 0)
 mesh = SubResource("BoxMesh_fry")
 surface_material_override/0 = SubResource("StandardMaterial3D_fry")
@@ -498,43 +773,50 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.13, -2)
 script = ExtResource("5_fos0i")
 
 [node name="Grape1" type="MeshInstance3D" parent="PicnicFood3" unique_id=1111111104]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10, -0.05, -0.10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.05, -0.1)
 mesh = SubResource("SphereMesh_grape")
 surface_material_override/0 = SubResource("StandardMaterial3D_grape")
 
-[node name="Grape2" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666603]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.10, -0.05, -0.10)
+[node name="Grape2" type="MeshInstance3D" parent="PicnicFood3" unique_id=-1628300693]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.05, -0.1)
 mesh = SubResource("SphereMesh_grape")
 surface_material_override/0 = SubResource("StandardMaterial3D_grape")
 
-[node name="Grape3" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666604]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10, -0.05, 0.10)
+[node name="Grape3" type="MeshInstance3D" parent="PicnicFood3" unique_id=-1628300692]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, -0.05, 0.1)
 mesh = SubResource("SphereMesh_grape")
 surface_material_override/0 = SubResource("StandardMaterial3D_grape")
 
-[node name="Grape4" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666605]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.10, -0.05, 0.10)
+[node name="Grape4" type="MeshInstance3D" parent="PicnicFood3" unique_id=-1628300691]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, -0.05, 0.1)
 mesh = SubResource("SphereMesh_grape")
 surface_material_override/0 = SubResource("StandardMaterial3D_grape")
 
-[node name="Grape5" type="MeshInstance3D" parent="PicnicFood3" unique_id=2666666606]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.10, 0)
+[node name="Grape5" type="MeshInstance3D" parent="PicnicFood3" unique_id=-1628300690]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 mesh = SubResource("SphereMesh_grape")
 surface_material_override/0 = SubResource("StandardMaterial3D_grape")
 
 [node name="EscapeZone" type="Node3D" parent="." unique_id=1636446841]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 7)
+script = ExtResource("6_escz")
 
 [node name="ExitMarker" type="MeshInstance3D" parent="EscapeZone" unique_id=106654799]
 mesh = SubResource("BoxMesh_01hvr")
 surface_material_override/0 = SubResource("StandardMaterial3D_lgr22")
-script = ExtResource("6_3dxm6")
 
 [node name="ExitArea" type="Area3D" parent="EscapeZone" unique_id=1598190625]
 script = ExtResource("7_lgr22")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="EscapeZone/ExitArea" unique_id=636492439]
 shape = SubResource("BoxShape3D_u0gv2")
+
+[node name="ExitLabel" type="Label3D" parent="EscapeZone" unique_id=1881000002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+text = "EXIT"
+font_size = 64
+modulate = Color(0.3, 1.0, 0.4, 1)
+billboard = 1
 
 [node name="Tree" type="Node3D" parent="." unique_id=1823333013]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -5)
@@ -782,67 +1064,161 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.04, 0.07, 0.04, 0.94)
+color = Color(0.04, 0.07, 0.04, 1.0)
 
-[node name="TitleLabel" type="Label" parent="TitleScreen" unique_id=-1739411794]
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.22
-anchor_right = 0.5
-anchor_bottom = 0.22
-offset_left = -300.0
-offset_top = -30.0
-offset_right = 300.0
-offset_bottom = 30.0
-theme_override_font_sizes/font_size = 48
-text = "Don't Look Human"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="TitleScreen" unique_id=-1739411793]
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.32
-anchor_right = 0.5
-anchor_bottom = 0.32
-offset_left = -250.0
-offset_top = -15.0
-offset_right = 250.0
-offset_bottom = 15.0
-theme_override_font_sizes/font_size = 20
-text = "A pigeon stealth game"
-horizontal_alignment = 1
-
-[node name="ControlsLabel" type="Label" parent="TitleScreen" unique_id=-1739411792]
-anchors_preset = 8
+[node name="StartLabel" type="Label" parent="TitleScreen" unique_id=-1739411791]
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -90.0
-offset_right = 220.0
-offset_bottom = 90.0
-theme_override_font_sizes/font_size = 16
-text = "WASD        — Move
-Shift       — Sprint  (attracts suspicion!)
-E           — Peck
+offset_left = -200.0
+offset_top = -50.0
+offset_right = 200.0
+offset_bottom = 50.0
+theme_override_font_sizes/font_size = 26
+text = "READY?
 
-Steal all 3 items, then reach the green exit zone.
-Act like a pigeon.  Don't look human."
-
-[node name="StartLabel" type="Label" parent="TitleScreen" unique_id=-1739411791]
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.78
-anchor_right = 0.5
-anchor_bottom = 0.78
-offset_left = -180.0
-offset_top = -18.0
-offset_right = 180.0
-offset_bottom = 18.0
-theme_override_font_sizes/font_size = 22
-text = "Press SPACE to start"
+Press SPACE to begin"
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TransitionLayer" type="CanvasLayer" parent="." unique_id=1905000001]
+layer = 20
+
+[node name="FadeRect" type="ColorRect" parent="TransitionLayer" unique_id=1905000002]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0)
+mouse_filter = 2
+
+; ── PAUSE MENU ───────────────────────────────────────────────────────────────
+; Layer 15 sits above the HUD (layer 1) and TitleScreen (layer 10) so the pause
+; overlay covers the full screen. Below TransitionLayer (layer 20) so fade effects
+; still render on top during scene transitions.
+; visible = false because it starts hidden — game_timer.gd shows it on Escape press.
+; process_mode is set to PROCESS_MODE_ALWAYS in pause_menu.gd's _ready() so that
+; buttons remain clickable while get_tree().paused == true.
+
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=2003000001]
+layer = 15
+visible = false
+script = ExtResource("12_pmenu")
+
+; Semi-transparent dark overlay covers the game world so the pause menu is readable.
+; mouse_filter = 0 (STOP) catches all clicks — prevents the player from accidentally
+; interacting with 3D objects through the pause overlay.
+[node name="Background" type="ColorRect" parent="PauseMenu" unique_id=2003000002]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0, 0.02, 0.0, 0.88)
+mouse_filter = 0
+
+; VBoxContainer stacks all pause menu elements vertically, centred on screen.
+; offsets push 200px left/right and 235px up/down from the screen centre.
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu" unique_id=2003000003]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -235.0
+offset_right = 200.0
+offset_bottom = 235.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2003000004]
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2003000005]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000006]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+text = "RESUME  (Escape)"
+
+[node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer" unique_id=2003000007]
+custom_minimum_size = Vector2(0, 10)
+
+; AUDIO button toggles the AudioPanel below it. Starts collapsed.
+[node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000016]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+text = "AUDIO  ▶"
+
+; AudioPanel holds both sliders. Hidden by default — AudioButton reveals it.
+[node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer" unique_id=2003000017]
+visible = false
+theme_override_constants/separation = 6
+
+[node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000008]
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000009]
+custom_minimum_size = Vector2(0, 32)
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000010]
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
+text = "Sound Effects Volume"
+
+[node name="SFXSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000011]
+custom_minimum_size = Vector2(0, 32)
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer" unique_id=2003000012]
+custom_minimum_size = Vector2(0, 10)
+
+[node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2003000013]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000014]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+text = "MAIN MENU"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000015]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+text = "QUIT"
 
 [node name="Pond" type="Node3D" parent="." unique_id=1543891791]
 
@@ -850,3 +1226,126 @@ horizontal_alignment = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -7)
 mesh = SubResource("BoxMesh_cwewh")
 surface_material_override/0 = SubResource("StandardMaterial3D_ldbx0")
+
+[node name="ParkVisitor1" type="CharacterBody3D" parent="." unique_id=1711111111]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.525, 4)
+script = ExtResource("10_pvst")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ParkVisitor1" unique_id=1903000004]
+shape = SubResource("CapsuleShape3D_visitor")
+
+[node name="VisitorBody" type="MeshInstance3D" parent="ParkVisitor1" unique_id=1711111112]
+mesh = SubResource("BoxMesh_ranger_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_v1body")
+
+[node name="VisitorPants" type="MeshInstance3D" parent="ParkVisitor1" unique_id=1711111113]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("BoxMesh_ranger_pants")
+surface_material_override/0 = SubResource("StandardMaterial3D_v1pants")
+
+[node name="VisitorHead" type="MeshInstance3D" parent="ParkVisitor1" unique_id=1711111114]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("SphereMesh_ranger_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_skin")
+
+[node name="ParkVisitor2" type="CharacterBody3D" parent="." unique_id=1722222221]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.525, 6)
+script = ExtResource("10_pvst")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ParkVisitor2" unique_id=1903000005]
+shape = SubResource("CapsuleShape3D_visitor")
+
+[node name="VisitorBody" type="MeshInstance3D" parent="ParkVisitor2" unique_id=1722222222]
+mesh = SubResource("BoxMesh_ranger_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_v2body")
+
+[node name="VisitorPants" type="MeshInstance3D" parent="ParkVisitor2" unique_id=1722222223]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("BoxMesh_ranger_pants")
+surface_material_override/0 = SubResource("StandardMaterial3D_v2pants")
+
+[node name="VisitorHead" type="MeshInstance3D" parent="ParkVisitor2" unique_id=1722222224]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("SphereMesh_ranger_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_skin")
+
+[node name="ParkVisitor3" type="CharacterBody3D" parent="." unique_id=1733333331]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.525, -6)
+script = ExtResource("10_pvst")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ParkVisitor3" unique_id=1903000006]
+shape = SubResource("CapsuleShape3D_visitor")
+
+[node name="VisitorBody" type="MeshInstance3D" parent="ParkVisitor3" unique_id=1733333332]
+mesh = SubResource("BoxMesh_ranger_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_v3body")
+
+[node name="VisitorPants" type="MeshInstance3D" parent="ParkVisitor3" unique_id=1733333333]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("BoxMesh_ranger_pants")
+surface_material_override/0 = SubResource("StandardMaterial3D_v3pants")
+
+[node name="VisitorHead" type="MeshInstance3D" parent="ParkVisitor3" unique_id=1733333334]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("SphereMesh_ranger_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_ranger_skin")
+
+[node name="NPC_Animal4" type="CharacterBody3D" parent="." unique_id=1744444441]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, -2)
+script = ExtResource("3_r0du0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPC_Animal4" unique_id=1903000007]
+shape = SubResource("CapsuleShape3D_npc")
+
+[node name="PigeonVisual" type="Node3D" parent="NPC_Animal4" unique_id=1744444442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="NPC_Animal4/PigeonVisual" unique_id=1744444443]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="NPC_Animal4/PigeonVisual" unique_id=1744444444]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="NPC_Animal4/PigeonVisual" unique_id=1744444445]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="NPC_Animal4/PigeonVisual" unique_id=1744444446]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="NPC_Animal5" type="CharacterBody3D" parent="." unique_id=1755555551]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 2)
+script = ExtResource("3_r0du0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPC_Animal5" unique_id=1903000008]
+shape = SubResource("CapsuleShape3D_npc")
+
+[node name="PigeonVisual" type="Node3D" parent="NPC_Animal5" unique_id=1755555552]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="NPC_Animal5/PigeonVisual" unique_id=1755555553]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="NPC_Animal5/PigeonVisual" unique_id=1755555554]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="NPC_Animal5/PigeonVisual" unique_id=1755555555]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="NPC_Animal5/PigeonVisual" unique_id=1755555556]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
