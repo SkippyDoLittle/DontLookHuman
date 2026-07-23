@@ -232,6 +232,18 @@ var _stamina_depleted: bool = false
 # while stamina is at zero. Set true when stamina first hits 0; reset when it
 # refills above 10 so the sound can fire again on the next depletion event.
 
+var in_water: bool = false
+# in_water — True while the player is inside the oval pond area.
+# Read by ranger.gd to add a small suspicion bonus (a pigeon wading looks odd).
+# Updated every frame in the movement section below.
+
+# Pond shape constants — must match the CylinderMesh in Main.tscn.
+# The pond mesh has top_radius=1.6 with z-scale 0.72 applied, making an oval.
+const _POND_CENTER  := Vector3(-3.0, 0.0, -7.0)
+const _POND_RADIUS_X: float = 1.6          # Half-width along X
+const _POND_RADIUS_Z: float = 1.6 * 0.72  # Half-depth along Z (oval squish)
+const _WATER_SPEED_FACTOR: float = 0.5    # Wading is half normal speed
+
 
 # =============================================================================
 # LINES 25–27 — @onready NODE REFERENCES: Shortcuts to child nodes
@@ -435,6 +447,19 @@ func _physics_process(delta: float) -> void:
 	# In GDScript: value_if_true if condition else value_if_false
 	# So: if sprinting, use run_speed (4.0); otherwise use walk_speed (1.2)
 	var current_speed: float = run_speed if sprinting else walk_speed
+
+	# ── WATER CHECK: Slow the player while wading in the pond ───────────────
+	# Use the "point in ellipse" test: normalise the player's offset by each
+	# radius, then check whether the resulting point falls inside a unit circle.
+	# If (dx² + dz²) <= 1 the player is inside the ellipse.
+	var _dx: float = (global_position.x - _POND_CENTER.x) / _POND_RADIUS_X
+	var _dz: float = (global_position.z - _POND_CENTER.z) / _POND_RADIUS_Z
+	in_water = (_dx * _dx + _dz * _dz) <= 1.0
+
+	if in_water:
+		# Wading through shallow water is tiring and slow.
+		# Sprint is still physically possible but also half-speed in water.
+		current_speed *= _WATER_SPEED_FACTOR
 
 	# ── SECTION 3: APPLY HORIZONTAL MOVEMENT ────────────────────────────────
 

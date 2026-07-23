@@ -463,6 +463,15 @@ func _process(delta: float) -> void:
 		if reason == "":
 			reason = "Acting alone"
 
+	# SUSPICIOUS BEHAVIOUR 5: Wading in the pond
+	# Pigeons don't swim — a pigeon standing in the water looks wrong to a ranger.
+	# player.get("in_water") reads the flag set by player.gd's water check each frame.
+	# We use .get() (runtime lookup) because ranger.gd doesn't import player.gd directly.
+	if is_nearby and player.get("in_water"):
+		active_gain += 12.0
+		if reason == "":
+			reason = "In the water!"
+
 	# ── SECTION 5: UPDATE THE SUSPICION VALUE ────────────────────────────────
 
 	if active_gain > 0.0:

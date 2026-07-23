@@ -293,12 +293,24 @@ albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_frefy"]
 size = Vector3(1.8, 0.72, 0.9)
 
-[sub_resource type="BoxMesh" id="BoxMesh_cwewh"]
-size = Vector3(3, 0.8, 2.2)
+; Organic pond disc: 9 sides (not a perfect circle) shared by both pond layers.
+; The node transform applies an oval scale (z * 0.72) so it reads as a natural
+; irregular pond rather than a mathematical circle or a rectangle.
+[sub_resource type="CylinderMesh" id="CylinderMesh_pond"]
+top_radius = 1.6
+bottom_radius = 1.6
+height = 0.01
+radial_segments = 9
+rings = 1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ldbx0"]
 transparency = 1
-albedo_color = Color(0.22745098, 0.49803922, 0.75686276, 1)
+cull_mode = 2
+albedo_color = Color(0.15, 0.45, 0.78, 0.62)
+
+; PondBed material — dark opaque layer visible through the translucent water above.
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pond_bed"]
+albedo_color = Color(0.08, 0.18, 0.28, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
 albedo_color = Color(0.29, 0.52, 0.19, 1)
@@ -1222,10 +1234,20 @@ text = "QUIT"
 
 [node name="Pond" type="Node3D" parent="." unique_id=1543891791]
 
+; Water surface — 9-sided oval disc (z scaled to 0.72 of x for an irregular oval).
+; Sits 7cm above ground so the pigeon's feet appear below the surface when wading.
+; Semi-transparent so the dark PondBed shows through as a depth cue.
 [node name="WaterSurface" type="MeshInstance3D" parent="Pond" unique_id=2098430698]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -7)
-mesh = SubResource("BoxMesh_cwewh")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.07, -7)
+mesh = SubResource("CylinderMesh_pond")
 surface_material_override/0 = SubResource("StandardMaterial3D_ldbx0")
+
+; PondBed — same oval shape, 3mm above ground to avoid z-fighting with the ground mesh.
+; Dark and opaque; visible through the translucent water as the pond floor.
+[node name="PondBed" type="MeshInstance3D" parent="Pond"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.003, -7)
+mesh = SubResource("CylinderMesh_pond")
+surface_material_override/0 = SubResource("StandardMaterial3D_pond_bed")
 
 [node name="ParkVisitor1" type="CharacterBody3D" parent="." unique_id=1711111111]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.525, 4)
