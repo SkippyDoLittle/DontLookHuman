@@ -180,11 +180,12 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 # opportunities to blend in — so blending in should actually matter more.
 # Straying from the flock now costs you noticeably.
 
-@export var straight_line_threshold: float = 1.5
+@export var straight_line_threshold: float = 2.5
 # straight_line_threshold — How many seconds the player must walk in a nearly
 # straight line before suspicion starts rising from it.
 # Real pigeons constantly veer, peck, and bob their heads — they never march in a
-# straight line. 1.5 seconds of straight-line walking looks purposeful and human.
+# straight line. 2.5 seconds gives the player meaningful grace time before the
+# ranger notices — enough to cross open ground without being immediately penalised.
 
 @export var straight_line_dot: float = 0.97
 # straight_line_dot — How "straight" the movement must be to count.
@@ -193,10 +194,11 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 # A bird always wobbles at least a little — staying within 14° for 1.5 seconds
 # is abnormally controlled movement.
 
-@export var straight_line_gain_per_second: float = 18.0
+@export var straight_line_gain_per_second: float = 10.0
 # straight_line_gain_per_second — Suspicion points per second from walking too straight.
-# 18/sec is moderate — less punishing than sprinting (30/sec) because straight-line
-# walking is subtler. But sustained straight walking will eventually alert the ranger.
+# 10/sec is gentle — it takes 10 full seconds of perfectly straight walking to fill
+# the bar on its own, so this only becomes a real threat when combined with other
+# suspicious behaviours (sprinting, isolation, etc.).
 
 
 # =============================================================================
