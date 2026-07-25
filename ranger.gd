@@ -180,6 +180,24 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 # opportunities to blend in — so blending in should actually matter more.
 # Straying from the flock now costs you noticeably.
 
+@export var straight_line_threshold: float = 1.5
+# straight_line_threshold — How many seconds the player must walk in a nearly
+# straight line before suspicion starts rising from it.
+# Real pigeons constantly veer, peck, and bob their heads — they never march in a
+# straight line. 1.5 seconds of straight-line walking looks purposeful and human.
+
+@export var straight_line_dot: float = 0.97
+# straight_line_dot — How "straight" the movement must be to count.
+# This is a dot product threshold (explained fully in _is_aiming_at_food above).
+# 0.97 ≈ within 14° of the same direction between consecutive frames.
+# A bird always wobbles at least a little — staying within 14° for 1.5 seconds
+# is abnormally controlled movement.
+
+@export var straight_line_gain_per_second: float = 18.0
+# straight_line_gain_per_second — Suspicion points per second from walking too straight.
+# 18/sec is moderate — less punishing than sprinting (30/sec) because straight-line
+# walking is subtler. But sustained straight walking will eventually alert the ranger.
+
 
 # =============================================================================
 # LINES 31–36 — @onready NODE REFERENCES
@@ -297,6 +315,15 @@ var stare_time: float = 0.0
 var food_aim_time: float = 0.0
 # food_aim_time — How long (in seconds) the player has been walking toward food.
 # Resets (quickly) when the player stops aiming at food.
+
+var _straight_time: float = 0.0
+# _straight_time — How long (in seconds) the player has been moving in a nearly
+# straight line without turning. Resets when the player turns or stops.
+
+var _last_move_dir: Vector2 = Vector2.ZERO
+# _last_move_dir — The player's horizontal movement direction from the PREVIOUS frame.
+# We compare this to the current frame's direction to measure how much the player turned.
+# Stored as a 2D vector (X and Z axes only) because Y (vertical) doesn't affect turning.
 
 var npc_animals: Array = []
 # npc_animals — An Array (list) that stores references to all NPC pigeon nodes.
@@ -471,6 +498,59 @@ func _process(delta: float) -> void:
 		active_gain += 12.0
 		if reason == "":
 			reason = "In the water!"
+
+	# SUSPICIOUS BEHAVIOUR 6: Walking in a straight line
+	# Real pigeons are constantly bobbing, veering, and changing direction — they never
+	# march in a straight line. A pigeon that walks in a perfectly straight path for
+	# more than a couple of seconds looks like a person controlling it.
+	#
+	# HOW IT WORKS:
+	# Every frame we compare the player's current movement direction to the direction
+	# from the previous frame. If they're nearly identical (within 14°), the player
+	# is walking "too straight." We accumulate that time in _straight_time. Once
+	# it exceeds straight_line_threshold (1.5s), suspicion starts rising.
+	#
+	# We use player_speed > 0.3 so this only fires while actively moving — standing
+	# still doesn't count as "walking straight."
+	if is_nearby and player_speed > 0.3:
+		# Get the player's current horizontal movement direction as a 2D vector.
+		# Vector2(x, z) extracts only the horizontal plane (we ignore Y / up-down).
+		# .normalized() scales the vector to length 1.0 so it's a pure direction.
+		var cur_dir := Vector2(player.velocity.x, player.velocity.z).normalized()
+
+		# We can only compare directions if we have a valid previous direction.
+		# _last_move_dir.length() < 0.5 means either this is the first frame of movement
+		# or the previous frame had near-zero speed (player just started moving).
+		# In either case, skip the comparison and just record the current direction.
+		if _last_move_dir.length() > 0.5:
+			# DOT PRODUCT: cur_dir.dot(_last_move_dir) gives cos(angle between them).
+			# 1.0 = same direction, 0.0 = 90° apart, -1.0 = opposite.
+			# straight_line_dot = 0.97 means we only count it as "straight" when the
+			# angle between this frame and last frame is less than ~14°.
+			var dot := cur_dir.dot(_last_move_dir)
+			if dot >= straight_line_dot:
+				# Still moving in nearly the same direction — accumulate time.
+				_straight_time += delta
+				if _straight_time >= straight_line_threshold:
+					active_gain += straight_line_gain_per_second
+					if reason == "":
+						reason = "Moving too straight"
+			else:
+				# Turned enough — decay the straight-line timer at double speed.
+				# Double-speed decay means a brief turn gives noticeable relief,
+				# rewarding the player for weaving naturally.
+				_straight_time = maxf(_straight_time - delta * 2.0, 0.0)
+
+		# Always update the stored direction to this frame's direction.
+		_last_move_dir = cur_dir
+	else:
+		# Player stopped or is below the minimum speed. Decay the timer quickly
+		# (3× speed) since stopping is a bigger break than turning.
+		_straight_time = maxf(_straight_time - delta * 3.0, 0.0)
+		# Clear the stored direction so the comparison starts fresh when movement
+		# resumes — avoids a false "same direction" reading on the first moving frame.
+		if player_speed <= 0.1:
+			_last_move_dir = Vector2.ZERO
 
 	# ── SECTION 5: UPDATE THE SUSPICION VALUE ────────────────────────────────
 
@@ -972,8 +1052,8 @@ func _physics_process(delta: float) -> void:
 #   1. If caught: freeze UI, listen for restart, stop.
 #   2. Measure distance to player and player's speed.
 #   3. Calculate the effective notice range based on current alert level.
-#   4. Check all four suspicious behaviours (sprint, food-aim, stare, isolation)
-#      and accumulate a total suspicion gain for this frame.
+#   4. Check all six suspicious behaviours (sprint, food-aim, stare, isolation,
+#      in-water, straight-line walking) and accumulate a total suspicion gain for this frame.
 #   5. Add or subtract from suspicion (scaled by delta) and cap at 0–100.
 #   6. Update the progress bar and vignette shader intensity.
 #   7. If suspicion hits 100, set caught = true and stop.
