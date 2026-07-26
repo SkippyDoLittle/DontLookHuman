@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="11_mmap"]
 [ext_resource type="Script" uid="uid://cxu6mnerk822l" path="res://how_to_play.gd" id="12_5vvyt"]
 [ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd" id="12_pmenu"]
+[ext_resource type="Script" path="res://tree_scatter.gd" id="tree_scatter_1"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
 radius = 0.22
@@ -373,6 +374,9 @@ ambient_light_energy = 0.5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=987654321]
 environment = SubResource("Environment_main")
+
+[node name="TreeScatter" type="Node3D" parent="." unique_id=111222333]
+script = ExtResource("tree_scatter_1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=769087889]
 transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
