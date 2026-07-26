@@ -41,7 +41,7 @@ var _wall_bump_cooldown: float = 0.0  # prevents bump sound repeating every fram
 var in_water: bool = false   # read by ranger.gd for suspicion; updated each frame
 
 # Pond shape constants — must match the CylinderMesh in Main.tscn (z-scale 0.72 makes it oval)
-const _POND_CENTER:        := Vector3(-3.0, 0.0, -7.0)
+const _POND_CENTER         := Vector3(-3.0, 0.0, -7.0)
 const _POND_RADIUS_X:       float = 1.6
 const _POND_RADIUS_Z:       float = 1.6 * 0.72
 const _WATER_SPEED_FACTOR:  float = 0.5
