@@ -10,7 +10,7 @@ uniform vec4  sky_horizon_color: source_color = vec4(0.68, 0.84, 0.97, 1.0);
 uniform float sky_curve: hint_range(0.02, 1.0) = 0.09;
 
 // ── Ground (below the horizon line) ──────────────────────────────────────────
-uniform vec4 ground_color: source_color = vec4(0.30, 0.38, 0.22, 1.0);
+uniform vec4 ground_color: source_color = vec4(0.29, 0.52, 0.19, 1.0);
 
 // ── Clouds ────────────────────────────────────────────────────────────────────
 uniform vec4  cloud_color:    source_color          = vec4(1.0, 1.0, 1.0, 1.0);
