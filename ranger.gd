@@ -20,13 +20,13 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 @export var chase_speed:             float = 3.5
 @export var approach_stop_distance:  float = 1.8    # ranger stops this close to the player
 @export var food_aim_threshold:      float = 0.9    # dot product — ~26° cone toward food
-@export var food_aim_delay:          float = 0.5    # seconds of aiming before suspicion rises
-@export var food_aim_gain_per_second: float = 25.0
+@export var food_aim_delay:          float = 0.8    # seconds of aiming before suspicion rises
+@export var food_aim_gain_per_second: float = 18.0
 @export var stare_threshold:         float = 0.85   # dot product — ~32° cone toward ranger
-@export var stare_delay:             float = 0.6    # seconds staring before suspicion rises
-@export var stare_gain_per_second:   float = 20.0
-@export var separation_distance:     float = 4.0    # NPC must be within this to count as "blending in"
-@export var separation_gain_per_second: float = 15.0
+@export var stare_delay:             float = 0.9    # seconds staring before suspicion rises
+@export var stare_gain_per_second:   float = 16.0
+@export var separation_distance:     float = 5.0    # NPC must be within this to count as "blending in"
+@export var separation_gain_per_second: float = 10.0
 @export var straight_line_threshold: float = 2.5    # seconds of straight walking before suspicion rises
 @export var straight_line_dot:       float = 0.97   # ~14° — tighter than this = "too straight"
 @export var straight_line_gain_per_second: float = 10.0
