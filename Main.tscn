@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd" id="12_pmenu"]
 [ext_resource type="Script" path="res://tree_scatter.gd" id="tree_scatter_1"]
 [ext_resource type="Script" path="res://bench_scatter.gd" id="bench_scatter_1"]
+[ext_resource type="Script" path="res://table_scatter.gd" id="table_scatter_1"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
 radius = 0.22
@@ -381,6 +382,9 @@ script = ExtResource("tree_scatter_1")
 
 [node name="BenchScatter" type="Node3D" parent="." unique_id=111222334]
 script = ExtResource("bench_scatter_1")
+
+[node name="TableScatter" type="Node3D" parent="." unique_id=111222335]
+script = ExtResource("table_scatter_1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=769087889]
 transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
