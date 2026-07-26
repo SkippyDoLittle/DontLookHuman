@@ -82,7 +82,7 @@ func _ready() -> void:
 	lmm.mesh             = lmesh
 
 	for i in count:
-		var d  := instances[i]
+		var d: Dictionary = instances[i]
 		var s  := float(d["s"])
 		var x  := float(d["x"])
 		var z  := float(d["z"])
