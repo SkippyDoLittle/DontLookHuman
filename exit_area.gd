@@ -12,11 +12,6 @@ func _ready() -> void:
 	# Event-driven: more reliable than checking distance every frame.
 	body_entered.connect(_on_body_entered)
 
-func _process(_delta: float) -> void:
-	# Belt-and-suspenders restart listener alongside game_timer.gd.
-	if escaped and Input.is_action_just_pressed("restart"):
-		get_tree().reload_current_scene()
-
 func _on_body_entered(body: Node3D) -> void:
 	if escaped:
 		return

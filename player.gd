@@ -36,6 +36,7 @@ var _prev_sin: float = 0.0   # previous frame's sin value — for zero-crossing 
 
 var _stamina:          float = 100.0
 var _stamina_depleted: bool  = false   # prevents exhaust sound firing every frame while empty
+var _wall_bump_cooldown: float = 0.0  # prevents bump sound repeating every frame while held against wall
 
 var in_water: bool = false   # read by ranger.gd for suspicion; updated each frame
 
@@ -176,3 +177,8 @@ func _physics_process(delta: float) -> void:
 			beak.position.y = beak_y_rest
 
 	move_and_slide()
+
+	_wall_bump_cooldown = maxf(_wall_bump_cooldown - delta, 0.0)
+	if is_on_wall() and _wall_bump_cooldown <= 0.0:
+		SoundManager.play_wall_bump()
+		_wall_bump_cooldown = 0.6

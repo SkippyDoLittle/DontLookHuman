@@ -25,6 +25,7 @@ extends Node
 @onready var _stamina_bar:      ProgressBar  = get_node("../HUD/StaminaBar")
 @onready var _countdown_label:  Label        = get_node("../HUD/CountdownLabel")
 @onready var _pause_menu:       CanvasLayer  = get_node("../PauseMenu")
+@onready var _how_to_play:      Node         = get_node_or_null("../HowToPlayScreen")
 
 const SAVE_PATH: String = "user://best_time.dat"
 
@@ -39,6 +40,7 @@ var _exit_pulse_time: float = 0.0
 var _counting_down:  bool  = false
 var _countdown_val:  int   = 3
 var _countdown_timer: float = 0.0
+var _help_hint:      Label  = null
 
 func _ready() -> void:
 	# Fade in from black on scene load.
@@ -58,6 +60,16 @@ func _ready() -> void:
 	# (e.g., during the title screen, countdown, and pause menu).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true   # freeze everything until countdown finishes
+
+	# "H — controls" hint shown in the corner during the title screen.
+	_help_hint = Label.new()
+	_help_hint.text = "H — controls"
+	_help_hint.add_theme_font_size_override("font_size", 13)
+	_help_hint.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.60))
+	_help_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_help_hint.offset_bottom = -10
+	_help_hint.offset_left   = 12
+	get_node("../HUD").add_child(_help_hint)
 
 func _process(delta: float) -> void:
 
@@ -98,6 +110,8 @@ func _process(delta: float) -> void:
 			tween.tween_callback(func():
 				_title_screen.visible    = false
 				_transition_rect.color.a = 0.0   # clear instantly (the new scene fades in itself)
+				if _how_to_play: _how_to_play.visible = false
+				if _help_hint:   _help_hint.visible   = false
 				_countdown_val           = 3
 				_countdown_timer         = 0.0
 				_counting_down           = true

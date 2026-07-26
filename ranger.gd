@@ -30,6 +30,8 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 @export var straight_line_threshold: float = 2.5    # seconds of straight walking before suspicion rises
 @export var straight_line_dot:       float = 0.97   # ~14° — tighter than this = "too straight"
 @export var straight_line_gain_per_second: float = 10.0
+@export var still_threshold:           float = 3.5    # seconds motionless before suspicion rises
+@export var still_gain_per_second:     float = 8.0
 
 # ── Node references ──────────────────────────────────────────────────────────────
 @onready var player:        CharacterBody3D = get_node("../Player")
@@ -58,6 +60,7 @@ var stare_time:       float   = 0.0
 var food_aim_time:    float   = 0.0
 var _straight_time:   float   = 0.0
 var _last_move_dir:   Vector2  = Vector2.ZERO   # player's movement direction last frame
+var _still_time:      float   = 0.0
 
 var npc_animals: Array = []
 
@@ -76,9 +79,7 @@ func _process(delta: float) -> void:
 	# ── CAUGHT STATE ─────────────────────────────────────────────────────────────
 	if caught:
 		suspicion_bar.value = 100.0
-		status_label.text   = "CAUGHT! Press R to retry"
-		if Input.is_action_just_pressed("restart"):
-			get_tree().reload_current_scene()
+		status_label.text   = "CAUGHT!"
 		return
 
 	# ── DISTANCE & SPEED ─────────────────────────────────────────────────────────
@@ -155,6 +156,17 @@ func _process(delta: float) -> void:
 		_straight_time = maxf(_straight_time - delta * 3.0, 0.0)
 		if player_speed <= 0.1:
 			_last_move_dir = Vector2.ZERO   # reset so the next movement starts fresh
+
+	# 7. Standing completely still
+	# Real pigeons constantly shift weight and bob — sustained motionlessness looks deliberate.
+	# Exempt while pecking: that's visibly natural behaviour and already reduces suspicion.
+	if is_nearby and player_speed < 0.1 and not player.get("is_pecking"):
+		_still_time += delta
+		if _still_time >= still_threshold:
+			active_gain += still_gain_per_second
+			if reason == "": reason = "Standing still"
+	else:
+		_still_time = maxf(_still_time - delta * 1.5, 0.0)
 
 	# ── UPDATE SUSPICION ─────────────────────────────────────────────────────────
 	if active_gain > 0.0:

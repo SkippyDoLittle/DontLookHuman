@@ -16,7 +16,8 @@ var _ambient:   AudioStreamPlayer
 var _step_walk: AudioStreamPlayer
 var _step_run:  AudioStreamPlayer
 var _portal:    AudioStreamPlayer
-var _exhaust:   AudioStreamPlayer
+var _exhaust:    AudioStreamPlayer
+var _wall_bump:  AudioStreamPlayer
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
@@ -39,8 +40,9 @@ func _ready() -> void:
 	_step_run  = _player(_noise(0.022, 100.0,  0.10), -12.0)
 	_portal    = _player(_chime([523.25, 783.99, 1046.5, 1318.5, 1568.0], [0.08, 0.08, 0.10, 0.12, 0.30]), -2.0)  # C5 G5 C6 E6 G6
 	_exhaust   = _player(_noise(0.08,   40.0,  0.12), -14.0)
+	_wall_bump = _player(_noise(0.06,   35.0,  0.18), -10.0)  # low thud for hitting park boundary
 
-	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust]:
+	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump]:
 		add_child(p)
 		p.bus = "SFX"
 
@@ -55,8 +57,9 @@ func play_caught()  -> void: _caught.play()
 func play_escape()  -> void: _escape.play()
 func play_tick()    -> void: _tick.play()
 func play_portal()  -> void: _portal.play()
-func play_exhaust() -> void: _exhaust.play()
-func stop_ambient() -> void: _ambient.stop()
+func play_exhaust()   -> void: _exhaust.play()
+func play_wall_bump() -> void: _wall_bump.play()
+func stop_ambient()   -> void: _ambient.stop()
 
 func play_step(sprint: bool) -> void:
 	if sprint: _step_run.play()
