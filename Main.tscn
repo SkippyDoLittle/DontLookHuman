@@ -47,7 +47,7 @@ albedo_color = Color(0.4, 0.46667, 0.53333, 1)
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4bddv"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_u0gv2"]
-size = Vector3(20, 0.2, 20)
+size = Vector3(500, 0.2, 500)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
 albedo_color = Color(0.29, 0.52, 0.19, 1)
