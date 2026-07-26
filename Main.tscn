@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="7_lgr22"]
 [ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="8_gtmr1"]
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="9_vgnt1"]
+[ext_resource type="Shader" path="res://sky.gdshader" id="sky_1"]
 [ext_resource type="Script" uid="uid://dvfyvsyh3pxpe" path="res://park_visitor.gd" id="10_pvst"]
 [ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="11_mmap"]
 [ext_resource type="Script" uid="uid://cxu6mnerk822l" path="res://how_to_play.gd" id="12_5vvyt"]
@@ -346,10 +347,38 @@ albedo_color = Color(0.2, 0.6, 0.5, 1)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v3pants"]
 albedo_color = Color(0.4, 0.4, 0.45, 1)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("sky_1")
+shader_parameter/sky_top_color = Color(0.15, 0.38, 0.78, 1)
+shader_parameter/sky_horizon_color = Color(0.68, 0.84, 0.97, 1)
+shader_parameter/sky_curve = 0.09
+shader_parameter/ground_color = Color(0.30, 0.38, 0.22, 1)
+shader_parameter/cloud_color = Color(1, 1, 1, 1)
+shader_parameter/cloud_coverage = 0.45
+shader_parameter/cloud_scale = 3.0
+shader_parameter/cloud_speed = 0.015
+shader_parameter/sun_angle_max = 4.0
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ShaderMaterial_sky")
+process_mode = 3
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 0
+ambient_light_energy = 0.5
+
 [node name="Main" type="Node3D" unique_id=1807496603]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=987654321]
+environment = SubResource("Environment_main")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=769087889]
 transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_mode = 0
+directional_shadow_max_distance = 32.0
 
 [node name="Player" type="CharacterBody3D" parent="." unique_id=1684290428]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 0)
