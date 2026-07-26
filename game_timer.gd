@@ -97,6 +97,7 @@ func _process(delta: float) -> void:
 				_counting_down = false
 				game_started   = true
 				get_tree().paused = false
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 				var tween := create_tween()
 				tween.tween_interval(0.55)
 				tween.tween_callback(func(): _countdown_label.visible = false)
@@ -126,9 +127,11 @@ func _process(delta: float) -> void:
 			if _pause_menu.visible:
 				_pause_menu.visible = false
 				get_tree().paused   = false
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 			else:
 				_pause_menu.visible = true
 				get_tree().paused   = true
+				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 	if _pause_menu.visible:
 		return   # skip game logic while paused
@@ -192,6 +195,7 @@ func _finish(success: bool, headline: String) -> void:
 	if game_over:
 		return   # guard against simultaneous triggers (e.g., caught + time's up same frame)
 	game_over = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 	if success:
 		SoundManager.play_escape()

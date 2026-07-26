@@ -4,64 +4,14 @@
 [ext_resource type="Script" uid="uid://dy1bj0d1l136i" path="res://npc_animal.gd" id="3_r0du0"]
 [ext_resource type="Script" uid="uid://cqvl4a5y5bpjp" path="res://ranger.gd" id="4_cm0pq"]
 [ext_resource type="Script" uid="uid://s8x4yqy1rlay" path="res://picnic_food.gd" id="5_fos0i"]
-[ext_resource type="Script" path="res://escape_zone.gd" id="6_escz"]
+[ext_resource type="Script" uid="uid://dpjy1itkpqr4o" path="res://escape_zone.gd" id="6_escz"]
 [ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="7_lgr22"]
 [ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="8_gtmr1"]
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="9_vgnt1"]
-[ext_resource type="Script" path="res://park_visitor.gd" id="10_pvst"]
-[ext_resource type="Script" path="res://minimap.gd" id="11_mmap"]
-[ext_resource type="Script" path="res://pause_menu.gd" id="12_pmenu"]
-
-; ── PAUSE MENU BUTTON STYLES ─────────────────────────────────────────────────
-; Same dark-green colour scheme as the main menu.
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
-bg_color = Color(0.06, 0.13, 0.06, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.22, 0.52, 0.22, 1.0)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
-bg_color = Color(0.11, 0.24, 0.11, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.35, 0.70, 0.35, 1.0)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
-bg_color = Color(0.03, 0.07, 0.03, 1.0)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.18, 0.40, 0.18, 1.0)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
+[ext_resource type="Script" uid="uid://dvfyvsyh3pxpe" path="res://park_visitor.gd" id="10_pvst"]
+[ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="11_mmap"]
+[ext_resource type="Script" uid="uid://cxu6mnerk822l" path="res://how_to_play.gd" id="12_5vvyt"]
+[ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd" id="12_pmenu"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
 radius = 0.22
@@ -95,12 +45,11 @@ albedo_color = Color(0.4, 0.46667, 0.53333, 1)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4bddv"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ranger"]
-radius = 0.28
-height = 1.0
-
 [sub_resource type="BoxMesh" id="BoxMesh_u0gv2"]
 size = Vector3(20, 0.2, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
+albedo_color = Color(0.29, 0.52, 0.19, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4bddv"]
 size = Vector3(20, 0.2, 20)
@@ -111,17 +60,45 @@ size = Vector3(21, 3, 0.5)
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_ew"]
 size = Vector3(0.5, 3, 21)
 
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_pants"]
-size = Vector3(0.3, 0.35, 0.18)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
+radius = 0.15
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_pants"]
-albedo_color = Color(0.28, 0.35, 0.2, 1)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ranger"]
+radius = 0.28
+height = 1.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_ranger_body"]
 size = Vector3(0.34, 0.38, 0.2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_shirt"]
 albedo_color = Color(0.5, 0.56, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_arm"]
+size = Vector3(0.1, 0.3, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_belt"]
+size = Vector3(0.36, 0.06, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_belt"]
+albedo_color = Color(0.15, 0.1, 0.05, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_badge"]
+size = Vector3(0.07, 0.07, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_badge"]
+albedo_color = Color(0.85, 0.72, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_leg"]
+size = Vector3(0.12, 0.32, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_pants"]
+albedo_color = Color(0.28, 0.35, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_boot"]
+size = Vector3(0.15, 0.1, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_boot"]
+albedo_color = Color(0.22, 0.14, 0.08, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_ranger_head"]
 radius = 0.15
@@ -146,35 +123,23 @@ top_radius = 0.11
 bottom_radius = 0.13
 height = 0.22
 
-; ── RANGER UPGRADED MODEL PARTS ──────────────────────────────────────────────
-
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_arm"]
-size = Vector3(0.10, 0.30, 0.14)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_leg"]
-size = Vector3(0.12, 0.32, 0.18)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_boot"]
-size = Vector3(0.15, 0.10, 0.22)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_belt"]
-size = Vector3(0.36, 0.06, 0.22)
-
-[sub_resource type="BoxMesh" id="BoxMesh_ranger_badge"]
-size = Vector3(0.07, 0.07, 0.02)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_boot"]
-albedo_color = Color(0.22, 0.14, 0.08, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_belt"]
-albedo_color = Color(0.15, 0.10, 0.05, 1)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ranger_badge"]
-albedo_color = Color(0.85, 0.72, 0.08, 1)
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vgnt1"]
 shader = ExtResource("9_vgnt1")
 shader_parameter/intensity = 0.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_bg"]
+bg_color = Color(0.08, 0.08, 0.08, 0.85)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_fill"]
+bg_color = Color(1, 0.85, 0.1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
 
 [sub_resource type="SphereMesh" id="SphereMesh_bread"]
 radius = 0.18
@@ -293,9 +258,54 @@ albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_frefy"]
 size = Vector3(1.8, 0.72, 0.9)
 
-; Organic pond disc: 9 sides (not a perfect circle) shared by both pond layers.
-; The node transform applies an oval scale (z * 0.72) so it reads as a natural
-; irregular pond rather than a mathematical circle or a rectangle.
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.06, 0.13, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.03, 0.07, 0.03, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.4, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.11, 0.24, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.7, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [sub_resource type="CylinderMesh" id="CylinderMesh_pond"]
 top_radius = 1.6
 bottom_radius = 1.6
@@ -308,15 +318,18 @@ transparency = 1
 cull_mode = 2
 albedo_color = Color(0.15, 0.45, 0.78, 0.62)
 
-; PondBed material — dark opaque layer visible through the translucent water above.
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pond_bed"]
 albedo_color = Color(0.08, 0.18, 0.28, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
-albedo_color = Color(0.29, 0.52, 0.19, 1)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_visitor"]
+radius = 0.25
+height = 1.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v1body"]
 albedo_color = Color(0.25, 0.45, 0.8, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ranger_pants"]
+size = Vector3(0.3, 0.35, 0.18)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v1pants"]
 albedo_color = Color(0.2, 0.25, 0.45, 1)
@@ -332,28 +345,6 @@ albedo_color = Color(0.2, 0.6, 0.5, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v3pants"]
 albedo_color = Color(0.4, 0.4, 0.45, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_fill"]
-bg_color = Color(1, 0.85, 0.1, 1)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_bg"]
-bg_color = Color(0.08, 0.08, 0.08, 0.85)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
-radius = 0.15
-height = 2.0
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_visitor"]
-radius = 0.25
-height = 1.0
 
 [node name="Main" type="Node3D" unique_id=1807496603]
 
@@ -408,21 +399,25 @@ shape = SubResource("BoxShape3D_4bddv")
 
 [node name="WallNorth" type="StaticBody3D" parent="." unique_id=1901000001]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10.25)
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth" unique_id=1901000002]
 shape = SubResource("BoxShape3D_wall_ns")
 
 [node name="WallSouth" type="StaticBody3D" parent="." unique_id=1901000003]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -10.25)
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth" unique_id=1901000004]
 shape = SubResource("BoxShape3D_wall_ns")
 
 [node name="WallEast" type="StaticBody3D" parent="." unique_id=1901000005]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 1.5, 0)
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast" unique_id=1901000006]
 shape = SubResource("BoxShape3D_wall_ew")
 
 [node name="WallWest" type="StaticBody3D" parent="." unique_id=1901000007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.25, 1.5, 0)
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest" unique_id=1901000008]
 shape = SubResource("BoxShape3D_wall_ew")
 
@@ -526,14 +521,9 @@ shape = SubResource("CapsuleShape3D_ranger")
 [node name="AlertLabel" type="Label3D" parent="Ranger" unique_id=1902000002]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
 visible = false
-text = ""
+billboard = 1
 font_size = 96
 outline_size = 8
-billboard = 1
-
-; ── RANGER BODY ──────────────────────────────────────────────────────────────
-; Two separate legs replace the old single-block pants so the silhouette reads
-; more like a person. Arms, boots, belt, and badge are all new additions.
 
 [node name="RangerBody" type="MeshInstance3D" parent="Ranger" unique_id=-1517189595]
 mesh = SubResource("BoxMesh_ranger_body")
@@ -622,20 +612,18 @@ offset_right = 320.0
 offset_bottom = 97.0
 
 [node name="StaminaBar" type="ProgressBar" parent="HUD" unique_id=1902000001]
-anchor_left = 0.0
+anchors_preset = 2
 anchor_top = 1.0
-anchor_right = 0.0
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = -100.0
 offset_right = 36.0
 offset_bottom = -20.0
-max_value = 100.0
+theme_override_styles/background = SubResource("StyleBoxFlat_stam_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_stam_fill")
 value = 100.0
 fill_mode = 3
 show_percentage = false
-theme_override_styles/fill = SubResource("StyleBoxFlat_stam_fill")
-theme_override_styles/background = SubResource("StyleBoxFlat_stam_bg")
 
 [node name="TimerLabel" type="Label" parent="HUD" unique_id=-2072745094]
 anchors_preset = 1
@@ -689,14 +677,15 @@ vertical_alignment = 1
 autowrap_mode = 3
 
 [node name="FadeOverlay" type="ColorRect" parent="HUD" unique_id=1881000001]
+z_index = 100
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-z_index = 100
 color = Color(0, 0, 0, 1)
 
 [node name="CountdownLabel" type="Label" parent="HUD" unique_id=2001000001]
 visible = false
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -705,50 +694,63 @@ offset_left = -120.0
 offset_top = -70.0
 offset_right = 120.0
 offset_bottom = 70.0
+theme_override_colors/font_color = Color(0.85, 1, 0.85, 1)
 theme_override_font_sizes/font_size = 96
-theme_override_colors/font_color = Color(0.85, 1.0, 0.85, 1.0)
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Minimap" type="Control" parent="HUD" unique_id=1882000001]
+layout_mode = 3
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 0.0
 anchor_right = 1.0
-anchor_bottom = 0.0
 offset_left = -130.0
 offset_top = 10.0
 offset_right = -10.0
 offset_bottom = 130.0
+grow_horizontal = 0
 script = ExtResource("11_mmap")
 
 [node name="MapBackground" type="ColorRect" parent="HUD/Minimap" unique_id=1882000002]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.05, 0.05, 0.1, 0.82)
 
 [node name="PlayerDot" type="ColorRect" parent="HUD/Minimap" unique_id=1882000003]
-size = Vector2(10, 10)
-color = Color(1, 1, 1, 1)
+layout_mode = 0
+offset_right = 10.0
+offset_bottom = 10.0
 
 [node name="RangerDot" type="ColorRect" parent="HUD/Minimap" unique_id=1882000004]
-size = Vector2(8, 8)
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
 color = Color(1, 0.2, 0.2, 1)
 
 [node name="FoodDot1" type="ColorRect" parent="HUD/Minimap" unique_id=1882000005]
-size = Vector2(6, 6)
+layout_mode = 0
+offset_right = 6.0
+offset_bottom = 6.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="FoodDot2" type="ColorRect" parent="HUD/Minimap" unique_id=1882000006]
-size = Vector2(6, 6)
+layout_mode = 0
+offset_right = 6.0
+offset_bottom = 6.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="FoodDot3" type="ColorRect" parent="HUD/Minimap" unique_id=1882000007]
-size = Vector2(6, 6)
+layout_mode = 0
+offset_right = 6.0
+offset_bottom = 6.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="ExitDot" type="ColorRect" parent="HUD/Minimap" unique_id=1882000008]
 visible = false
-size = Vector2(8, 8)
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
 color = Color(0.2, 1, 0.3, 1)
 
 [node name="GameTimer" type="Node" parent="." unique_id=-2072745095]
@@ -824,11 +826,11 @@ script = ExtResource("7_lgr22")
 shape = SubResource("BoxShape3D_u0gv2")
 
 [node name="ExitLabel" type="Label3D" parent="EscapeZone" unique_id=1881000002]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+billboard = 1
+modulate = Color(0.3, 1, 0.4, 1)
 text = "EXIT"
 font_size = 64
-modulate = Color(0.3, 1.0, 0.4, 1)
-billboard = 1
 
 [node name="Tree" type="Node3D" parent="." unique_id=1823333013]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -5)
@@ -1076,9 +1078,10 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.04, 0.07, 0.04, 1.0)
+color = Color(0.04, 0.07, 0.04, 1)
 
 [node name="StartLabel" type="Label" parent="TitleScreen" unique_id=-1739411791]
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -1101,35 +1104,22 @@ layer = 20
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0, 0, 0)
 mouse_filter = 2
-
-; ── PAUSE MENU ───────────────────────────────────────────────────────────────
-; Layer 15 sits above the HUD (layer 1) and TitleScreen (layer 10) so the pause
-; overlay covers the full screen. Below TransitionLayer (layer 20) so fade effects
-; still render on top during scene transitions.
-; visible = false because it starts hidden — game_timer.gd shows it on Escape press.
-; process_mode is set to PROCESS_MODE_ALWAYS in pause_menu.gd's _ready() so that
-; buttons remain clickable while get_tree().paused == true.
+color = Color(0, 0, 0, 0)
 
 [node name="PauseMenu" type="CanvasLayer" parent="." unique_id=2003000001]
 layer = 15
 visible = false
 script = ExtResource("12_pmenu")
 
-; Semi-transparent dark overlay covers the game world so the pause menu is readable.
-; mouse_filter = 0 (STOP) catches all clicks — prevents the player from accidentally
-; interacting with 3D objects through the pause overlay.
 [node name="Background" type="ColorRect" parent="PauseMenu" unique_id=2003000002]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.0, 0.02, 0.0, 0.88)
-mouse_filter = 0
+color = Color(0, 0.02, 0, 0.88)
 
-; VBoxContainer stacks all pause menu elements vertically, centred on screen.
-; offsets push 200px left/right and 235px up/down from the screen centre.
 [node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu" unique_id=2003000003]
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -1143,108 +1133,113 @@ grow_vertical = 2
 theme_override_constants/separation = 10
 
 [node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2003000004]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1)
 theme_override_font_sizes/font_size = 36
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
 text = "PAUSED"
 horizontal_alignment = 1
 
 [node name="Divider" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2003000005]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
 [node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000006]
 custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
 theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "RESUME  (Escape)"
 
 [node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer" unique_id=2003000007]
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
 
-; AUDIO button toggles the AudioPanel below it. Starts collapsed.
 [node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000016]
 custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
 theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "AUDIO  ▶"
 
-; AudioPanel holds both sliders. Hidden by default — AudioButton reveals it.
 [node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer" unique_id=2003000017]
 visible = false
+layout_mode = 2
 theme_override_constants/separation = 6
 
 [node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000008]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Music Volume"
 
 [node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000009]
 custom_minimum_size = Vector2(0, 32)
-min_value = 0.0
+layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 1.0
 
 [node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000010]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Sound Effects Volume"
 
 [node name="SFXSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2003000011]
 custom_minimum_size = Vector2(0, 32)
-min_value = 0.0
+layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 1.0
 
 [node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer" unique_id=2003000012]
 custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
 
 [node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2003000013]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
 [node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000014]
 custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
 theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "MAIN MENU"
 
 [node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000015]
 custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1.0)
 theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "QUIT"
 
 [node name="Pond" type="Node3D" parent="." unique_id=1543891791]
 
-; Water surface — 9-sided oval disc (z scaled to 0.72 of x for an irregular oval).
-; Sits 7cm above ground so the pigeon's feet appear below the surface when wading.
-; Semi-transparent so the dark PondBed shows through as a depth cue.
 [node name="WaterSurface" type="MeshInstance3D" parent="Pond" unique_id=2098430698]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.07, -7)
 mesh = SubResource("CylinderMesh_pond")
 surface_material_override/0 = SubResource("StandardMaterial3D_ldbx0")
 
-; PondBed — same oval shape, 3mm above ground to avoid z-fighting with the ground mesh.
-; Dark and opaque; visible through the translucent water as the pond floor.
-[node name="PondBed" type="MeshInstance3D" parent="Pond"]
+[node name="PondBed" type="MeshInstance3D" parent="Pond" unique_id=11395892]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.003, -7)
 mesh = SubResource("CylinderMesh_pond")
 surface_material_override/0 = SubResource("StandardMaterial3D_pond_bed")
@@ -1371,3 +1366,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
 transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
 mesh = SubResource("BoxMesh_pgtail")
 surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="HowToPlayScreen" type="CanvasLayer" parent="." unique_id=1919386971]
+layer = 15
+script = ExtResource("12_5vvyt")
