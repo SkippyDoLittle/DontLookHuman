@@ -1,0 +1,316 @@
+[gd_scene format=3 uid="uid://dqinwyd3h4b1j"]
+
+[ext_resource type="Script" path="res://main_menu.gd" id="1_mainmenu"]
+
+; ── BUTTON STYLE BOXES ──────────────────────────────────────────────────────
+; StyleBoxFlat defines the visual appearance of a button in each state.
+; Three states: normal (idle), hover (mouse over), pressed (clicked).
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.06, 0.13, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.11, 0.24, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.70, 0.35, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_pressed"]
+bg_color = Color(0.03, 0.07, 0.03, 1.0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.40, 0.18, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+; ── SCENE TREE ───────────────────────────────────────────────────────────────
+
+[node name="MainMenu" type="Node"]
+script = ExtResource("1_mainmenu")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=3001000001]
+layer = 5
+
+; Full-screen dark background
+[node name="Background" type="ColorRect" parent="CanvasLayer" unique_id=3001000002]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.03, 0.06, 0.03, 1.0)
+
+; ── MAIN PANEL ───────────────────────────────────────────────────────────────
+; A VBoxContainer centered on screen holding the title labels and nav buttons.
+; anchors_preset=8 = CENTER preset (anchor point at screen centre).
+; offsets push the container 170px left/right and 200px up/down from centre.
+
+[node name="MainPanel" type="VBoxContainer" parent="CanvasLayer" unique_id=3001000003]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -205.0
+offset_right = 170.0
+offset_bottom = 205.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer/MainPanel" unique_id=3001000004]
+theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+text = "Don't Look Human"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CanvasLayer/MainPanel" unique_id=3001000005]
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.45, 0.65, 0.45, 1.0)
+text = "A pigeon stealth game"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CanvasLayer/MainPanel" unique_id=3001000006]
+custom_minimum_size = Vector2(0, 28)
+
+[node name="PlayButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000010]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "PLAY"
+
+[node name="HowToPlayButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000011]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "HOW TO PLAY"
+
+[node name="SettingsButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000012]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "SETTINGS"
+
+[node name="QuitButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000013]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "QUIT"
+
+; ── HOW TO PLAY PANEL ────────────────────────────────────────────────────────
+; Full-screen overlay (hidden by default). Shows controls reference.
+
+[node name="HowToPlayPanel" type="Control" parent="CanvasLayer" unique_id=3001000020]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PanelBG" type="ColorRect" parent="CanvasLayer/HowToPlayPanel" unique_id=3001000021]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.03, 0.06, 0.03, 0.96)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HowToPlayPanel" unique_id=3001000022]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -240.0
+offset_right = 260.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000023]
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+text = "HOW TO PLAY"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000024]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="ControlsLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000025]
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.80, 0.92, 0.80, 1.0)
+text = "WASD / Arrow Keys    Move
+Shift                Sprint  (drains stamina)
+E                    Peck to steal food
+R                    Restart after a run"
+horizontal_alignment = 1
+
+[node name="Spacer2" type="Control" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000026]
+custom_minimum_size = Vector2(0, 16)
+
+[node name="GoalLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000027]
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.65, 0.88, 0.65, 1.0)
+text = "Steal all 3 food items, then reach the exit portal.
+Blend in with the other pigeons.
+Don't look human."
+horizontal_alignment = 1
+
+[node name="Divider2" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000028]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000029]
+custom_minimum_size = Vector2(0, 48)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "BACK"
+
+; ── SETTINGS PANEL ───────────────────────────────────────────────────────────
+; Full-screen overlay (hidden by default). Volume sliders + fullscreen toggle.
+
+[node name="SettingsPanel" type="Control" parent="CanvasLayer" unique_id=3001000030]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PanelBG" type="ColorRect" parent="CanvasLayer/SettingsPanel" unique_id=3001000031]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.03, 0.06, 0.03, 0.96)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/SettingsPanel" unique_id=3001000032]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -220.0
+offset_right = 220.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000033]
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+text = "SETTINGS"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000034]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="MusicLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000035]
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000036]
+custom_minimum_size = Vector2(0, 32)
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000037]
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
+text = "Sound Effects Volume"
+
+[node name="SFXSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000038]
+custom_minimum_size = Vector2(0, 32)
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="Spacer3" type="Control" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000039]
+custom_minimum_size = Vector2(0, 10)
+
+[node name="FullscreenCheck" type="CheckButton" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000040]
+custom_minimum_size = Vector2(0, 40)
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
+text = "Fullscreen"
+
+[node name="Divider2" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000041]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000042]
+custom_minimum_size = Vector2(0, 48)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "BACK"
+
+; ── SIGNAL CONNECTIONS ───────────────────────────────────────────────────────
+; These wire each button's "pressed" signal (and slider/toggle signals) to the
+; matching function in main_menu.gd. "to" = "." means the root node (MainMenu).
+
+[connection signal="pressed" from="CanvasLayer/MainPanel/PlayButton" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="CanvasLayer/MainPanel/HowToPlayButton" to="." method="_on_how_to_play_pressed"]
+[connection signal="pressed" from="CanvasLayer/MainPanel/SettingsButton" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="CanvasLayer/MainPanel/QuitButton" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="CanvasLayer/HowToPlayPanel/VBoxContainer/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="CanvasLayer/SettingsPanel/VBoxContainer/BackButton" to="." method="_on_back_pressed"]
+[connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider" to="." method="_on_music_slider_changed"]
+[connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider" to="." method="_on_sfx_slider_changed"]
+[connection signal="toggled" from="CanvasLayer/SettingsPanel/VBoxContainer/FullscreenCheck" to="." method="_on_fullscreen_toggled"]
