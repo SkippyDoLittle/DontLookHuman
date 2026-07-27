@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://scbench0tscn01"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+; bench_scatter.gd reads BenchSeat's surface_material_override/0 to tint background benches.
+; These values must match the hand-placed bench in the level scene.
+
+[sub_resource type="BoxMesh" id="BoxMesh_seat"]
+size = Vector3(2, 0.1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood"]
+albedo_color = Color(0.54509807, 0.36862746, 0.23529412, 1)
+
+; Back panel mesh keeps the material embedded on the mesh itself (matching Main.tscn's BoxMesh_3dxm6).
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wood2"]
+albedo_color = Color(0.54509807, 0.36862746, 0.23529412, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_back"]
+material = SubResource("StandardMaterial3D_wood2")
+size = Vector3(2, 0.5, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.1, 0.45, 0.45)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_leg"]
+albedo_color = Color(0.54509807, 0.36862746, 0.23529412, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bench"]
+size = Vector3(2, 0.9, 0.5)
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="Bench" type="StaticBody3D"]
+
+[node name="BenchSeat" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("BoxMesh_seat")
+surface_material_override/0 = SubResource("StandardMaterial3D_wood")
+
+[node name="BenchBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, -0.22)
+mesh = SubResource("BoxMesh_back")
+
+[node name="LegL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_leg")
+
+[node name="LegR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.225, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_leg")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+shape = SubResource("BoxShape3D_bench")

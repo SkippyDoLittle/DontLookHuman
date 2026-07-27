@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://scptable0tscn1"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+; table_scatter.gd reads TableTop's surface_material_override/0 for background tables.
+
+[sub_resource type="BoxMesh" id="BoxMesh_top"]
+size = Vector3(1.8, 0.08, 0.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tabletop"]
+albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_seat"]
+size = Vector3(1.6, 0.06, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_seat"]
+albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.08, 0.72, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_leg"]
+albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_table"]
+size = Vector3(1.8, 0.72, 0.9)
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="PicnicTable" type="StaticBody3D"]
+
+[node name="TableTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 0)
+mesh = SubResource("BoxMesh_top")
+surface_material_override/0 = SubResource("StandardMaterial3D_tabletop")
+
+[node name="SeatLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0.65)
+mesh = SubResource("BoxMesh_seat")
+surface_material_override/0 = SubResource("StandardMaterial3D_seat")
+
+[node name="SeatRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -0.65)
+mesh = SubResource("BoxMesh_seat")
+surface_material_override/0 = SubResource("StandardMaterial3D_seat")
+
+[node name="LegA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0.36, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_leg")
+
+[node name="LegB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.36, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_leg")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
+shape = SubResource("BoxShape3D_table")

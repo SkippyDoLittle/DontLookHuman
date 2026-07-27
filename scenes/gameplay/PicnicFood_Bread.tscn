@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://scbread0tscn1"]
+
+[ext_resource type="Script" uid="uid://s8x4yqy1rlay" path="res://picnic_food.gd" id="1_food"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_bread"]
+radius = 0.18
+height = 0.26
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bread"]
+albedo_color = Color(0.92, 0.8, 0.58, 1)
+
+[node name="PicnicFood" type="Node3D"]
+script = ExtResource("1_food")
+
+[node name="FoodMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_bread")
+surface_material_override/0 = SubResource("StandardMaterial3D_bread")

@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://scfries0tscn1"]
+
+[ext_resource type="Script" uid="uid://s8x4yqy1rlay" path="res://picnic_food.gd" id="1_food"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_fry"]
+size = Vector3(0.35, 0.07, 0.07)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fry"]
+albedo_color = Color(0.97, 0.82, 0.22, 1)
+
+[node name="PicnicFood" type="Node3D"]
+script = ExtResource("1_food")
+
+[node name="Fry1" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_fry")
+surface_material_override/0 = SubResource("StandardMaterial3D_fry")
+
+[node name="Fry2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.8192, 0, 0.5736, 0, 1, 0, -0.5736, 0, 0.8192, 0, 0.02, 0)
+mesh = SubResource("BoxMesh_fry")
+surface_material_override/0 = SubResource("StandardMaterial3D_fry")
+
+[node name="Fry3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9063, 0, -0.4226, 0, 1, 0, 0.4226, 0, 0.9063, 0, 0.04, 0)
+mesh = SubResource("BoxMesh_fry")
+surface_material_override/0 = SubResource("StandardMaterial3D_fry")

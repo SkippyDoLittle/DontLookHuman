@@ -4,7 +4,7 @@
 extends Node
 
 const SETTINGS_PATH: String = "user://settings.cfg"
-const GAME_SCENE:    String = "res://Main.tscn"
+const GAME_SCENE:    String = "res://scenes/levels/Level01_Park.tscn"
 
 @onready var _main_panel:       VBoxContainer = $CanvasLayer/MainPanel
 @onready var _howto_panel:      Control       = $CanvasLayer/HowToPlayPanel

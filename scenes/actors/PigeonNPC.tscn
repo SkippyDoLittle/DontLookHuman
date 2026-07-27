@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://scpgnnpctscn1"]
+
+[ext_resource type="Script" uid="uid://dy1bj0d1l136i" path="res://npc_animal.gd" id="1_npc"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+; Pigeon meshes shared with the Player pigeon visual.
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_npc"]
+radius = 0.15
+
+[sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
+radius = 0.22
+height = 0.38
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgbody"]
+albedo_color = Color(0.53333, 0.6, 0.73333, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_pghead"]
+radius = 0.13
+height = 0.26
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pghead"]
+albedo_color = Color(0.6, 0.66667, 0.73333, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgbeak"]
+size = Vector3(0.04, 0.04, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgbeak"]
+albedo_color = Color(0.8, 0.53333, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgtail"]
+size = Vector3(0.18, 0.05, 0.14)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgtail"]
+albedo_color = Color(0.4, 0.46667, 0.53333, 1)
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="PigeonNPC" type="CharacterBody3D"]
+script = ExtResource("1_npc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_npc")
+
+; Visual offset moves the mesh centre down so feet rest on the ground.
+[node name="PigeonVisual" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.85, 0)
+
+[node name="Body" type="MeshInstance3D" parent="PigeonVisual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.4, 0, 0, 0)
+mesh = SubResource("SphereMesh_pgbody")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbody")
+
+[node name="Head" type="MeshInstance3D" parent="PigeonVisual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
+mesh = SubResource("SphereMesh_pghead")
+surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
+
+[node name="Beak" type="MeshInstance3D" parent="PigeonVisual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
+mesh = SubResource("BoxMesh_pgbeak")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="Tail" type="MeshInstance3D" parent="PigeonVisual"]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)
+mesh = SubResource("BoxMesh_pgtail")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
