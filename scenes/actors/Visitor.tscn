@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://scvisitortscn"]
+
+[ext_resource type="Script" uid="uid://dvfyvsyh3pxpe" path="res://park_visitor.gd" id="1_visitor"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+; Default colours match ParkVisitor1 (blue shirt, navy pants).
+; Each level instance overrides shirt_color / pants_color exports,
+; and _ready() applies them as fresh materials so instances never share materials.
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_visitor"]
+radius = 0.25
+height = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.34, 0.38, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_default_shirt"]
+albedo_color = Color(0.25, 0.45, 0.8, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pants"]
+size = Vector3(0.3, 0.35, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_default_pants"]
+albedo_color = Color(0.2, 0.25, 0.45, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.15
+height = 0.24
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_skin"]
+albedo_color = Color(0.89, 0.72, 0.56, 1)
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="ParkVisitor" type="CharacterBody3D"]
+script = ExtResource("1_visitor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_visitor")
+
+; park_visitor.gd._ready() always overwrites these materials via set_surface_override_material,
+; so inline materials here are only used for editor preview.
+[node name="VisitorBody" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_default_shirt")
+
+[node name="VisitorPants" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("BoxMesh_pants")
+surface_material_override/0 = SubResource("StandardMaterial3D_default_pants")
+
+[node name="VisitorHead" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("SphereMesh_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_skin")

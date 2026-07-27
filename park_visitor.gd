@@ -1,10 +1,15 @@
-# park_visitor.gd — Attached to each ParkVisitor node in Main.tscn
+# park_visitor.gd — Attached to each ParkVisitor node (or Visitor.tscn instance).
 # Human background NPCs that wander and pause. No interaction with the suspicion system.
 
 extends CharacterBody3D
 
-@export var walk_speed:    float = 0.9   # slightly slower than the pigeon so you can weave around them
+@export var walk_speed:    float = 0.9    # slightly slower than the pigeon so you can weave around them
 @export var wander_radius: float = 7.5   # max distance from park centre
+
+# Per-instance clothing colours — set on each instance in the level scene.
+# _ready() creates a fresh material so colour changes on one visitor never bleed to others.
+@export var shirt_color: Color = Color(0.25, 0.45, 0.8, 1)    # default: blue (ParkVisitor1)
+@export var pants_color: Color = Color(0.2, 0.25, 0.45, 1)    # default: navy
 
 var _target:       Vector3 = Vector3.ZERO
 var _wait_timer:   float   = 0.0
@@ -12,6 +17,16 @@ var _is_waiting:   bool    = false
 var _desired_move: Vector3 = Vector3.ZERO   # bridge between AI logic and physics
 
 func _ready() -> void:
+	# Apply per-instance colours to clothing meshes.
+	# New materials so tinting one visitor never affects other instances.
+	var shirt_mat := StandardMaterial3D.new()
+	shirt_mat.albedo_color = shirt_color
+	$VisitorBody.set_surface_override_material(0, shirt_mat)
+
+	var pants_mat := StandardMaterial3D.new()
+	pants_mat.albedo_color = pants_color
+	$VisitorPants.set_surface_override_material(0, pants_mat)
+
 	_pick_new_target()
 
 func _process(delta: float) -> void:

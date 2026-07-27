@@ -6,12 +6,18 @@ extends CharacterBody3D
 # Inspector-tunable values
 @export var walk_speed:      float = 1.2
 @export var run_speed:       float = 4.0
-@export var turn_speed:      float = 10.0
+@export var turn_speed:        float = 10.0
+@export var mouse_sensitivity: float = 0.003
 @export var peck_duration:   float = 0.55
 @export var peck_cooldown:   float = 0.3
 @export var max_stamina:     float = 100.0
 @export var stamina_drain:   float = 30.0   # points/sec while sprinting
 @export var stamina_recover: float = 15.0   # points/sec when not sprinting
+@export var zoom_step:       float = 0.5    # world units per scroll click
+@export var zoom_smooth:     float = 12.0   # how quickly the camera eases to the target distance
+
+const ZOOM_MIN: float = 2.0   # closest the camera can get to the player
+const ZOOM_MAX: float = 8.0   # furthest the camera can pull back
 
 # Peck animation shape constants
 const PECK_FORWARD:     float = 0.12   # how far head lunges forward
@@ -40,12 +46,20 @@ var _wall_bump_cooldown: float = 0.0  # prevents bump sound repeating every fram
 
 var in_water: bool = false   # read by ranger.gd for suspicion; updated each frame
 
+# Camera orbit angles — driven by mouse input in _input(), applied to spring_arm each frame.
+var camera_yaw:   float = 0.0
+var camera_pitch: float = 0.0
+
+# Scroll-wheel zoom: _zoom_target is where we want to be; spring_length lerps toward it each frame.
+var _zoom_target: float = 4.0
+
 # Pond shape constants — must match the CylinderMesh in Main.tscn (z-scale 0.72 makes it oval)
 const _POND_CENTER         := Vector3(-3.0, 0.0, -7.0)
 const _POND_RADIUS_X:       float = 1.6
 const _POND_RADIUS_Z:       float = 1.6 * 0.72
 const _WATER_SPEED_FACTOR:  float = 0.5
 
+@onready var spring_arm:    SpringArm3D   = $SpringArm3D
 @onready var pigeon_visual: Node3D        = $PigeonVisual
 @onready var head:          MeshInstance3D = $PigeonVisual/Head
 @onready var beak:          MeshInstance3D = $PigeonVisual/Beak
@@ -58,7 +72,37 @@ func _ready() -> void:
 	head_z_rest = head.position.z
 	beak_z_rest = beak.position.z
 
+	# Initialise camera angles from whatever the scene has set on the spring arm,
+	# so there's no snap on the first frame of mouse input.
+	camera_yaw   = spring_arm.rotation.y
+	camera_pitch = spring_arm.rotation.x
+	# Seed the zoom target from the scene's spring_length so Inspector edits take effect.
+	_zoom_target = spring_arm.spring_length
+
+func _input(event: InputEvent) -> void:
+	# Only handle camera input when the cursor is captured (active gameplay).
+	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		return
+
+	if event is InputEventMouseMotion:
+		camera_yaw   -= event.relative.x * mouse_sensitivity
+		camera_pitch -= event.relative.y * mouse_sensitivity
+		# Clamp pitch: negative = looking up, positive = looking down at the character.
+		camera_pitch  = clampf(camera_pitch, -1.1, 0.5)
+		spring_arm.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
+
+	# Scroll wheel zoom: adjust the target distance and let _physics_process smooth it.
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_target = clampf(_zoom_target - zoom_step, ZOOM_MIN, ZOOM_MAX)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_target = clampf(_zoom_target + zoom_step, ZOOM_MIN, ZOOM_MAX)
+
 func _physics_process(delta: float) -> void:
+
+	# ── CAMERA ZOOM ──────────────────────────────────────────────────────────────
+	# Smoothly ease spring_length toward wherever the scroll wheel last set it.
+	spring_arm.spring_length = lerp(spring_arm.spring_length, _zoom_target, delta * zoom_smooth)
 
 	# ── GRAVITY ──────────────────────────────────────────────────────────────────
 	if not is_on_floor():
@@ -100,15 +144,26 @@ func _physics_process(delta: float) -> void:
 	if in_water:
 		current_speed *= _WATER_SPEED_FACTOR
 
-	# ── MOVEMENT ─────────────────────────────────────────────────────────────────
-	velocity.x = input_vector.x * current_speed
-	velocity.z = input_vector.y * current_speed   # input .y maps to 3D Z (forward/back)
+	# ── MOVEMENT (camera-relative) ──────────────────────────────────────────────
+	# Build world-space forward/right vectors from the camera's horizontal yaw,
+	# then project WASD input onto them so "forward" always means camera-forward.
+	# input.y = -1 when W is pressed (get_vector convention), hence the negation.
+	if input_vector.length() > 0.01:
+		var cam_fwd   := Vector3(-sin(camera_yaw), 0.0, -cos(camera_yaw))
+		var cam_right := Vector3( cos(camera_yaw), 0.0, -sin(camera_yaw))
+		var move_dir  := (cam_fwd * (-input_vector.y) + cam_right * input_vector.x).normalized()
+		velocity.x = move_dir.x * current_speed
+		velocity.z = move_dir.z * current_speed
+	else:
+		velocity.x = 0.0
+		velocity.z = 0.0
 
 	# ── ROTATION ─────────────────────────────────────────────────────────────────
 	# Rotate the visual only — not the physics body — to avoid collision glitches.
-	if input_vector.length() > 0.1:
-		var direction := Vector3(input_vector.x, 0, input_vector.y)
-		var target_angle := atan2(direction.x, direction.z)
+	# Derive the target angle from actual world-space velocity so the pigeon turns
+	# to face wherever it's walking, regardless of camera direction.
+	if Vector2(velocity.x, velocity.z).length() > 0.1:
+		var target_angle := atan2(velocity.x, velocity.z)
 		pigeon_visual.rotation.y = lerp_angle(pigeon_visual.rotation.y, target_angle, delta * turn_speed)
 
 	# ── HEAD BOB ─────────────────────────────────────────────────────────────────

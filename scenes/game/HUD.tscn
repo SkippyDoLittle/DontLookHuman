@@ -1,0 +1,217 @@
+[gd_scene format=3 uid="uid://schud000tscn01"]
+
+[ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="1_vgnt"]
+[ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="2_mmap"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgnt"]
+shader = ExtResource("1_vgnt")
+shader_parameter/intensity = 0.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_bg"]
+bg_color = Color(0.08, 0.08, 0.08, 0.85)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_fill"]
+bg_color = Color(1, 0.85, 0.1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="HUD" type="CanvasLayer"]
+
+; Full-screen vignette overlay — ranger.gd sets its intensity when suspicion rises.
+[node name="VignetteRect" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_vgnt")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="RangerStatus" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Ranger: Calm"
+
+[node name="ObjectiveStatus" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 258.0
+offset_bottom = 63.0
+text = "Steal all 5 items, then reach the exit!"
+
+[node name="SuspicionBar" type="ProgressBar" parent="."]
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 320.0
+offset_bottom = 97.0
+
+; Vertical stamina bar anchored to the bottom-left edge; fill_mode=3 = bottom-to-top.
+[node name="StaminaBar" type="ProgressBar" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -100.0
+offset_right = 36.0
+offset_bottom = -20.0
+theme_override_styles/background = SubResource("StyleBoxFlat_stam_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_stam_fill")
+value = 100.0
+fill_mode = 3
+show_percentage = false
+
+[node name="TimerLabel" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -70.0
+offset_top = 5.0
+offset_right = 70.0
+offset_bottom = 30.0
+text = "1:30"
+horizontal_alignment = 1
+
+[node name="WarnLabel" type="Label" parent="."]
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_top = 105.0
+offset_right = 160.0
+offset_bottom = 145.0
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+
+[node name="ResultBackground" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -150.0
+offset_right = 250.0
+offset_bottom = 150.0
+color = Color(0.05, 0.05, 0.05, 0.82)
+
+[node name="ResultLabel" type="Label" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -130.0
+offset_right = 230.0
+offset_bottom = 130.0
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+; Fade-in overlay — game_timer.gd tweens its alpha from 1 to 0 on scene load.
+[node name="FadeOverlay" type="ColorRect" parent="."]
+z_index = 100
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 1)
+
+[node name="CountdownLabel" type="Label" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -70.0
+offset_right = 120.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(0.85, 1, 0.85, 1)
+theme_override_font_sizes/font_size = 96
+horizontal_alignment = 1
+vertical_alignment = 1
+
+; Minimap — top-right corner, 120×120 px. minimap.gd navigates ../../ to reach level root.
+[node name="Minimap" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -130.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 130.0
+grow_horizontal = 0
+script = ExtResource("2_mmap")
+
+[node name="MapBackground" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.1, 0.82)
+
+[node name="PlayerDot" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 10.0
+offset_bottom = 10.0
+
+[node name="RangerDot" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="RangerDot2" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+color = Color(1, 0.2, 0.2, 1)
+
+[node name="FoodDot1" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 9.0
+offset_bottom = 9.0
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="FoodDot2" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 9.0
+offset_bottom = 9.0
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="FoodDot3" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 9.0
+offset_bottom = 9.0
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="FoodDot4" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 9.0
+offset_bottom = 9.0
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="FoodDot5" type="ColorRect" parent="Minimap"]
+layout_mode = 0
+offset_right = 9.0
+offset_bottom = 9.0
+color = Color(1, 0.9, 0.2, 1)
+
+[node name="ExitDot" type="ColorRect" parent="Minimap"]
+visible = false
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+color = Color(0.2, 1, 0.3, 1)

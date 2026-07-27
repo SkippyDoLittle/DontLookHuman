@@ -1,0 +1,140 @@
+[gd_scene format=3 uid="uid://scrangertscn1"]
+
+[ext_resource type="Script" uid="uid://cqvl4a5y5bpjp" path="res://ranger.gd" id="1_ranger"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ranger"]
+radius = 0.28
+height = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.34, 0.38, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shirt"]
+albedo_color = Color(0.5, 0.56, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+size = Vector3(0.1, 0.3, 0.14)
+
+[sub_resource type="BoxMesh" id="BoxMesh_belt"]
+size = Vector3(0.36, 0.06, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_belt"]
+albedo_color = Color(0.15, 0.1, 0.05, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_badge"]
+size = Vector3(0.07, 0.07, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_badge"]
+albedo_color = Color(0.85, 0.72, 0.08, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.12, 0.32, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pants"]
+albedo_color = Color(0.28, 0.35, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_boot"]
+size = Vector3(0.15, 0.1, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_boot"]
+albedo_color = Color(0.22, 0.14, 0.08, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_head"]
+radius = 0.15
+height = 0.24
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_skin"]
+albedo_color = Color(0.89, 0.72, 0.56, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hatbrim"]
+top_radius = 0.25
+bottom_radius = 0.25
+height = 0.03
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hat"]
+albedo_color = Color(0.42, 0.38, 0.22, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hatcrown"]
+top_radius = 0.11
+bottom_radius = 0.13
+height = 0.22
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="Ranger" type="CharacterBody3D"]
+script = ExtResource("1_ranger")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_ranger")
+
+; Floating alert label — shown above the ranger's head when suspicious/chasing.
+[node name="AlertLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+visible = false
+billboard = 1
+font_size = 96
+outline_size = 8
+
+[node name="RangerBody" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_shirt")
+
+[node name="RangerLeftArm" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.02, 0)
+mesh = SubResource("BoxMesh_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_shirt")
+
+[node name="RangerRightArm" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 0.02, 0)
+mesh = SubResource("BoxMesh_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_shirt")
+
+[node name="RangerBelt" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.17, 0)
+mesh = SubResource("BoxMesh_belt")
+surface_material_override/0 = SubResource("StandardMaterial3D_belt")
+
+[node name="RangerBadge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.07, 0.08, -0.11)
+mesh = SubResource("BoxMesh_badge")
+surface_material_override/0 = SubResource("StandardMaterial3D_badge")
+
+[node name="RangerLeftLeg" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, -0.35, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_pants")
+
+[node name="RangerRightLeg" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, -0.35, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_pants")
+
+[node name="RangerLeftBoot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, -0.52, 0.01)
+mesh = SubResource("BoxMesh_boot")
+surface_material_override/0 = SubResource("StandardMaterial3D_boot")
+
+[node name="RangerRightBoot" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, -0.52, 0.01)
+mesh = SubResource("BoxMesh_boot")
+surface_material_override/0 = SubResource("StandardMaterial3D_boot")
+
+[node name="RangerHead" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("SphereMesh_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_skin")
+
+[node name="RangerHatBrim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.47, 0)
+mesh = SubResource("CylinderMesh_hatbrim")
+surface_material_override/0 = SubResource("StandardMaterial3D_hat")
+
+[node name="RangerHatCrown" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+mesh = SubResource("CylinderMesh_hatcrown")
+surface_material_override/0 = SubResource("StandardMaterial3D_hat")

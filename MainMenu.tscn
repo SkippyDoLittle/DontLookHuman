@@ -80,9 +80,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -170.0
-offset_top = -205.0
+offset_top = -240.0
 offset_right = 170.0
-offset_bottom = 205.0
+offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
@@ -110,6 +110,15 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "PLAY"
+
+[node name="LevelSelectButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000050]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "LEVEL SELECT"
 
 [node name="HowToPlayButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000011]
 custom_minimum_size = Vector2(0, 52)
@@ -158,10 +167,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -240.0
-offset_right = 260.0
-offset_bottom = 240.0
+offset_left = -280.0
+offset_top = -300.0
+offset_right = 280.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
@@ -181,10 +190,15 @@ horizontal_alignment = 1
 [node name="ControlsLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000025]
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(0.80, 0.92, 0.80, 1.0)
-text = "WASD / Arrow Keys    Move
-Shift                Sprint  (drains stamina)
-E                    Peck to steal food
-R                    Restart after a run"
+text = "WASD               Move
+Shift              Sprint  (drains stamina bar)
+E                  Peck food  (can't sprint while pecking)
+Esc                Pause / resume
+R                  Retry current level
+Space              Next level  (after a successful escape)
+Mouse              Rotate camera
+Scroll Wheel       Zoom camera in / out
+H                  Controls reference  (in-game)"
 horizontal_alignment = 1
 
 [node name="Spacer2" type="Control" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000026]
@@ -193,7 +207,7 @@ custom_minimum_size = Vector2(0, 16)
 [node name="GoalLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000027]
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(0.65, 0.88, 0.65, 1.0)
-text = "Steal all 3 food items, then reach the exit portal.
+text = "Steal all 5 food items, then reach the exit portal.
 Blend in with the other pigeons.
 Don't look human."
 horizontal_alignment = 1
@@ -301,16 +315,123 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "BACK"
 
+; ── LEVEL SELECT PANEL ───────────────────────────────────────────────────────
+; Full-screen overlay (hidden by default). Lets the player jump to any level.
+
+[node name="LevelSelectPanel" type="Control" parent="CanvasLayer" unique_id=3001000051]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PanelBG" type="ColorRect" parent="CanvasLayer/LevelSelectPanel" unique_id=3001000052]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.03, 0.06, 0.03, 0.96)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/LevelSelectPanel" unique_id=3001000053]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -310.0
+offset_right = 240.0
+offset_bottom = 310.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000054]
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+text = "LEVEL SELECT"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000055]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="Level1Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000056]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Level 1 — Community Park"
+
+[node name="Level2Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000057]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Level 2 — Playground"
+
+[node name="Level3Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000058]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Level 3 — Lakeside"
+
+[node name="Level4Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000059]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Level 4 — Festival"
+
+[node name="Level5Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000060]
+custom_minimum_size = Vector2(0, 52)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "Level 5 — Botanical Gardens"
+
+[node name="Divider2" type="Label" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000061]
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000062]
+custom_minimum_size = Vector2(0, 48)
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+text = "BACK"
+
 ; ── SIGNAL CONNECTIONS ───────────────────────────────────────────────────────
 ; These wire each button's "pressed" signal (and slider/toggle signals) to the
 ; matching function in main_menu.gd. "to" = "." means the root node (MainMenu).
 
 [connection signal="pressed" from="CanvasLayer/MainPanel/PlayButton" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="CanvasLayer/MainPanel/LevelSelectButton" to="." method="_on_level_select_pressed"]
 [connection signal="pressed" from="CanvasLayer/MainPanel/HowToPlayButton" to="." method="_on_how_to_play_pressed"]
 [connection signal="pressed" from="CanvasLayer/MainPanel/SettingsButton" to="." method="_on_settings_pressed"]
 [connection signal="pressed" from="CanvasLayer/MainPanel/QuitButton" to="." method="_on_quit_pressed"]
 [connection signal="pressed" from="CanvasLayer/HowToPlayPanel/VBoxContainer/BackButton" to="." method="_on_back_pressed"]
 [connection signal="pressed" from="CanvasLayer/SettingsPanel/VBoxContainer/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/Level1Button" to="." method="_on_level_pressed" binds=[0]]
+[connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/Level2Button" to="." method="_on_level_pressed" binds=[1]]
+[connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/Level3Button" to="." method="_on_level_pressed" binds=[2]]
+[connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/Level4Button" to="." method="_on_level_pressed" binds=[3]]
+[connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/Level5Button" to="." method="_on_level_pressed" binds=[4]]
+[connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/BackButton" to="." method="_on_back_pressed"]
 [connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider" to="." method="_on_music_slider_changed"]
 [connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider" to="." method="_on_sfx_slider_changed"]
 [connection signal="toggled" from="CanvasLayer/SettingsPanel/VBoxContainer/FullscreenCheck" to="." method="_on_fullscreen_toggled"]

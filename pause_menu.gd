@@ -8,11 +8,12 @@ const MENU_SCENE:    String = "res://MainMenu.tscn"
 
 @onready var _music_slider: HSlider       = $VBoxContainer/AudioPanel/MusicSlider
 @onready var _sfx_slider:   HSlider       = $VBoxContainer/AudioPanel/SFXSlider
-@onready var _resume_btn:   Button        = $VBoxContainer/ResumeButton
-@onready var _menu_btn:     Button        = $VBoxContainer/MainMenuButton
-@onready var _quit_btn:     Button        = $VBoxContainer/QuitButton
-@onready var _audio_btn:    Button        = $VBoxContainer/AudioButton
-@onready var _audio_panel:  VBoxContainer = $VBoxContainer/AudioPanel
+@onready var _resume_btn:    Button        = $VBoxContainer/ResumeButton
+@onready var _menu_btn:      Button        = $VBoxContainer/MainMenuButton
+@onready var _quit_btn:      Button        = $VBoxContainer/QuitButton
+@onready var _audio_btn:     Button        = $VBoxContainer/AudioButton
+@onready var _audio_panel:   VBoxContainer = $VBoxContainer/AudioPanel
+@onready var _controls_btn:  Button        = $VBoxContainer/ControlsButton
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so buttons stay clickable while get_tree().paused == true.
@@ -23,6 +24,7 @@ func _ready() -> void:
 	_menu_btn.pressed.connect(_on_main_menu_pressed)
 	_quit_btn.pressed.connect(_on_quit_pressed)
 	_audio_btn.pressed.connect(_on_audio_pressed)
+	_controls_btn.pressed.connect(_on_controls_pressed)
 	_music_slider.value_changed.connect(_on_music_slider_changed)
 	_sfx_slider.value_changed.connect(_on_sfx_slider_changed)
 
@@ -50,6 +52,12 @@ func _on_quit_pressed() -> void:
 func _on_audio_pressed() -> void:
 	_audio_panel.visible = !_audio_panel.visible
 	_audio_btn.text = "AUDIO  ▼" if _audio_panel.visible else "AUDIO  ▶"
+
+func _on_controls_pressed() -> void:
+	# Open the in-game controls screen (HowToPlayScreen). H key or its CLOSE button dismisses it.
+	var htp := get_node_or_null("../HowToPlayScreen")
+	if htp:
+		htp.visible = true
 
 func _on_music_slider_changed(value: float) -> void:
 	SoundManager.set_music_volume(value)

@@ -1,0 +1,585 @@
+[gd_scene format=3 uid="uid://dwxes5r7rvilt"]
+
+; ── EXTERNAL RESOURCES ────────────────────────────────────────────────────────
+[ext_resource type="PackedScene" uid="uid://scplayertscn1"  path="res://scenes/actors/Player.tscn"                   id="1_player"]
+[ext_resource type="PackedScene" uid="uid://scpgnnpctscn1"  path="res://scenes/actors/PigeonNPC.tscn"                 id="2_pigeon"]
+[ext_resource type="PackedScene" uid="uid://scrangertscn1"  path="res://scenes/actors/Ranger.tscn"                   id="3_ranger"]
+[ext_resource type="PackedScene" uid="uid://scvisitortscn"  path="res://scenes/actors/Visitor.tscn"                  id="4_visitor"]
+[ext_resource type="PackedScene" uid="uid://schud000tscn01" path="res://scenes/game/HUD.tscn"                        id="5_hud"]
+[ext_resource type="PackedScene" uid="uid://scesczonetscn"  path="res://scenes/gameplay/EscapeZone.tscn"             id="6_escape"]
+[ext_resource type="PackedScene" uid="uid://scbread0tscn1"  path="res://scenes/gameplay/PicnicFood_Bread.tscn"       id="7_bread"]
+[ext_resource type="PackedScene" uid="uid://scfries0tscn1"  path="res://scenes/gameplay/PicnicFood_Fries.tscn"       id="8_fries"]
+[ext_resource type="PackedScene" uid="uid://scgrape0tscn1"  path="res://scenes/gameplay/PicnicFood_Grapes.tscn"      id="9_grapes"]
+[ext_resource type="PackedScene" uid="uid://scpcorn0tscn1"  path="res://scenes/gameplay/PicnicFood_Popcorn.tscn"     id="10_popcorn"]
+[ext_resource type="PackedScene" uid="uid://scapple0tscn1"  path="res://scenes/gameplay/PicnicFood_Apple.tscn"       id="11_apple"]
+[ext_resource type="PackedScene" uid="uid://sctree00tscn01" path="res://scenes/props/Tree.tscn"                      id="12_tree"]
+[ext_resource type="PackedScene" uid="uid://scbench0tscn01" path="res://scenes/props/Bench.tscn"                     id="13_bench"]
+[ext_resource type="PackedScene" uid="uid://scptable0tscn1" path="res://scenes/props/PicnicTable.tscn"               id="14_table"]
+[ext_resource type="PackedScene" uid="uid://sctrash0tscn01" path="res://scenes/props/TrashCan.tscn"                  id="15_trash"]
+[ext_resource type="Script" uid="uid://n0wwguurpwxa"        path="res://game_timer.gd"                               id="16_gtmr"]
+[ext_resource type="Shader"                                  path="res://sky.gdshader"                                id="17_sky"]
+[ext_resource type="Script"                                  path="res://tree_scatter.gd"                             id="18_tree_sct"]
+[ext_resource type="Script"                                  path="res://bench_scatter.gd"                            id="19_bench_sct"]
+[ext_resource type="Script"                                  path="res://table_scatter.gd"                            id="20_table_sct"]
+[ext_resource type="Script"                                  path="res://trash_can_scatter.gd"                        id="21_trash_sct"]
+[ext_resource type="Script"                                  path="res://pigeon_scatter.gd"                           id="22_pigeon_sct"]
+[ext_resource type="Script"                                  path="res://visitor_scatter.gd"                          id="23_visitor_sct"]
+[ext_resource type="Script" uid="uid://c5spuv808m6cu"       path="res://pause_menu.gd"                               id="25_pmenu"]
+
+; ── INLINE SUB-RESOURCES ──────────────────────────────────────────────────────
+
+; Sky — bright sunny day over the playground
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("17_sky")
+shader_parameter/sky_top_color    = Color(0.12, 0.42, 0.85, 1)
+shader_parameter/sky_horizon_color = Color(0.72, 0.88, 0.98, 1)
+shader_parameter/sky_curve        = 0.09
+shader_parameter/ground_color     = Color(0.82, 0.72, 0.52, 1)
+shader_parameter/cloud_color      = Color(1, 1, 1, 1)
+shader_parameter/cloud_coverage   = 0.2
+shader_parameter/cloud_scale      = 3.0
+shader_parameter/cloud_speed      = 0.015
+shader_parameter/sun_angle_max    = 4.0
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ShaderMaterial_sky")
+process_mode = 3
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 0
+ambient_light_energy = 0.5
+
+; Ground — sandy tan
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(500, 0.2, 500)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.82, 0.72, 0.52, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(500, 0.2, 500)
+
+; Walls
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ns"]
+size = Vector3(33, 3, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ew"]
+size = Vector3(0.5, 3, 33)
+
+; Sandpit — circular tan disc in the corner
+[sub_resource type="CylinderMesh" id="CylinderMesh_sand"]
+top_radius    = 1.8
+bottom_radius = 1.8
+height        = 0.08
+radial_segments = 10
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sand"]
+albedo_color = Color(0.94, 0.88, 0.62, 1)
+
+; Swing frame posts — thin vertical pillars
+[sub_resource type="BoxMesh" id="BoxMesh_swingpost"]
+size = Vector3(0.15, 2.5, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_metal"]
+albedo_color = Color(0.55, 0.60, 0.65, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_swingpost"]
+size = Vector3(0.15, 2.5, 0.15)
+
+; Swing cross-bar
+[sub_resource type="BoxMesh" id="BoxMesh_swingbar"]
+size = Vector3(3.5, 0.15, 0.15)
+
+; Swing chain (thin vertical box hung from bar)
+[sub_resource type="BoxMesh" id="BoxMesh_swingchain"]
+size = Vector3(0.05, 1.4, 0.05)
+
+; Swing seat
+[sub_resource type="BoxMesh" id="BoxMesh_swingseat"]
+size = Vector3(0.42, 0.06, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_seat"]
+albedo_color = Color(0.22, 0.18, 0.14, 1)
+
+; Pause menu button styles
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.06, 0.13, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.03, 0.07, 0.03, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.4, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.11, 0.24, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.7, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="Level02_Playground" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_mode = 0
+directional_shadow_max_distance = 32.0
+
+; ── SCATTER ───────────────────────────────────────────────────────────────────
+[node name="TreeScatter" type="Node3D" parent="."]
+script = ExtResource("18_tree_sct")
+park_half_size = 18.0
+
+[node name="BenchScatter" type="Node3D" parent="."]
+script = ExtResource("19_bench_sct")
+park_half_size = 18.0
+
+[node name="TableScatter" type="Node3D" parent="."]
+script = ExtResource("20_table_sct")
+park_half_size = 18.0
+
+[node name="TrashCanScatter" type="Node3D" parent="."]
+script = ExtResource("21_trash_sct")
+park_half_size = 18.0
+
+[node name="PigeonScatter" type="Node3D" parent="."]
+script = ExtResource("22_pigeon_sct")
+
+[node name="VisitorScatter" type="Node3D" parent="."]
+script = ExtResource("23_visitor_sct")
+
+; ── PLAYER ────────────────────────────────────────────────────────────────────
+[node name="Player" parent="." instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+; ── GROUND + WALLS ────────────────────────────────────────────────────────────
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="WallNorth" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 16.25)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth"]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallSouth" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -16.25)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth"]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallEast" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast"]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="WallWest" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest"]
+shape = SubResource("BoxShape3D_wall_ew")
+
+; ── PLAYGROUND PROPS ──────────────────────────────────────────────────────────
+; Sandpit — low flat disc in the south-west corner
+[node name="Sandpit" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.04, 6)
+mesh = SubResource("CylinderMesh_sand")
+surface_material_override/0 = SubResource("StandardMaterial3D_sand")
+
+; Swing frame — two posts and a cross-bar
+[node name="SwingPost1" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 1.25, -7)
+
+[node name="Mesh" type="MeshInstance3D" parent="SwingPost1"]
+mesh = SubResource("BoxMesh_swingpost")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Collision" type="CollisionShape3D" parent="SwingPost1"]
+shape = SubResource("BoxShape3D_swingpost")
+
+[node name="SwingPost2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 1.25, -7)
+
+[node name="Mesh" type="MeshInstance3D" parent="SwingPost2"]
+mesh = SubResource("BoxMesh_swingpost")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Collision" type="CollisionShape3D" parent="SwingPost2"]
+shape = SubResource("BoxShape3D_swingpost")
+
+[node name="SwingBar" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -7)
+mesh = SubResource("BoxMesh_swingbar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+; Left swing — chain + seat
+[node name="SwingChainL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 1.8, -7)
+mesh = SubResource("BoxMesh_swingchain")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="SwingSeatL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 1.07, -7)
+mesh = SubResource("BoxMesh_swingseat")
+surface_material_override/0 = SubResource("StandardMaterial3D_seat")
+
+; Right swing — chain + seat
+[node name="SwingChainR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.8, -7)
+mesh = SubResource("BoxMesh_swingchain")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="SwingSeatR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.07, -7)
+mesh = SubResource("BoxMesh_swingseat")
+surface_material_override/0 = SubResource("StandardMaterial3D_seat")
+
+; ── NPC PIGEONS ───────────────────────────────────────────────────────────────
+[node name="NPC_Animal" parent="." instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 0)
+
+[node name="NPC_Animal2" parent="." instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 3)
+
+[node name="NPC_Animal3" parent="." instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, -4)
+
+; ── RANGERS — 3 rangers for a crowded playground ──────────────────────────────
+[node name="Ranger" parent="." instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -6)
+notice_distance = 4.0
+suspicion_gain_per_second = 20.0
+suspicion_loss_per_second = 32.0
+peck_loss_per_second = 25.0
+investigate_threshold = 72.0
+chase_threshold = 94.0
+food_aim_gain_per_second = 12.0
+stare_gain_per_second = 10.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+
+[node name="Ranger2" parent="." instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.525, 4)
+is_primary = false
+notice_distance = 4.0
+suspicion_gain_per_second = 20.0
+suspicion_loss_per_second = 32.0
+peck_loss_per_second = 25.0
+investigate_threshold = 72.0
+chase_threshold = 94.0
+food_aim_gain_per_second = 12.0
+stare_gain_per_second = 10.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+
+[node name="Ranger3" parent="." instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, 2)
+is_primary = false
+notice_distance = 4.0
+suspicion_gain_per_second = 20.0
+suspicion_loss_per_second = 32.0
+peck_loss_per_second = 25.0
+investigate_threshold = 72.0
+chase_threshold = 94.0
+food_aim_gain_per_second = 12.0
+stare_gain_per_second = 10.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+
+; ── PARK VISITORS — more people to blend into ─────────────────────────────────
+[node name="ParkVisitor1" parent="." instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.525, 5)
+
+[node name="ParkVisitor2" parent="." instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.525, -3)
+shirt_color = Color(0.2, 0.5, 0.85, 1)
+pants_color = Color(0.3, 0.3, 0.35, 1)
+
+[node name="ParkVisitor3" parent="." instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.525, 7)
+shirt_color = Color(0.9, 0.5, 0.1, 1)
+pants_color = Color(0.25, 0.25, 0.3, 1)
+
+[node name="ParkVisitor4" parent="." instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.525, -3)
+shirt_color = Color(0.7, 0.2, 0.6, 1)
+pants_color = Color(0.5, 0.45, 0.4, 1)
+
+; ── FOOD ITEMS ────────────────────────────────────────────────────────────────
+[node name="PicnicFood" parent="." instance=ExtResource("7_bread")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.13, 6)
+
+[node name="PicnicFood2" parent="." instance=ExtResource("8_fries")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.04, -7)
+
+[node name="PicnicFood3" parent="." instance=ExtResource("9_grapes")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.13, -5)
+
+[node name="PicnicFood4" parent="." instance=ExtResource("10_popcorn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.06, 7)
+
+[node name="PicnicFood5" parent="." instance=ExtResource("11_apple")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.15, -2)
+
+; ── ESCAPE ZONE ───────────────────────────────────────────────────────────────
+[node name="EscapeZone" parent="." instance=ExtResource("6_escape")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.25, -8)
+
+; ── HAND-PLACED PROPS (templates for scatter scripts) ─────────────────────────
+[node name="Tree" parent="." instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
+
+[node name="Tree2" parent="." instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
+
+[node name="Tree3" parent="." instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -7)
+
+[node name="Bench" parent="." instance=ExtResource("13_bench")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 2)
+
+[node name="Bench2" parent="." instance=ExtResource("13_bench")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 4, 0, 2)
+
+[node name="PicnicTable" parent="." instance=ExtResource("14_table")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+
+[node name="TrashCan" parent="." instance=ExtResource("15_trash")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 1)
+
+; ── HUD ───────────────────────────────────────────────────────────────────────
+[node name="HUD" parent="." instance=ExtResource("5_hud")]
+
+; ── GAME MANAGER ──────────────────────────────────────────────────────────────
+[node name="GameTimer" type="Node" parent="."]
+script = ExtResource("16_gtmr")
+time_limit = 85.0
+next_level_scene = "res://scenes/levels/Level03_Lakeside.tscn"
+
+; ── TITLE SCREEN ──────────────────────────────────────────────────────────────
+[node name="TitleScreen" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Background" type="ColorRect" parent="TitleScreen"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.04, 0.07, 0.04, 1)
+
+[node name="StartLabel" type="Label" parent="TitleScreen"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -60.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 24
+text = "LEVEL 2: PLAYGROUND
+Watch out — it's crowded out there.
+
+Press SPACE to begin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+; ── SCENE TRANSITION OVERLAY ──────────────────────────────────────────────────
+[node name="TransitionLayer" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="FadeRect" type="ColorRect" parent="TransitionLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+; ── PAUSE MENU ────────────────────────────────────────────────────────────────
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+layer = 15
+visible = false
+script = ExtResource("25_pmenu")
+
+[node name="Background" type="ColorRect" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0.02, 0, 0.88)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -270.0
+offset_right = 200.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 36
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="PauseMenu/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "RESUME  (Escape)"
+
+[node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "AUDIO  ▶"
+
+[node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Sound Effects Volume"
+
+[node name="SFXSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="ControlsButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "CONTROLS"
+
+[node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "MAIN MENU"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "QUIT"

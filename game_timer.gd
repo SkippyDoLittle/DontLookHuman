@@ -4,8 +4,9 @@
 
 extends Node
 
-@export var time_limit:   float = 60.0
-@export var items_total:  int   = 3   # must match the number of PicnicFood nodes in the scene
+@export var time_limit:        float  = 60.0
+@export var items_total:       int    = 5      # must match the number of PicnicFood nodes in the scene
+@export var next_level_scene:  String = ""     # empty on the final level
 
 @onready var timer_label:       Label        = get_node("../HUD/TimerLabel")
 @onready var result_bg:         ColorRect    = get_node("../HUD/ResultBackground")
@@ -13,7 +14,7 @@ extends Node
 @onready var status_label:      Label        = get_node("../HUD/RangerStatus")
 @onready var objective_label:   Label        = get_node("../HUD/ObjectiveStatus")
 @onready var suspicion_bar:     ProgressBar  = get_node("../HUD/SuspicionBar")
-@onready var ranger:            Node3D       = get_node("../Ranger")
+@onready var ranger:            Node3D       = get_node("../Ranger")   # primary ranger (kept for compatibility)
 @onready var exit_area:         Node         = get_node("../EscapeZone/ExitArea")
 @onready var _camera:           Camera3D     = get_node("../Player/SpringArm3D/Camera3D")
 @onready var _title_screen:     CanvasLayer  = get_node("../TitleScreen")
@@ -27,11 +28,12 @@ extends Node
 @onready var _pause_menu:       CanvasLayer  = get_node("../PauseMenu")
 @onready var _how_to_play:      Node         = get_node_or_null("../HowToPlayScreen")
 
-const SAVE_PATH: String = "user://best_time.dat"
+const SAVE_PATH: String = "user://best_score.dat"
 
 var time_remaining:  float = 0.0
 var peak_suspicion:  float = 0.0
 var game_over:       bool  = false
+var _success:        bool  = false   # stored so the input handler can gate SPACE on win only
 var game_started:    bool  = false
 var _tick_timer:     float = 0.0
 var _shake_trauma:   float = 0.0   # 1.0 = max shake; decays to 0 each frame
@@ -97,6 +99,7 @@ func _process(delta: float) -> void:
 				_counting_down = false
 				game_started   = true
 				get_tree().paused = false
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 				var tween := create_tween()
 				tween.tween_interval(0.55)
 				tween.tween_callback(func(): _countdown_label.visible = false)
@@ -126,32 +129,41 @@ func _process(delta: float) -> void:
 			if _pause_menu.visible:
 				_pause_menu.visible = false
 				get_tree().paused   = false
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 			else:
 				_pause_menu.visible = true
 				get_tree().paused   = true
+				Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 	if _pause_menu.visible:
 		return   # skip game logic while paused
 
-	# ── GAME OVER: RESTART ───────────────────────────────────────────────────────
+	# ── GAME OVER: RESTART / ADVANCE ────────────────────────────────────────────
 	if game_over:
 		if Input.is_action_just_pressed("restart"):
-			# Fade to black before reload so the cut isn't jarring.
-			# Use _transition_rect (layer 20) — it sits above the result screen's background.
 			var tween := create_tween()
 			tween.tween_property(_transition_rect, "color:a", 1.0, 0.4)
 			tween.tween_callback(func(): get_tree().reload_current_scene())
+		elif _success and next_level_scene != "" and Input.is_action_just_pressed("ui_accept"):
+			# SPACE advances to the next level only after a successful escape.
+			var tween := create_tween()
+			tween.tween_property(_transition_rect, "color:a", 1.0, 0.4)
+			tween.tween_callback(func(): get_tree().change_scene_to_file(next_level_scene))
 		return
 
-	# ── PEAK SUSPICION ───────────────────────────────────────────────────────────
-	var s: float = float(ranger.get("suspicion"))
-	if s > peak_suspicion:
-		peak_suspicion = s
+	# ── PEAK SUSPICION (across all rangers) ─────────────────────────────────────
+	# Check every ranger so the end-screen stat reflects the worst threat the player faced.
+	for r in get_tree().get_nodes_in_group("rangers"):
+		if is_instance_valid(r):
+			var s: float = float(r.get("suspicion"))
+			if s > peak_suspicion:
+				peak_suspicion = s
 
-	# ── WIN / LOSE CHECK ─────────────────────────────────────────────────────────
-	if bool(ranger.get("caught")):
-		_finish(false, "CAUGHT!")
-		return
+	# ── WIN / LOSE CHECK (any ranger catches player) ──────────────────────────────
+	for r in get_tree().get_nodes_in_group("rangers"):
+		if is_instance_valid(r) and bool(r.get("caught")):
+			_finish(false, "CAUGHT!")
+			return
 	if bool(exit_area.get("escaped")):
 		_finish(true, "ESCAPED!")
 		return
@@ -192,6 +204,8 @@ func _finish(success: bool, headline: String) -> void:
 	if game_over:
 		return   # guard against simultaneous triggers (e.g., caught + time's up same frame)
 	game_over = true
+	_success  = success   # persist so the input handler can gate SPACE on win only
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 	if success:
 		SoundManager.play_escape()
@@ -200,24 +214,30 @@ func _finish(success: bool, headline: String) -> void:
 		_shake_trauma = 1.0
 
 	# ── STATISTICS ───────────────────────────────────────────────────────────────
-	var remaining: int  = get_tree().get_nodes_in_group("collectibles").size()
-	var collected: int  = items_total - remaining
+	var remaining: int   = get_tree().get_nodes_in_group("collectibles").size()
+	var collected: int   = items_total - remaining
 	var used:      float = time_limit - time_remaining
 	var m: int = int(used / 60.0)
 	var s: int = int(used) % 60
 
-	# ── LETTER GRADE (success only) ───────────────────────────────────────────────
-	# Score = items (40 pts) + time remaining (35 pts) + low peak suspicion (25 pts).
-	var grade: String = "F"
+	# ── TIME-BASED SCORE ─────────────────────────────────────────────────────────
+	# Score tiers are based on how quickly the player escapes with all items.
+	# Failure (caught or time out) always scores 0.
+	var score: int    = 0
+	var tier:  String = ""
 	if success:
-		var item_score:  float = float(collected) / float(items_total) * 40.0
-		var time_score:  float = maxf(0.0, (time_limit - used) / time_limit) * 35.0
-		var susp_score:  float = maxf(0.0, 1.0 - peak_suspicion / 100.0) * 25.0
-		var total_score: float = item_score + time_score + susp_score
-		if   total_score >= 85.0: grade = "A"
-		elif total_score >= 70.0: grade = "B"
-		elif total_score >= 55.0: grade = "C"
-		elif total_score >= 40.0: grade = "D"
+		if used <= 20.0:
+			score = 1000
+			tier  = "★★★  Lightning fast!"
+		elif used <= 35.0:
+			score = 750
+			tier  = "★★  Great escape!"
+		elif used <= 50.0:
+			score = 500
+			tier  = "★  Nice work!"
+		else:
+			score = 250
+			tier  = "Completed"
 
 	var flavor: String
 	if headline == "ESCAPED!":
@@ -231,26 +251,30 @@ func _finish(success: bool, headline: String) -> void:
 		headline
 		+ "\n" + flavor
 		+ "\n\n──────────────────"
-		+ "\nGrade:          " + grade
+		+ "\nScore:          %d pts"
+		+ (("\n                " + tier) if tier != "" else "")
 		+ "\nTime:           %d:%02d"
 		+ "\nItems stolen:   %d / %d"
-		+ "\nPeak suspicion: %d%%"
 		+ "\n──────────────────"
-	) % [m, s, collected, items_total, int(peak_suspicion)]
+	) % [score, m, s, collected, items_total]
 
-	# ── BEST TIME ────────────────────────────────────────────────────────────────
-	var best: float = _load_best()   # returns INF when no save exists
-	if success:
-		if best == INF or used < best:
-			_save_best(used)
-			result_label.text += "\n★  New best time!"
+	# ── BEST SCORE ───────────────────────────────────────────────────────────────
+	var best_score: int = _load_best()
+	if success and score > 0:
+		if score > best_score:
+			_save_best(score)
+			result_label.text += "\n★  New best score!"
 		else:
-			result_label.text += "\nBest: %d:%02d" % [int(best / 60.0), int(best) % 60]
-	else:
-		if best != INF:
-			result_label.text += "\nBest so far: %d:%02d" % [int(best / 60.0), int(best) % 60]
+			result_label.text += "\nBest score: %d pts" % best_score
+	elif not success and best_score > 0:
+		result_label.text += "\nBest score: %d pts" % best_score
 
-	result_label.text += "\n\nPress R to play again"
+	if success and next_level_scene != "":
+		result_label.text += "\n\nSPACE — next level    R — restart"
+	elif success and next_level_scene == "":
+		result_label.text += "\n\n★  ALL LEVELS COMPLETE!  ★\nPress R to play again"
+	else:
+		result_label.text += "\n\nPress R to retry"
 
 	result_label.modulate = Color(0.35, 1.0, 0.45) if success else Color(1.0, 0.35, 0.35)
 	result_bg.color       = Color(0.03, 0.14, 0.06, 0.88) if success else Color(0.14, 0.03, 0.03, 0.88)
@@ -265,14 +289,15 @@ func _finish(success: bool, headline: String) -> void:
 
 	SoundManager.stop_ambient()
 
-func _load_best() -> float:
+func _load_best() -> int:
+	# Returns 0 when no save file exists yet.
 	if not FileAccess.file_exists(SAVE_PATH):
-		return INF   # sentinel value meaning "no best time saved yet"
+		return 0
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	return f.get_float() if f != null else INF
+	return f.get_32() if f != null else 0
 
-func _save_best(time_used: float) -> void:
+func _save_best(score: int) -> void:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f != null:
-		f.store_float(time_used)
+		f.store_32(score)
 		# FileAccess closes automatically when f goes out of scope in Godot 4.

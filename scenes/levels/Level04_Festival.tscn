@@ -1,0 +1,611 @@
+[gd_scene format=3 uid="uid://dwxes7r7rvilt"]
+
+[ext_resource type="PackedScene" uid="uid://cu23wqprkytmy" path="res://scenes/actors/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://cu2ybf1ckytmy" path="res://scenes/actors/PigeonNPC.tscn" id="2_pigeon"]
+[ext_resource type="PackedScene" uid="uid://cu4sa7prkytmy" path="res://scenes/actors/Ranger.tscn" id="3_ranger"]
+[ext_resource type="PackedScene" uid="uid://cu81ga5oi1bbl" path="res://scenes/actors/Visitor.tscn" id="4_visitor"]
+[ext_resource type="PackedScene" uid="uid://dteus3r1keea7" path="res://scenes/game/HUD.tscn" id="5_hud"]
+[ext_resource type="PackedScene" uid="uid://curbyr0m41bbl" path="res://scenes/gameplay/EscapeZone.tscn" id="6_escape"]
+[ext_resource type="PackedScene" uid="uid://cuoa01o0kytmy" path="res://scenes/gameplay/PicnicFood_Bread.tscn" id="7_bread"]
+[ext_resource type="PackedScene" uid="uid://cusa4540kytmy" path="res://scenes/gameplay/PicnicFood_Fries.tscn" id="8_fries"]
+[ext_resource type="PackedScene" uid="uid://cutawhp0kytmy" path="res://scenes/gameplay/PicnicFood_Grapes.tscn" id="9_grapes"]
+[ext_resource type="PackedScene" uid="uid://cu2ucjy0kytmy" path="res://scenes/gameplay/PicnicFood_Popcorn.tscn" id="10_popcorn"]
+[ext_resource type="PackedScene" uid="uid://cum8ddp0kytmy" path="res://scenes/gameplay/PicnicFood_Apple.tscn" id="11_apple"]
+[ext_resource type="PackedScene" uid="uid://bv0l1ury6ijg" path="res://scenes/props/Tree.tscn" id="12_tree"]
+[ext_resource type="PackedScene" uid="uid://dmw44kr1keea7" path="res://scenes/props/Bench.tscn" id="13_bench"]
+[ext_resource type="PackedScene" uid="uid://d2dq3n57lt1w7" path="res://scenes/props/PicnicTable.tscn" id="14_table"]
+[ext_resource type="PackedScene" uid="uid://bvv0iury6ijg" path="res://scenes/props/TrashCan.tscn" id="15_trash"]
+[ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="16_gtmr"]
+[ext_resource type="Shader" uid="uid://bsatdw46tiwro" path="res://sky.gdshader" id="17_sky"]
+[ext_resource type="Script" uid="uid://dnajbuv0pplen" path="res://tree_scatter.gd" id="18_tree_sct"]
+[ext_resource type="Script" uid="uid://bpcjxsqt3w744" path="res://bench_scatter.gd" id="19_bench_sct"]
+[ext_resource type="Script" uid="uid://c4h6vgykahw4c" path="res://table_scatter.gd" id="20_table_sct"]
+[ext_resource type="Script" uid="uid://dffh8twj48h6w" path="res://trash_can_scatter.gd" id="21_trash_sct"]
+[ext_resource type="Script" uid="uid://ctqmerfs2ha5n" path="res://pigeon_scatter.gd" id="22_pigeon_sct"]
+[ext_resource type="Script" uid="uid://by71khwjhc3yn" path="res://visitor_scatter.gd" id="23_visitor_sct"]
+[ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd" id="25_pmenu"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("17_sky")
+shader_parameter/sky_top_color = Color(0.18, 0.08, 0.32, 1)
+shader_parameter/sky_horizon_color = Color(0.88, 0.42, 0.12, 1)
+shader_parameter/sky_curve = 0.14
+shader_parameter/ground_color = Color(0.58, 0.48, 0.32, 1)
+shader_parameter/cloud_color = Color(0.95, 0.72, 0.45, 1)
+shader_parameter/cloud_coverage = 0.55
+shader_parameter/cloud_scale = 4.0
+shader_parameter/cloud_speed = 0.025
+shader_parameter/sun_angle_max = 8.0
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ShaderMaterial_sky")
+process_mode = 3
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_energy = 0.35
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(500, 0.2, 500)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.68, 0.58, 0.38, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(500, 0.2, 500)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ns"]
+size = Vector3(33, 3, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ew"]
+size = Vector3(0.5, 3, 33)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tent_body"]
+size = Vector3(2.5, 2.2, 2.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tent_red"]
+albedo_color = Color(0.85, 0.18, 0.12, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_tent_roof"]
+top_radius = 0.05
+bottom_radius = 1.65
+height = 1.2
+radial_segments = 8
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_tent_awning"]
+size = Vector3(2.8, 0.08, 1.1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_flagpole"]
+top_radius = 0.04
+bottom_radius = 0.04
+height = 0.7
+radial_segments = 5
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pole"]
+albedo_color = Color(0.76, 0.72, 0.68, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tent_body"]
+size = Vector3(2.5, 2.2, 2.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tent_blue"]
+albedo_color = Color(0.12, 0.28, 0.78, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tent_yellow"]
+albedo_color = Color(0.92, 0.78, 0.08, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tent_green"]
+albedo_color = Color(0.12, 0.62, 0.22, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.06, 0.13, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.03, 0.07, 0.03, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.4, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.11, 0.24, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.7, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Level04_Festival" type="Node3D" unique_id=578838624]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2068236518]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=920458761]
+transform = Transform3D(0.7071, 0.5, -0.5, 0, 0.7071, 0.7071, 0.7071, -0.5, 0.5, 0, 1, 0)
+light_color = Color(1, 0.78, 0.55, 1)
+light_energy = 0.8
+shadow_enabled = true
+directional_shadow_mode = 0
+directional_shadow_max_distance = 32.0
+
+[node name="TreeScatter" type="Node3D" parent="." unique_id=99551028]
+script = ExtResource("18_tree_sct")
+park_half_size = 18.0
+
+[node name="BenchScatter" type="Node3D" parent="." unique_id=184455954]
+script = ExtResource("19_bench_sct")
+park_half_size = 18.0
+
+[node name="TableScatter" type="Node3D" parent="." unique_id=1534134880]
+script = ExtResource("20_table_sct")
+park_half_size = 18.0
+
+[node name="TrashCanScatter" type="Node3D" parent="." unique_id=599027788]
+script = ExtResource("21_trash_sct")
+park_half_size = 18.0
+
+[node name="PigeonScatter" type="Node3D" parent="." unique_id=2001074568]
+script = ExtResource("22_pigeon_sct")
+
+[node name="VisitorScatter" type="Node3D" parent="." unique_id=1793848478]
+script = ExtResource("23_visitor_sct")
+
+[node name="Player" parent="." unique_id=1952745226 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 8)
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=516452554]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=663289918]
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=2100553871]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="WallNorth" type="StaticBody3D" parent="." unique_id=542003046]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 16.25)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth" unique_id=1961426911]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallSouth" type="StaticBody3D" parent="." unique_id=499441772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -16.25)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth" unique_id=403079303]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallEast" type="StaticBody3D" parent="." unique_id=216723068]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast" unique_id=111563621]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="WallWest" type="StaticBody3D" parent="." unique_id=10842871]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest" unique_id=1171585510]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="TentRed" type="StaticBody3D" parent="." unique_id=246974509]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.1, -4)
+
+[node name="Walls" type="MeshInstance3D" parent="TentRed" unique_id=2095124317]
+mesh = SubResource("BoxMesh_tent_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_red")
+
+[node name="Roof" type="MeshInstance3D" parent="TentRed" unique_id=835893692]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("CylinderMesh_tent_roof")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_red")
+
+[node name="Awning" type="MeshInstance3D" parent="TentRed" unique_id=581604463]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 1.8)
+mesh = SubResource("BoxMesh_tent_awning")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_red")
+
+[node name="Flagpole" type="MeshInstance3D" parent="TentRed" unique_id=953534595]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("CylinderMesh_flagpole")
+surface_material_override/0 = SubResource("StandardMaterial3D_pole")
+
+[node name="Collision" type="CollisionShape3D" parent="TentRed" unique_id=282960367]
+shape = SubResource("BoxShape3D_tent_body")
+
+[node name="TentBlue" type="StaticBody3D" parent="." unique_id=2111710339]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.1, -5)
+
+[node name="Walls" type="MeshInstance3D" parent="TentBlue" unique_id=1408715051]
+mesh = SubResource("BoxMesh_tent_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_blue")
+
+[node name="Roof" type="MeshInstance3D" parent="TentBlue" unique_id=1306542842]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("CylinderMesh_tent_roof")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_blue")
+
+[node name="Awning" type="MeshInstance3D" parent="TentBlue" unique_id=1634533982]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 1.8)
+mesh = SubResource("BoxMesh_tent_awning")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_blue")
+
+[node name="Flagpole" type="MeshInstance3D" parent="TentBlue" unique_id=1048528085]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("CylinderMesh_flagpole")
+surface_material_override/0 = SubResource("StandardMaterial3D_pole")
+
+[node name="Collision" type="CollisionShape3D" parent="TentBlue" unique_id=960571856]
+shape = SubResource("BoxShape3D_tent_body")
+
+[node name="TentYellow" type="StaticBody3D" parent="." unique_id=1729190626]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.1, 3)
+
+[node name="Walls" type="MeshInstance3D" parent="TentYellow" unique_id=1573910129]
+mesh = SubResource("BoxMesh_tent_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_yellow")
+
+[node name="Roof" type="MeshInstance3D" parent="TentYellow" unique_id=200236700]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("CylinderMesh_tent_roof")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_yellow")
+
+[node name="Awning" type="MeshInstance3D" parent="TentYellow" unique_id=2108301561]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 1.8)
+mesh = SubResource("BoxMesh_tent_awning")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_yellow")
+
+[node name="Flagpole" type="MeshInstance3D" parent="TentYellow" unique_id=710757716]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("CylinderMesh_flagpole")
+surface_material_override/0 = SubResource("StandardMaterial3D_pole")
+
+[node name="Collision" type="CollisionShape3D" parent="TentYellow" unique_id=334451318]
+shape = SubResource("BoxShape3D_tent_body")
+
+[node name="TentGreen" type="StaticBody3D" parent="." unique_id=985284226]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.1, 2)
+
+[node name="Walls" type="MeshInstance3D" parent="TentGreen" unique_id=1154432782]
+mesh = SubResource("BoxMesh_tent_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_green")
+
+[node name="Roof" type="MeshInstance3D" parent="TentGreen" unique_id=2000172851]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+mesh = SubResource("CylinderMesh_tent_roof")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_green")
+
+[node name="Awning" type="MeshInstance3D" parent="TentGreen" unique_id=1588657875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 1.8)
+mesh = SubResource("BoxMesh_tent_awning")
+surface_material_override/0 = SubResource("StandardMaterial3D_tent_green")
+
+[node name="Flagpole" type="MeshInstance3D" parent="TentGreen" unique_id=384936103]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("CylinderMesh_flagpole")
+surface_material_override/0 = SubResource("StandardMaterial3D_pole")
+
+[node name="Collision" type="CollisionShape3D" parent="TentGreen" unique_id=1415536950]
+shape = SubResource("BoxShape3D_tent_body")
+
+[node name="NPC_Animal" parent="." unique_id=628810849 instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 3)
+
+[node name="NPC_Animal2" parent="." unique_id=1835420911 instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, -1)
+
+[node name="Ranger" parent="." unique_id=903673705 instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -7)
+notice_distance = 3.5
+suspicion_gain_per_second = 15.0
+suspicion_loss_per_second = 38.0
+peck_loss_per_second = 28.0
+investigate_threshold = 76.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 9.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 2.0
+straight_line_gain_per_second = 5.0
+still_gain_per_second = 3.0
+
+[node name="Ranger2" parent="." unique_id=847337069 instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.525, 0)
+notice_distance = 3.5
+suspicion_gain_per_second = 15.0
+suspicion_loss_per_second = 38.0
+peck_loss_per_second = 28.0
+investigate_threshold = 76.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 9.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 2.0
+straight_line_gain_per_second = 5.0
+still_gain_per_second = 3.0
+is_primary = false
+
+[node name="Ranger3" parent="." unique_id=1729781696 instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, -3)
+notice_distance = 3.5
+suspicion_gain_per_second = 15.0
+suspicion_loss_per_second = 38.0
+peck_loss_per_second = 28.0
+investigate_threshold = 76.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 9.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 2.0
+straight_line_gain_per_second = 5.0
+still_gain_per_second = 3.0
+is_primary = false
+
+[node name="ParkVisitor1" parent="." unique_id=1407952720 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.525, 5)
+
+[node name="ParkVisitor2" parent="." unique_id=900474072 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.525, -3)
+shirt_color = Color(0.9, 0.4, 0.1, 1)
+pants_color = Color(0.2, 0.2, 0.25, 1)
+
+[node name="ParkVisitor3" parent="." unique_id=2026760734 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.525, -6)
+shirt_color = Color(0.8, 0.15, 0.55, 1)
+pants_color = Color(0.35, 0.32, 0.28, 1)
+
+[node name="ParkVisitor4" parent="." unique_id=1318044260 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, 5)
+shirt_color = Color(0.15, 0.55, 0.85, 1)
+pants_color = Color(0.28, 0.28, 0.32, 1)
+
+[node name="ParkVisitor5" parent="." unique_id=2012161325 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.525, -2)
+shirt_color = Color(0.55, 0.85, 0.15, 1)
+pants_color = Color(0.32, 0.28, 0.22, 1)
+
+[node name="ParkVisitor6" parent="." unique_id=1046151699 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.525, 7)
+shirt_color = Color(0.95, 0.85, 0.1, 1)
+pants_color = Color(0.25, 0.22, 0.18, 1)
+
+[node name="PicnicFood" parent="." unique_id=1595459462 instance=ExtResource("7_bread")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.150467, 0.13, -2.442501)
+
+[node name="PicnicFood2" parent="." unique_id=1111745720 instance=ExtResource("8_fries")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.04, -6.636898)
+
+[node name="PicnicFood3" parent="." unique_id=1921197243 instance=ExtResource("9_grapes")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.908508, 0.13, -7.048218)
+
+[node name="PicnicFood4" parent="." unique_id=1058310382 instance=ExtResource("10_popcorn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.296753, 0.06, 4.5434875)
+
+[node name="PicnicFood5" parent="." unique_id=995468154 instance=ExtResource("11_apple")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.929199, 0.15, 7.026886)
+
+[node name="EscapeZone" parent="." unique_id=1552814316 instance=ExtResource("6_escape")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.25, 8)
+
+[node name="Tree" parent="." unique_id=1162985479 instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -8)
+
+[node name="Tree2" parent="." unique_id=1799807620 instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 8)
+
+[node name="Bench" parent="." unique_id=466429058 instance=ExtResource("13_bench")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 4)
+
+[node name="PicnicTable" parent="." unique_id=1545120911 instance=ExtResource("14_table")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -2)
+
+[node name="TrashCan" parent="." unique_id=606387052 instance=ExtResource("15_trash")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.34576416, 0, 3.8141937)
+
+[node name="HUD" parent="." unique_id=501163141 instance=ExtResource("5_hud")]
+
+[node name="GameTimer" type="Node" parent="." unique_id=1103244301]
+script = ExtResource("16_gtmr")
+time_limit = 75.0
+next_level_scene = "res://scenes/levels/Level05_BotanicalGardens.tscn"
+
+[node name="TitleScreen" type="CanvasLayer" parent="." unique_id=1909947463]
+layer = 10
+
+[node name="Background" type="ColorRect" parent="TitleScreen" unique_id=1582112532]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.06, 0.03, 0.02, 1)
+
+[node name="StartLabel" type="Label" parent="TitleScreen" unique_id=888264364]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -60.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 24
+text = "LEVEL 4: FESTIVAL
+It's chaos out there — use it.
+
+Press SPACE to begin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TransitionLayer" type="CanvasLayer" parent="." unique_id=1236529085]
+layer = 20
+
+[node name="FadeRect" type="ColorRect" parent="TransitionLayer" unique_id=695098364]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=1201255865]
+layer = 15
+visible = false
+script = ExtResource("25_pmenu")
+
+[node name="Background" type="ColorRect" parent="PauseMenu" unique_id=1187376558]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0.02, 0, 0.88)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu" unique_id=1869285710]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -270.0
+offset_right = 200.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2092081735]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 36
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="PauseMenu/VBoxContainer" unique_id=1612694238]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=93000602]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "RESUME  (Escape)"
+
+[node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer" unique_id=1509432692]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=185600671]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "AUDIO  ▶"
+
+[node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer" unique_id=1794641907]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=2092964033]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=478175105]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=1120545668]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Sound Effects Volume"
+
+[node name="SFXSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=531847277]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="ControlsButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "CONTROLS"
+
+[node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer" unique_id=1022058253]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer" unique_id=875119351]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=1399534782]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "MAIN MENU"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=1341501344]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "QUIT"

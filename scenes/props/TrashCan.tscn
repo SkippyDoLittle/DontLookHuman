@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://sctrash0tscn01"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+; trash_can_scatter.gd reads CanBody and CanLid surface_material_override/0
+; to tint the background trash cans the same grey/dark colours.
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+top_radius = 0.2
+bottom_radius = 0.18
+height = 0.7
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grey"]
+albedo_color = Color(0.33333334, 0.33333334, 0.33333334, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lid"]
+top_radius = 0.22
+bottom_radius = 0.22
+height = 0.5
+radial_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dark"]
+albedo_color = Color(0.2, 0.2, 0.2, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_can"]
+height = 0.75
+radius = 0.22
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="TrashCan" type="StaticBody3D"]
+
+[node name="CanBody" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("CylinderMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_grey")
+
+[node name="CanLid" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.73, 0)
+mesh = SubResource("CylinderMesh_lid")
+surface_material_override/0 = SubResource("StandardMaterial3D_dark")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.375, 0)
+shape = SubResource("CylinderShape3D_can")

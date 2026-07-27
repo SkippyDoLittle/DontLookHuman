@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://sctree00tscn01"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+; These match the tree meshes in Main.tscn exactly so tree_scatter and bench_scatter
+; see the same visual when reading materials from sibling template nodes.
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_trunk"]
+top_radius = 0.25
+bottom_radius = 0.25
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bark"]
+albedo_color = Color(0.41960785, 0.24313726, 0.14901961, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_leaves"]
+radius = 1.1
+height = 1.6
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_leaves"]
+albedo_color = Color(0.24705882, 0.49803922, 0.24705882, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_trunk"]
+radius = 0.25
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+
+[node name="Tree" type="Node3D"]
+
+; Slight lean baked in — matches the hand-placed park trees in the level scene.
+[node name="Trunk" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9999055, -0.013745184, 0, 0.013745184, 0.9999055, -0.041769728, 1.0329406, -0.09601802)
+mesh = SubResource("CylinderMesh_trunk")
+surface_material_override/0 = SubResource("StandardMaterial3D_bark")
+
+[node name="Leaves" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9997473, 0, 0.022481043, 0, 1, 0, -0.022481043, 0, 0.9997473, 0, 2.4, 0)
+mesh = SubResource("SphereMesh_leaves")
+surface_material_override/0 = SubResource("StandardMaterial3D_leaves")
+
+; Collision only on the trunk — leaves are non-solid.
+[node name="TrunkCollider" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TrunkCollider"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_trunk")

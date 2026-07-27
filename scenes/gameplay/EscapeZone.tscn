@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://scesczonetscn"]
+
+[ext_resource type="Script" uid="uid://dpjy1itkpqr4o" path="res://escape_zone.gd" id="1_escape"]
+[ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="2_exitarea"]
+
+; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
+
+[sub_resource type="BoxMesh" id="BoxMesh_marker"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_green"]
+albedo_color = Color(0, 1, 0, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trigger"]
+size = Vector3(2, 1, 2)
+
+; ── SCENE TREE ────────────────────────────────────────────────────────────────
+; EscapeZone starts invisible — escape_zone.gd reveals it once all food is collected.
+
+[node name="EscapeZone" type="Node3D"]
+visible = false
+script = ExtResource("1_escape")
+
+; Green platform — game_timer.gd overrides its material colour to pulse at runtime.
+[node name="ExitMarker" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_marker")
+surface_material_override/0 = SubResource("StandardMaterial3D_green")
+
+; Area3D trigger — exit_area.gd fires on body_entered to set the "escaped" flag.
+[node name="ExitArea" type="Area3D" parent="."]
+script = ExtResource("2_exitarea")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ExitArea"]
+shape = SubResource("BoxShape3D_trigger")
+
+; Floating "EXIT" label shown above the portal.
+[node name="ExitLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+billboard = 1
+modulate = Color(0.3, 1, 0.4, 1)
+text = "EXIT"
+font_size = 64
