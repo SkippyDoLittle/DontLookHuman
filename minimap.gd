@@ -8,24 +8,32 @@ const MINIMAP_SIZE: float = 120.0   # pixel dimensions of the minimap square
 
 @onready var _player:      Node3D   = get_node("../../Player")
 @onready var _ranger:      Node3D   = get_node("../../Ranger")
+@onready var _ranger2:     Node3D   = get_node_or_null("../../Ranger2")
 @onready var _escape_zone: Node3D   = get_node("../../EscapeZone")
 
-@onready var _player_dot: ColorRect = get_node("PlayerDot")
-@onready var _ranger_dot: ColorRect = get_node("RangerDot")
-@onready var _exit_dot:   ColorRect = get_node("ExitDot")
-@onready var _food_dots:  Array     = [get_node("FoodDot1"), get_node("FoodDot2"), get_node("FoodDot3")]
+@onready var _player_dot:  ColorRect = get_node("PlayerDot")
+@onready var _ranger_dot:  ColorRect = get_node("RangerDot")
+@onready var _ranger2_dot: ColorRect = get_node_or_null("RangerDot2")
+@onready var _exit_dot:    ColorRect = get_node("ExitDot")
+@onready var _food_dots:  Array     = [get_node("FoodDot1"), get_node("FoodDot2"), get_node("FoodDot3"), get_node("FoodDot4"), get_node("FoodDot5")]
 
 var _food_nodes: Array = []   # references to PicnicFood nodes; checked each frame via is_instance_valid()
 
 func _ready() -> void:
 	var collectibles := get_tree().get_nodes_in_group("collectibles")
-	for i in range(min(collectibles.size(), 3)):
+	for i in range(min(collectibles.size(), 5)):
 		_food_nodes.append(collectibles[i] as Node3D)
 	_exit_dot.visible = false
 
 func _process(_delta: float) -> void:
 	_place_dot(_player_dot, _player.global_position)
 	_place_dot(_ranger_dot, _ranger.global_position)
+	# Show second ranger dot only if Ranger2 exists in the scene.
+	if _ranger2 != null and _ranger2_dot != null:
+		_ranger2_dot.visible = true
+		_place_dot(_ranger2_dot, _ranger2.global_position)
+	elif _ranger2_dot != null:
+		_ranger2_dot.visible = false
 
 	for i in range(_food_dots.size()):
 		var dot: ColorRect = _food_dots[i]

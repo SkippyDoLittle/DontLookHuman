@@ -32,6 +32,8 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 @export var straight_line_gain_per_second: float = 10.0
 @export var still_threshold:           float = 3.5    # seconds motionless before suspicion rises
 @export var still_gain_per_second:     float = 8.0
+# Set false on Ranger2 so it runs full AI but leaves all HUD writes to the primary ranger.
+@export var is_primary:                bool  = true
 
 # ── Node references ──────────────────────────────────────────────────────────────
 @onready var player:        CharacterBody3D = get_node("../Player")
@@ -65,6 +67,7 @@ var _still_time:      float   = 0.0
 var npc_animals: Array = []
 
 func _ready() -> void:
+	add_to_group("rangers")
 	choose_new_patrol_direction()
 	_alert_label.visible = false
 
@@ -78,8 +81,9 @@ func _process(delta: float) -> void:
 
 	# ── CAUGHT STATE ─────────────────────────────────────────────────────────────
 	if caught:
-		suspicion_bar.value = 100.0
-		status_label.text   = "CAUGHT!"
+		if is_primary:
+			suspicion_bar.value = 100.0
+			status_label.text   = "CAUGHT!"
 		return
 
 	# ── DISTANCE & SPEED ─────────────────────────────────────────────────────────
@@ -177,9 +181,14 @@ func _process(delta: float) -> void:
 			loss_rate += peck_loss_per_second
 		suspicion = maxf(suspicion - loss_rate * delta, 0.0)
 
-	# ── UI UPDATE ────────────────────────────────────────────────────────────────
-	suspicion_bar.value = suspicion
-	_vignette_mat.set_shader_parameter("intensity", suspicion / 100.0 * 0.65)
+	# ── UI UPDATE (primary ranger only — bar shows the highest suspicion of any ranger) ──
+	if is_primary:
+		var display_suspicion := suspicion
+		for r in get_tree().get_nodes_in_group("rangers"):
+			if is_instance_valid(r):
+				display_suspicion = maxf(display_suspicion, float(r.get("suspicion")))
+		suspicion_bar.value = display_suspicion
+		_vignette_mat.set_shader_parameter("intensity", display_suspicion / 100.0 * 0.65)
 
 	# ── CAUGHT CHECK ─────────────────────────────────────────────────────────────
 	if suspicion >= 100.0:
@@ -233,37 +242,40 @@ func _process(delta: float) -> void:
 		RangerState.CHASE:      _move_toward_player(delta, chase_speed)
 
 	# ── SUSPICION BAR COLOR PULSE ─────────────────────────────────────────────────
+	# _alert_label is per-ranger (each ranger has its own); bar modulate is HUD-only.
 	match state:
 		RangerState.PATROL:
 			_pulse_time = 0.0
-			suspicion_bar.modulate = Color.WHITE
+			if is_primary:
+				suspicion_bar.modulate = Color.WHITE
 
 		RangerState.INVESTIGATE:
 			_pulse_time += delta
 			var p: float = sin(_pulse_time * TAU * 2.5) * 0.5 + 0.5
-			suspicion_bar.modulate = Color(1.0, lerp(0.35, 0.75, p), p * 0.1)
+			if is_primary:
+				suspicion_bar.modulate = Color(1.0, lerp(0.35, 0.75, p), p * 0.1)
 			_alert_label.modulate  = Color(1.0, 0.85, 0.1, lerp(0.6, 1.0, p))
 
 		RangerState.CHASE:
 			_pulse_time += delta
 			var p: float = sin(_pulse_time * TAU * 6.0) * 0.5 + 0.5
-			suspicion_bar.modulate = Color(1.0, lerp(0.0, 0.3, p), 0.0)
+			if is_primary:
+				suspicion_bar.modulate = Color(1.0, lerp(0.0, 0.3, p), 0.0)
 			_alert_label.modulate  = Color(1.0, 0.2, 0.2, lerp(0.5, 1.0, p))
 
-	# ── THRESHOLD WARNING LABELS ──────────────────────────────────────────────────
-	# Detect threshold crossings by comparing this frame to last frame.
-	if suspicion >= chase_threshold and _prev_suspicion < chase_threshold:
+	# ── THRESHOLD WARNING LABELS (primary ranger only) ───────────────────────────
+	if is_primary and suspicion >= chase_threshold and _prev_suspicion < chase_threshold:
 		_warn_label.text     = "DANGER!"
 		_warn_label.modulate = Color(1.0, 0.15, 0.15, 1.0)
 		_warn_label.visible  = true
 		_warn_timer          = 1.8
-	elif suspicion >= investigate_threshold and _prev_suspicion < investigate_threshold:
+	elif is_primary and suspicion >= investigate_threshold and _prev_suspicion < investigate_threshold:
 		_warn_label.text     = "!"
 		_warn_label.modulate = Color(1.0, 0.8, 0.1, 1.0)
 		_warn_label.visible  = true
 		_warn_timer          = 1.5
 
-	if _warn_timer > 0.0:
+	if is_primary and _warn_timer > 0.0:
 		_warn_timer -= delta
 		# Fade out during the last 0.5 seconds.
 		_warn_label.modulate.a = clampf(_warn_timer / 0.5, 0.0, 1.0)
@@ -272,22 +284,23 @@ func _process(delta: float) -> void:
 
 	_prev_suspicion = suspicion
 
-	# ── STATUS LABEL ─────────────────────────────────────────────────────────────
-	match state:
-		RangerState.CHASE:
-			status_label.text = "Ranger: Alert!"
-		RangerState.INVESTIGATE:
-			if active_gain > 0.0:
-				status_label.text = "Ranger: Suspicious — %s" % reason
-			else:
-				status_label.text = "Ranger: Investigating..."
-		RangerState.PATROL:
-			if active_gain > 0.0:
-				status_label.text = "Ranger: Suspicious — %s" % reason
-			elif is_nearby:
-				status_label.text = "Ranger: Watching"
-			else:
-				status_label.text = "Ranger: Calm"
+	# ── STATUS LABEL (primary ranger only) ───────────────────────────────────────
+	if is_primary:
+		match state:
+			RangerState.CHASE:
+				status_label.text = "Ranger: Alert!"
+			RangerState.INVESTIGATE:
+				if active_gain > 0.0:
+					status_label.text = "Ranger: Suspicious — %s" % reason
+				else:
+					status_label.text = "Ranger: Investigating..."
+			RangerState.PATROL:
+				if active_gain > 0.0:
+					status_label.text = "Ranger: Suspicious — %s" % reason
+				elif is_nearby:
+					status_label.text = "Ranger: Watching"
+				else:
+					status_label.text = "Ranger: Calm"
 
 func _move_toward_player(_delta: float, spd: float) -> void:
 	var to_player := player.global_position - global_position

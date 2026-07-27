@@ -4,10 +4,10 @@
 
 extends CharacterBody3D
 
-@export var speed:          float = 1.2   # normal wander speed (matches player walk speed)
-@export var flee_speed:     float = 2.2   # speed when running from the ranger
+@export var speed:          float = 1.2    # normal wander speed (matches player walk speed)
+@export var flee_speed:     float = 2.2    # speed when running from the ranger
 @export var wander_radius:  float = 8.0   # max distance from park centre
-@export var flee_distance:  float = 4.5   # ranger must be closer than this to trigger flee
+@export var flee_distance:  float = 4.5    # ranger must be closer than this to trigger flee
 
 # Peck animation parameters — identical to player.gd values for visual consistency.
 const PECK_FORWARD:     float = 0.12

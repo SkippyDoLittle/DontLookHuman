@@ -19,6 +19,10 @@ extends Node3D
 # Different from tree_scatter's seed (42) to prevent benches clustering at tree positions.
 @export var rng_seed:       int   = 99
 
+# Filled during _ready() with the world-XZ position of every placed bench (y = 0).
+# path_network.gd reads this after _ready() runs to draw dirt trails between nearby objects.
+var positions: Array[Vector3] = []
+
 func _ready() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
@@ -42,6 +46,7 @@ func _ready() -> void:
 			"s":  rng.randf_range(scale_min, scale_max),
 			"ry": rng.randf_range(0.0, TAU),
 		})
+		positions.append(Vector3(x, 0.0, z))
 
 	var count := instances.size()
 

@@ -12,7 +12,7 @@ CONTROLS
   Esc         Pause
 
 OBJECTIVE
-  Steal all 3 food items scattered around the park,
+  Steal all 5 food items scattered around the park,
   then reach the glowing green exit portal.
 
 THE RANGER GETS SUSPICIOUS IF YOU:

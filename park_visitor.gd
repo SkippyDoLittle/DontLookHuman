@@ -3,7 +3,7 @@
 
 extends CharacterBody3D
 
-@export var walk_speed:    float = 0.9   # slightly slower than the pigeon so you can weave around them
+@export var walk_speed:    float = 0.9    # slightly slower than the pigeon so you can weave around them
 @export var wander_radius: float = 7.5   # max distance from park centre
 
 var _target:       Vector3 = Vector3.ZERO

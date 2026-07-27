@@ -13,6 +13,11 @@ extends CharacterBody3D
 @export var max_stamina:     float = 100.0
 @export var stamina_drain:   float = 30.0   # points/sec while sprinting
 @export var stamina_recover: float = 15.0   # points/sec when not sprinting
+@export var zoom_step:       float = 0.5    # world units per scroll click
+@export var zoom_smooth:     float = 12.0   # how quickly the camera eases to the target distance
+
+const ZOOM_MIN: float = 2.0   # closest the camera can get to the player
+const ZOOM_MAX: float = 8.0   # furthest the camera can pull back
 
 # Peck animation shape constants
 const PECK_FORWARD:     float = 0.12   # how far head lunges forward
@@ -45,6 +50,9 @@ var in_water: bool = false   # read by ranger.gd for suspicion; updated each fra
 var camera_yaw:   float = 0.0
 var camera_pitch: float = 0.0
 
+# Scroll-wheel zoom: _zoom_target is where we want to be; spring_length lerps toward it each frame.
+var _zoom_target: float = 4.0
+
 # Pond shape constants — must match the CylinderMesh in Main.tscn (z-scale 0.72 makes it oval)
 const _POND_CENTER         := Vector3(-3.0, 0.0, -7.0)
 const _POND_RADIUS_X:       float = 1.6
@@ -68,17 +76,33 @@ func _ready() -> void:
 	# so there's no snap on the first frame of mouse input.
 	camera_yaw   = spring_arm.rotation.y
 	camera_pitch = spring_arm.rotation.x
+	# Seed the zoom target from the scene's spring_length so Inspector edits take effect.
+	_zoom_target = spring_arm.spring_length
 
 func _input(event: InputEvent) -> void:
-	# Only rotate the camera when the cursor is captured (i.e., during active gameplay).
-	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	# Only handle camera input when the cursor is captured (active gameplay).
+	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		return
+
+	if event is InputEventMouseMotion:
 		camera_yaw   -= event.relative.x * mouse_sensitivity
 		camera_pitch -= event.relative.y * mouse_sensitivity
 		# Clamp pitch: negative = looking up, positive = looking down at the character.
 		camera_pitch  = clampf(camera_pitch, -1.1, 0.5)
 		spring_arm.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
 
+	# Scroll wheel zoom: adjust the target distance and let _physics_process smooth it.
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_target = clampf(_zoom_target - zoom_step, ZOOM_MIN, ZOOM_MAX)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_target = clampf(_zoom_target + zoom_step, ZOOM_MIN, ZOOM_MAX)
+
 func _physics_process(delta: float) -> void:
+
+	# ── CAMERA ZOOM ──────────────────────────────────────────────────────────────
+	# Smoothly ease spring_length toward wherever the scroll wheel last set it.
+	spring_arm.spring_length = lerp(spring_arm.spring_length, _zoom_target, delta * zoom_smooth)
 
 	# ── GRAVITY ──────────────────────────────────────────────────────────────────
 	if not is_on_floor():

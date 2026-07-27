@@ -5,7 +5,7 @@
 extends Node
 
 @export var time_limit:   float = 60.0
-@export var items_total:  int   = 3   # must match the number of PicnicFood nodes in the scene
+@export var items_total:  int   = 5   # must match the number of PicnicFood nodes in the scene
 
 @onready var timer_label:       Label        = get_node("../HUD/TimerLabel")
 @onready var result_bg:         ColorRect    = get_node("../HUD/ResultBackground")
@@ -13,7 +13,7 @@ extends Node
 @onready var status_label:      Label        = get_node("../HUD/RangerStatus")
 @onready var objective_label:   Label        = get_node("../HUD/ObjectiveStatus")
 @onready var suspicion_bar:     ProgressBar  = get_node("../HUD/SuspicionBar")
-@onready var ranger:            Node3D       = get_node("../Ranger")
+@onready var ranger:            Node3D       = get_node("../Ranger")   # primary ranger (kept for compatibility)
 @onready var exit_area:         Node         = get_node("../EscapeZone/ExitArea")
 @onready var _camera:           Camera3D     = get_node("../Player/SpringArm3D/Camera3D")
 @onready var _title_screen:     CanvasLayer  = get_node("../TitleScreen")
@@ -146,15 +146,19 @@ func _process(delta: float) -> void:
 			tween.tween_callback(func(): get_tree().reload_current_scene())
 		return
 
-	# ── PEAK SUSPICION ───────────────────────────────────────────────────────────
-	var s: float = float(ranger.get("suspicion"))
-	if s > peak_suspicion:
-		peak_suspicion = s
+	# ── PEAK SUSPICION (across all rangers) ─────────────────────────────────────
+	# Check every ranger so the end-screen stat reflects the worst threat the player faced.
+	for r in get_tree().get_nodes_in_group("rangers"):
+		if is_instance_valid(r):
+			var s: float = float(r.get("suspicion"))
+			if s > peak_suspicion:
+				peak_suspicion = s
 
-	# ── WIN / LOSE CHECK ─────────────────────────────────────────────────────────
-	if bool(ranger.get("caught")):
-		_finish(false, "CAUGHT!")
-		return
+	# ── WIN / LOSE CHECK (any ranger catches player) ──────────────────────────────
+	for r in get_tree().get_nodes_in_group("rangers"):
+		if is_instance_valid(r) and bool(r.get("caught")):
+			_finish(false, "CAUGHT!")
+			return
 	if bool(exit_area.get("escaped")):
 		_finish(true, "ESCAPED!")
 		return
