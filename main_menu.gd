@@ -6,9 +6,19 @@ extends Node
 const SETTINGS_PATH: String = "user://settings.cfg"
 const GAME_SCENE:    String = "res://scenes/levels/Level01_Park.tscn"
 
-@onready var _main_panel:       VBoxContainer = $CanvasLayer/MainPanel
-@onready var _howto_panel:      Control       = $CanvasLayer/HowToPlayPanel
-@onready var _settings_panel:   Control       = $CanvasLayer/SettingsPanel
+# Ordered list so _on_level_pressed(index) can jump directly to any level.
+const LEVEL_SCENES: Array[String] = [
+	"res://scenes/levels/Level01_Park.tscn",
+	"res://scenes/levels/Level02_Playground.tscn",
+	"res://scenes/levels/Level03_Lakeside.tscn",
+	"res://scenes/levels/Level04_Festival.tscn",
+	"res://scenes/levels/Level05_BotanicalGardens.tscn",
+]
+
+@onready var _main_panel:        VBoxContainer = $CanvasLayer/MainPanel
+@onready var _howto_panel:       Control       = $CanvasLayer/HowToPlayPanel
+@onready var _settings_panel:    Control       = $CanvasLayer/SettingsPanel
+@onready var _levelselect_panel: Control       = $CanvasLayer/LevelSelectPanel
 @onready var _music_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider
 @onready var _sfx_slider:       HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider
 @onready var _fullscreen_check: CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/FullscreenCheck
@@ -19,12 +29,20 @@ func _ready() -> void:
 
 func _show_panel(panel: Node) -> void:
 	# Exactly one panel is visible at a time.
-	_main_panel.visible     = (panel == _main_panel)
-	_howto_panel.visible    = (panel == _howto_panel)
-	_settings_panel.visible = (panel == _settings_panel)
+	_main_panel.visible        = (panel == _main_panel)
+	_howto_panel.visible       = (panel == _howto_panel)
+	_settings_panel.visible    = (panel == _settings_panel)
+	_levelselect_panel.visible = (panel == _levelselect_panel)
 
 func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file(GAME_SCENE)
+
+func _on_level_select_pressed() -> void:
+	_show_panel(_levelselect_panel)
+
+func _on_level_pressed(index: int) -> void:
+	# Jump directly to the chosen level, bypassing normal order.
+	get_tree().change_scene_to_file(LEVEL_SCENES[index])
 
 func _on_how_to_play_pressed() -> void:
 	_show_panel(_howto_panel)

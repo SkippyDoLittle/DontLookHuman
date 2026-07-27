@@ -1,8 +1,6 @@
-[gd_scene format=3 uid="uid://sclev01000tscn"]
+[gd_scene format=3 uid="uid://dwxes5r7rvilt"]
 
 ; ── EXTERNAL RESOURCES ────────────────────────────────────────────────────────
-; Sub-scene references (actors, props, gameplay, HUD).
-
 [ext_resource type="PackedScene" uid="uid://scplayertscn1"  path="res://scenes/actors/Player.tscn"                   id="1_player"]
 [ext_resource type="PackedScene" uid="uid://scpgnnpctscn1"  path="res://scenes/actors/PigeonNPC.tscn"                 id="2_pigeon"]
 [ext_resource type="PackedScene" uid="uid://scrangertscn1"  path="res://scenes/actors/Ranger.tscn"                   id="3_ranger"]
@@ -18,34 +16,30 @@
 [ext_resource type="PackedScene" uid="uid://scbench0tscn01" path="res://scenes/props/Bench.tscn"                     id="13_bench"]
 [ext_resource type="PackedScene" uid="uid://scptable0tscn1" path="res://scenes/props/PicnicTable.tscn"               id="14_table"]
 [ext_resource type="PackedScene" uid="uid://sctrash0tscn01" path="res://scenes/props/TrashCan.tscn"                  id="15_trash"]
-
-; Scripts for nodes that remain inline in this scene.
-[ext_resource type="Script" uid="uid://n0wwguurpwxa"  path="res://game_timer.gd"       id="16_gtmr"]
-[ext_resource type="Shader"                           path="res://sky.gdshader"         id="17_sky"]
-[ext_resource type="Script"                           path="res://tree_scatter.gd"      id="18_tree_sct"]
-[ext_resource type="Script"                           path="res://bench_scatter.gd"     id="19_bench_sct"]
-[ext_resource type="Script"                           path="res://table_scatter.gd"     id="20_table_sct"]
-[ext_resource type="Script"                           path="res://trash_can_scatter.gd" id="21_trash_sct"]
-[ext_resource type="Script"                           path="res://pigeon_scatter.gd"    id="22_pigeon_sct"]
-[ext_resource type="Script"                           path="res://visitor_scatter.gd"   id="23_visitor_sct"]
-[ext_resource type="Script" uid="uid://cxu6mnerk822l" path="res://how_to_play.gd"      id="24_howtoplay"]
-[ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd"       id="25_pmenu"]
+[ext_resource type="Script" uid="uid://n0wwguurpwxa"        path="res://game_timer.gd"                               id="16_gtmr"]
+[ext_resource type="Shader"                                  path="res://sky.gdshader"                                id="17_sky"]
+[ext_resource type="Script"                                  path="res://tree_scatter.gd"                             id="18_tree_sct"]
+[ext_resource type="Script"                                  path="res://bench_scatter.gd"                            id="19_bench_sct"]
+[ext_resource type="Script"                                  path="res://table_scatter.gd"                            id="20_table_sct"]
+[ext_resource type="Script"                                  path="res://trash_can_scatter.gd"                        id="21_trash_sct"]
+[ext_resource type="Script"                                  path="res://pigeon_scatter.gd"                           id="22_pigeon_sct"]
+[ext_resource type="Script"                                  path="res://visitor_scatter.gd"                          id="23_visitor_sct"]
+[ext_resource type="Script" uid="uid://c5spuv808m6cu"       path="res://pause_menu.gd"                               id="25_pmenu"]
 
 ; ── INLINE SUB-RESOURCES ──────────────────────────────────────────────────────
-; Only resources needed by nodes that stay inline in this level file.
 
-; Sky
+; Sky — bright sunny day over the playground
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
 shader = ExtResource("17_sky")
-shader_parameter/sky_top_color = Color(0.15, 0.38, 0.78, 1)
-shader_parameter/sky_horizon_color = Color(0.68, 0.84, 0.97, 1)
-shader_parameter/sky_curve = 0.09
-shader_parameter/ground_color = Color(0.29, 0.52, 0.19, 1)
-shader_parameter/cloud_color = Color(1, 1, 1, 1)
-shader_parameter/cloud_coverage = 0.45
-shader_parameter/cloud_scale = 3.0
-shader_parameter/cloud_speed = 0.015
-shader_parameter/sun_angle_max = 4.0
+shader_parameter/sky_top_color    = Color(0.12, 0.42, 0.85, 1)
+shader_parameter/sky_horizon_color = Color(0.72, 0.88, 0.98, 1)
+shader_parameter/sky_curve        = 0.09
+shader_parameter/ground_color     = Color(0.82, 0.72, 0.52, 1)
+shader_parameter/cloud_color      = Color(1, 1, 1, 1)
+shader_parameter/cloud_coverage   = 0.2
+shader_parameter/cloud_scale      = 3.0
+shader_parameter/cloud_speed      = 0.015
+shader_parameter/sun_angle_max    = 4.0
 
 [sub_resource type="Sky" id="Sky_main"]
 sky_material = SubResource("ShaderMaterial_sky")
@@ -57,12 +51,12 @@ sky = SubResource("Sky_main")
 ambient_light_source = 0
 ambient_light_energy = 0.5
 
-; Ground
+; Ground — sandy tan
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
 size = Vector3(500, 0.2, 500)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grass"]
-albedo_color = Color(0.29, 0.52, 0.19, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.82, 0.72, 0.52, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(500, 0.2, 500)
@@ -74,21 +68,41 @@ size = Vector3(33, 3, 0.5)
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_ew"]
 size = Vector3(0.5, 3, 33)
 
-; Pond
-[sub_resource type="CylinderMesh" id="CylinderMesh_pond"]
-top_radius = 1.6
-bottom_radius = 1.6
-height = 0.01
-radial_segments = 9
+; Sandpit — circular tan disc in the corner
+[sub_resource type="CylinderMesh" id="CylinderMesh_sand"]
+top_radius    = 1.8
+bottom_radius = 1.8
+height        = 0.08
+radial_segments = 10
 rings = 1
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_water"]
-transparency = 1
-cull_mode = 2
-albedo_color = Color(0.15, 0.45, 0.78, 0.62)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sand"]
+albedo_color = Color(0.94, 0.88, 0.62, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pond_bed"]
-albedo_color = Color(0.08, 0.18, 0.28, 1)
+; Swing frame posts — thin vertical pillars
+[sub_resource type="BoxMesh" id="BoxMesh_swingpost"]
+size = Vector3(0.15, 2.5, 0.15)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_metal"]
+albedo_color = Color(0.55, 0.60, 0.65, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_swingpost"]
+size = Vector3(0.15, 2.5, 0.15)
+
+; Swing cross-bar
+[sub_resource type="BoxMesh" id="BoxMesh_swingbar"]
+size = Vector3(3.5, 0.15, 0.15)
+
+; Swing chain (thin vertical box hung from bar)
+[sub_resource type="BoxMesh" id="BoxMesh_swingchain"]
+size = Vector3(0.05, 1.4, 0.05)
+
+; Swing seat
+[sub_resource type="BoxMesh" id="BoxMesh_swingseat"]
+size = Vector3(0.42, 0.06, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_seat"]
+albedo_color = Color(0.22, 0.18, 0.14, 1)
 
 ; Pause menu button styles
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
@@ -141,7 +155,7 @@ corner_radius_bottom_left = 4
 
 ; ── SCENE TREE ────────────────────────────────────────────────────────────────
 
-[node name="Level01_Park" type="Node3D"]
+[node name="Level02_Playground" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
@@ -152,7 +166,7 @@ shadow_enabled = true
 directional_shadow_mode = 0
 directional_shadow_max_distance = 32.0
 
-; ── SCATTER NODES (reference sibling template nodes by name) ──────────────────
+; ── SCATTER ───────────────────────────────────────────────────────────────────
 [node name="TreeScatter" type="Node3D" parent="."]
 script = ExtResource("18_tree_sct")
 park_half_size = 18.0
@@ -177,7 +191,7 @@ script = ExtResource("23_visitor_sct")
 
 ; ── PLAYER ────────────────────────────────────────────────────────────────────
 [node name="Player" parent="." instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 ; ── GROUND + WALLS ────────────────────────────────────────────────────────────
 [node name="Ground" type="StaticBody3D" parent="."]
@@ -185,7 +199,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
 mesh = SubResource("BoxMesh_ground")
-surface_material_override/0 = SubResource("StandardMaterial3D_grass")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
 shape = SubResource("BoxShape3D_ground")
@@ -214,106 +228,176 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 1.5, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest"]
 shape = SubResource("BoxShape3D_wall_ew")
 
+; ── PLAYGROUND PROPS ──────────────────────────────────────────────────────────
+; Sandpit — low flat disc in the south-west corner
+[node name="Sandpit" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.04, 6)
+mesh = SubResource("CylinderMesh_sand")
+surface_material_override/0 = SubResource("StandardMaterial3D_sand")
+
+; Swing frame — two posts and a cross-bar
+[node name="SwingPost1" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.75, 1.25, -7)
+
+[node name="Mesh" type="MeshInstance3D" parent="SwingPost1"]
+mesh = SubResource("BoxMesh_swingpost")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Collision" type="CollisionShape3D" parent="SwingPost1"]
+shape = SubResource("BoxShape3D_swingpost")
+
+[node name="SwingPost2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 1.25, -7)
+
+[node name="Mesh" type="MeshInstance3D" parent="SwingPost2"]
+mesh = SubResource("BoxMesh_swingpost")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Collision" type="CollisionShape3D" parent="SwingPost2"]
+shape = SubResource("BoxShape3D_swingpost")
+
+[node name="SwingBar" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -7)
+mesh = SubResource("BoxMesh_swingbar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+; Left swing — chain + seat
+[node name="SwingChainL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 1.8, -7)
+mesh = SubResource("BoxMesh_swingchain")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="SwingSeatL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, 1.07, -7)
+mesh = SubResource("BoxMesh_swingseat")
+surface_material_override/0 = SubResource("StandardMaterial3D_seat")
+
+; Right swing — chain + seat
+[node name="SwingChainR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.8, -7)
+mesh = SubResource("BoxMesh_swingchain")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="SwingSeatR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0, 1.07, -7)
+mesh = SubResource("BoxMesh_swingseat")
+surface_material_override/0 = SubResource("StandardMaterial3D_seat")
+
 ; ── NPC PIGEONS ───────────────────────────────────────────────────────────────
-; PigeonScatter uses NPC_Animal as template (get_node_or_null("../NPC_Animal")).
 [node name="NPC_Animal" parent="." instance=ExtResource("2_pigeon")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, 0)
 
 [node name="NPC_Animal2" parent="." instance=ExtResource("2_pigeon")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 3)
 
 [node name="NPC_Animal3" parent="." instance=ExtResource("2_pigeon")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, -4)
 
-[node name="NPC_Animal4" parent="." instance=ExtResource("2_pigeon")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, -2)
-
-[node name="NPC_Animal5" parent="." instance=ExtResource("2_pigeon")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 2)
-
-; ── RANGERS ───────────────────────────────────────────────────────────────────
-; Ranger is the primary (writes to HUD). Ranger2 runs AI silently (is_primary=false).
+; ── RANGERS — 3 rangers for a crowded playground ──────────────────────────────
 [node name="Ranger" parent="." instance=ExtResource("3_ranger")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -6)
+notice_distance = 4.0
+suspicion_gain_per_second = 20.0
+suspicion_loss_per_second = 32.0
+peck_loss_per_second = 25.0
+investigate_threshold = 72.0
+chase_threshold = 94.0
+food_aim_gain_per_second = 12.0
+stare_gain_per_second = 10.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
 
 [node name="Ranger2" parent="." instance=ExtResource("3_ranger")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, 5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.525, 4)
 is_primary = false
+notice_distance = 4.0
+suspicion_gain_per_second = 20.0
+suspicion_loss_per_second = 32.0
+peck_loss_per_second = 25.0
+investigate_threshold = 72.0
+chase_threshold = 94.0
+food_aim_gain_per_second = 12.0
+stare_gain_per_second = 10.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
 
-; ── PARK VISITORS ─────────────────────────────────────────────────────────────
-; ParkVisitor1 is also the template for VisitorScatter (get_node_or_null("../ParkVisitor1")).
-; Default shirt/pants colours from Visitor.tscn match ParkVisitor1 — no overrides needed.
+[node name="Ranger3" parent="." instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, 2)
+is_primary = false
+notice_distance = 4.0
+suspicion_gain_per_second = 20.0
+suspicion_loss_per_second = 32.0
+peck_loss_per_second = 25.0
+investigate_threshold = 72.0
+chase_threshold = 94.0
+food_aim_gain_per_second = 12.0
+stare_gain_per_second = 10.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+
+; ── PARK VISITORS — more people to blend into ─────────────────────────────────
 [node name="ParkVisitor1" parent="." instance=ExtResource("4_visitor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.525, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.525, 5)
 
 [node name="ParkVisitor2" parent="." instance=ExtResource("4_visitor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.525, 6)
-shirt_color = Color(0.8, 0.25, 0.25, 1)
-pants_color = Color(0.7, 0.6, 0.4, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.525, -3)
+shirt_color = Color(0.2, 0.5, 0.85, 1)
+pants_color = Color(0.3, 0.3, 0.35, 1)
 
 [node name="ParkVisitor3" parent="." instance=ExtResource("4_visitor")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.525, -6)
-shirt_color = Color(0.2, 0.6, 0.5, 1)
-pants_color = Color(0.4, 0.4, 0.45, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.525, 7)
+shirt_color = Color(0.9, 0.5, 0.1, 1)
+pants_color = Color(0.25, 0.25, 0.3, 1)
+
+[node name="ParkVisitor4" parent="." instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.525, -3)
+shirt_color = Color(0.7, 0.2, 0.6, 1)
+pants_color = Color(0.5, 0.45, 0.4, 1)
 
 ; ── FOOD ITEMS ────────────────────────────────────────────────────────────────
 [node name="PicnicFood" parent="." instance=ExtResource("7_bread")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.13, 6)
 
 [node name="PicnicFood2" parent="." instance=ExtResource("8_fries")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.04, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.04, -7)
 
 [node name="PicnicFood3" parent="." instance=ExtResource("9_grapes")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.13, -2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.13, -5)
 
 [node name="PicnicFood4" parent="." instance=ExtResource("10_popcorn")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.06, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.06, 7)
 
 [node name="PicnicFood5" parent="." instance=ExtResource("11_apple")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.15, 9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.15, -2)
 
 ; ── ESCAPE ZONE ───────────────────────────────────────────────────────────────
 [node name="EscapeZone" parent="." instance=ExtResource("6_escape")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.25, -8)
 
-; ── TREES (park interior) ─────────────────────────────────────────────────────
+; ── HAND-PLACED PROPS (templates for scatter scripts) ─────────────────────────
 [node name="Tree" parent="." instance=ExtResource("12_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
 
 [node name="Tree2" parent="." instance=ExtResource("12_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -6)
 
 [node name="Tree3" parent="." instance=ExtResource("12_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, -7)
 
-[node name="Tree4" parent="." instance=ExtResource("12_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 5)
-
-[node name="Tree5" parent="." instance=ExtResource("12_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 2)
-
-; ── BENCHES ───────────────────────────────────────────────────────────────────
-; "Bench" is also the template for BenchScatter (get_node_or_null("../Bench")).
 [node name="Bench" parent="." instance=ExtResource("13_bench")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 2)
 
 [node name="Bench2" parent="." instance=ExtResource("13_bench")]
-transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -3, 0, -0.4)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 4, 0, 2)
 
-[node name="Bench3" parent="." instance=ExtResource("13_bench")]
-transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -9, 0, 9)
-
-; ── PICNIC TABLE ──────────────────────────────────────────────────────────────
-; "PicnicTable" is also the template for TableScatter (get_node_or_null("../PicnicTable")).
 [node name="PicnicTable" parent="." instance=ExtResource("14_table")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 
-; ── TRASH CANS ────────────────────────────────────────────────────────────────
-; "TrashCan" is also the template for TrashCanScatter (get_node_or_null("../TrashCan")).
 [node name="TrashCan" parent="." instance=ExtResource("15_trash")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
-
-[node name="TrashCan2" parent="." instance=ExtResource("15_trash")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 1)
 
 ; ── HUD ───────────────────────────────────────────────────────────────────────
 [node name="HUD" parent="." instance=ExtResource("5_hud")]
@@ -321,21 +405,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 4)
 ; ── GAME MANAGER ──────────────────────────────────────────────────────────────
 [node name="GameTimer" type="Node" parent="."]
 script = ExtResource("16_gtmr")
-time_limit = 90.0
-next_level_scene = "res://scenes/levels/Level02_Playground.tscn"
-
-; ── POND ──────────────────────────────────────────────────────────────────────
-[node name="Pond" type="Node3D" parent="."]
-
-[node name="WaterSurface" type="MeshInstance3D" parent="Pond"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.07, -7)
-mesh = SubResource("CylinderMesh_pond")
-surface_material_override/0 = SubResource("StandardMaterial3D_water")
-
-[node name="PondBed" type="MeshInstance3D" parent="Pond"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.003, -7)
-mesh = SubResource("CylinderMesh_pond")
-surface_material_override/0 = SubResource("StandardMaterial3D_pond_bed")
+time_limit = 85.0
+next_level_scene = "res://scenes/levels/Level03_Lakeside.tscn"
 
 ; ── TITLE SCREEN ──────────────────────────────────────────────────────────────
 [node name="TitleScreen" type="CanvasLayer" parent="."]
@@ -355,18 +426,18 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -50.0
+offset_top = -60.0
 offset_right = 200.0
-offset_bottom = 50.0
-theme_override_font_sizes/font_size = 26
-text = "READY?
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 24
+text = "LEVEL 2: PLAYGROUND
+Watch out — it's crowded out there.
 
 Press SPACE to begin"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 ; ── SCENE TRANSITION OVERLAY ──────────────────────────────────────────────────
-; layer=20 so it renders above everything — used for fade-to-black transitions.
 [node name="TransitionLayer" type="CanvasLayer" parent="."]
 layer = 20
 
@@ -512,9 +583,3 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
 theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "QUIT"
-
-; ── HOW TO PLAY SCREEN ────────────────────────────────────────────────────────
-; layer=15 so it renders above HUD (1) and TitleScreen (10). Builds UI in _ready().
-[node name="HowToPlayScreen" type="CanvasLayer" parent="."]
-layer = 15
-script = ExtResource("24_howtoplay")

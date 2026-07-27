@@ -69,15 +69,15 @@ fill_mode = 3
 show_percentage = false
 
 [node name="TimerLabel" type="Label" parent="."]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -150.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -70.0
 offset_top = 5.0
-offset_right = -10.0
+offset_right = 70.0
 offset_bottom = 30.0
 text = "1:30"
-horizontal_alignment = 2
+horizontal_alignment = 1
 
 [node name="WarnLabel" type="Label" parent="."]
 visible = false
@@ -181,32 +181,32 @@ color = Color(1, 0.2, 0.2, 1)
 
 [node name="FoodDot1" type="ColorRect" parent="Minimap"]
 layout_mode = 0
-offset_right = 6.0
-offset_bottom = 6.0
+offset_right = 9.0
+offset_bottom = 9.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="FoodDot2" type="ColorRect" parent="Minimap"]
 layout_mode = 0
-offset_right = 6.0
-offset_bottom = 6.0
+offset_right = 9.0
+offset_bottom = 9.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="FoodDot3" type="ColorRect" parent="Minimap"]
 layout_mode = 0
-offset_right = 6.0
-offset_bottom = 6.0
+offset_right = 9.0
+offset_bottom = 9.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="FoodDot4" type="ColorRect" parent="Minimap"]
 layout_mode = 0
-offset_right = 6.0
-offset_bottom = 6.0
+offset_right = 9.0
+offset_bottom = 9.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="FoodDot5" type="ColorRect" parent="Minimap"]
 layout_mode = 0
-offset_right = 6.0
-offset_bottom = 6.0
+offset_right = 9.0
+offset_bottom = 9.0
 color = Color(1, 0.9, 0.2, 1)
 
 [node name="ExitDot" type="ColorRect" parent="Minimap"]

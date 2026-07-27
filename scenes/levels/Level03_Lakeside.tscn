@@ -1,0 +1,635 @@
+[gd_scene format=3 uid="uid://dwxes6r7rvilt"]
+
+[ext_resource type="PackedScene" uid="uid://cu23wqprkytmy" path="res://scenes/actors/Player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://cu2ybf1ckytmy" path="res://scenes/actors/PigeonNPC.tscn" id="2_pigeon"]
+[ext_resource type="PackedScene" uid="uid://cu4sa7prkytmy" path="res://scenes/actors/Ranger.tscn" id="3_ranger"]
+[ext_resource type="PackedScene" uid="uid://cu81ga5oi1bbl" path="res://scenes/actors/Visitor.tscn" id="4_visitor"]
+[ext_resource type="PackedScene" uid="uid://dteus3r1keea7" path="res://scenes/game/HUD.tscn" id="5_hud"]
+[ext_resource type="PackedScene" uid="uid://curbyr0m41bbl" path="res://scenes/gameplay/EscapeZone.tscn" id="6_escape"]
+[ext_resource type="PackedScene" uid="uid://cuoa01o0kytmy" path="res://scenes/gameplay/PicnicFood_Bread.tscn" id="7_bread"]
+[ext_resource type="PackedScene" uid="uid://cusa4540kytmy" path="res://scenes/gameplay/PicnicFood_Fries.tscn" id="8_fries"]
+[ext_resource type="PackedScene" uid="uid://cutawhp0kytmy" path="res://scenes/gameplay/PicnicFood_Grapes.tscn" id="9_grapes"]
+[ext_resource type="PackedScene" uid="uid://cu2ucjy0kytmy" path="res://scenes/gameplay/PicnicFood_Popcorn.tscn" id="10_popcorn"]
+[ext_resource type="PackedScene" uid="uid://cum8ddp0kytmy" path="res://scenes/gameplay/PicnicFood_Apple.tscn" id="11_apple"]
+[ext_resource type="PackedScene" uid="uid://bv0l1ury6ijg" path="res://scenes/props/Tree.tscn" id="12_tree"]
+[ext_resource type="PackedScene" uid="uid://dmw44kr1keea7" path="res://scenes/props/Bench.tscn" id="13_bench"]
+[ext_resource type="PackedScene" uid="uid://d2dq3n57lt1w7" path="res://scenes/props/PicnicTable.tscn" id="14_table"]
+[ext_resource type="PackedScene" uid="uid://bvv0iury6ijg" path="res://scenes/props/TrashCan.tscn" id="15_trash"]
+[ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="16_gtmr"]
+[ext_resource type="Shader" uid="uid://bsatdw46tiwro" path="res://sky.gdshader" id="17_sky"]
+[ext_resource type="Script" uid="uid://dnajbuv0pplen" path="res://tree_scatter.gd" id="18_tree_sct"]
+[ext_resource type="Script" uid="uid://bpcjxsqt3w744" path="res://bench_scatter.gd" id="19_bench_sct"]
+[ext_resource type="Script" uid="uid://c4h6vgykahw4c" path="res://table_scatter.gd" id="20_table_sct"]
+[ext_resource type="Script" uid="uid://dffh8twj48h6w" path="res://trash_can_scatter.gd" id="21_trash_sct"]
+[ext_resource type="Script" uid="uid://ctqmerfs2ha5n" path="res://pigeon_scatter.gd" id="22_pigeon_sct"]
+[ext_resource type="Script" uid="uid://by71khwjhc3yn" path="res://visitor_scatter.gd" id="23_visitor_sct"]
+[ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd" id="25_pmenu"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("17_sky")
+shader_parameter/sky_top_color = Color(0.28, 0.18, 0.55, 1)
+shader_parameter/sky_horizon_color = Color(0.92, 0.55, 0.22, 1)
+shader_parameter/sky_curve = 0.12
+shader_parameter/ground_color = Color(0.22, 0.42, 0.18, 1)
+shader_parameter/cloud_color = Color(1, 0.8, 0.6, 1)
+shader_parameter/cloud_coverage = 0.35
+shader_parameter/cloud_scale = 3.5
+shader_parameter/cloud_speed = 0.02
+shader_parameter/sun_angle_max = 6.0
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ShaderMaterial_sky")
+process_mode = 3
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_energy = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_ground"]
+size = Vector3(500, 0.2, 500)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.22, 0.48, 0.16, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
+size = Vector3(500, 0.2, 500)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ns"]
+size = Vector3(33, 3, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_ew"]
+size = Vector3(0.5, 3, 33)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lake"]
+top_radius = 3.8
+bottom_radius = 3.8
+height = 0.12
+radial_segments = 14
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lake"]
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0.12, 0.38, 0.72, 0.72)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lakebed"]
+top_radius = 3.8
+bottom_radius = 3.8
+height = 0.08
+radial_segments = 14
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lakebed"]
+albedo_color = Color(0.06, 0.14, 0.24, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_lake"]
+radius = 3.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_dock_deck"]
+size = Vector3(1.8, 0.12, 6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dock"]
+albedo_color = Color(0.58, 0.42, 0.26, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dock_pylon"]
+top_radius = 0.12
+bottom_radius = 0.12
+height = 1.0
+radial_segments = 6
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_dock_post"]
+size = Vector3(0.08, 0.75, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dock_rail"]
+size = Vector3(0.06, 0.06, 6)
+
+[sub_resource type="SphereMesh" id="SphereMesh_boulder"]
+radius = 0.45
+height = 0.7
+radial_segments = 6
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_boulder"]
+albedo_color = Color(0.45, 0.42, 0.38, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_boulder_sm"]
+radius = 0.28
+height = 0.44
+radial_segments = 6
+rings = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.06, 0.13, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.03, 0.07, 0.03, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.4, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.11, 0.24, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.7, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Level03_Lakeside" type="Node3D" unique_id=777733907]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=635714592]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=634901770]
+transform = Transform3D(0.8660254, 0.25, -0.43301, 0, 0.86602545, 0.5, 0.5, -0.43301275, 0.75, 0, 2, 0)
+light_color = Color(1, 0.88, 0.72, 1)
+shadow_enabled = true
+directional_shadow_mode = 0
+directional_shadow_max_distance = 32.0
+
+[node name="TreeScatter" type="Node3D" parent="." unique_id=1376850798]
+script = ExtResource("18_tree_sct")
+park_half_size = 18.0
+
+[node name="BenchScatter" type="Node3D" parent="." unique_id=646822086]
+script = ExtResource("19_bench_sct")
+park_half_size = 18.0
+
+[node name="TableScatter" type="Node3D" parent="." unique_id=1006205552]
+script = ExtResource("20_table_sct")
+park_half_size = 18.0
+
+[node name="TrashCanScatter" type="Node3D" parent="." unique_id=401456285]
+script = ExtResource("21_trash_sct")
+park_half_size = 18.0
+
+[node name="PigeonScatter" type="Node3D" parent="." unique_id=293515566]
+script = ExtResource("22_pigeon_sct")
+
+[node name="VisitorScatter" type="Node3D" parent="." unique_id=1352647519]
+script = ExtResource("23_visitor_sct")
+
+[node name="Player" parent="." unique_id=1168756690 instance=ExtResource("1_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1, 7)
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1544369785]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground" unique_id=84351262]
+mesh = SubResource("BoxMesh_ground")
+surface_material_override/0 = SubResource("StandardMaterial3D_ground")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=346085482]
+shape = SubResource("BoxShape3D_ground")
+
+[node name="WallNorth" type="StaticBody3D" parent="." unique_id=1963247784]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 16.25)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth" unique_id=691965581]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallSouth" type="StaticBody3D" parent="." unique_id=510435374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -16.25)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth" unique_id=630844858]
+shape = SubResource("BoxShape3D_wall_ns")
+
+[node name="WallEast" type="StaticBody3D" parent="." unique_id=1137241236]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast" unique_id=1171488981]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="WallWest" type="StaticBody3D" parent="." unique_id=1670350912]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 1.5, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest" unique_id=1715116958]
+shape = SubResource("BoxShape3D_wall_ew")
+
+[node name="Lake" type="Node3D" parent="." unique_id=685870569]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -1)
+
+[node name="WaterSurface" type="MeshInstance3D" parent="Lake" unique_id=1123084949]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+mesh = SubResource("CylinderMesh_lake")
+surface_material_override/0 = SubResource("StandardMaterial3D_lake")
+
+[node name="LakeBed" type="MeshInstance3D" parent="Lake" unique_id=1168156182]
+mesh = SubResource("CylinderMesh_lakebed")
+surface_material_override/0 = SubResource("StandardMaterial3D_lakebed")
+
+[node name="LakeCollision" type="StaticBody3D" parent="Lake" unique_id=1189636733]
+
+[node name="Shape" type="CollisionShape3D" parent="Lake/LakeCollision" unique_id=1328312699]
+shape = SubResource("CylinderShape3D_lake")
+
+[node name="Dock" type="Node3D" parent="." unique_id=719631754]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8890172, 0.22, -1)
+
+[node name="Deck" type="MeshInstance3D" parent="Dock" unique_id=749895506]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, 0)
+mesh = SubResource("BoxMesh_dock_deck")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="Pylon1" type="MeshInstance3D" parent="Dock" unique_id=303576178]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, -0.56, -2.5)
+mesh = SubResource("CylinderMesh_dock_pylon")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="Pylon2" type="MeshInstance3D" parent="Dock" unique_id=1416470581]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, -0.56, 0)
+mesh = SubResource("CylinderMesh_dock_pylon")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="Pylon3" type="MeshInstance3D" parent="Dock" unique_id=1550205840]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, -0.56, 2.5)
+mesh = SubResource("CylinderMesh_dock_pylon")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="PostL1" type="MeshInstance3D" parent="Dock" unique_id=1874875925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 0.435, -2.8)
+mesh = SubResource("BoxMesh_dock_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="PostL2" type="MeshInstance3D" parent="Dock" unique_id=121989077]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 0.435, 0)
+mesh = SubResource("BoxMesh_dock_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="PostL3" type="MeshInstance3D" parent="Dock" unique_id=930571987]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 0.435, 2.8)
+mesh = SubResource("BoxMesh_dock_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="PostR1" type="MeshInstance3D" parent="Dock" unique_id=1736446900]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.435, -2.8)
+mesh = SubResource("BoxMesh_dock_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="PostR2" type="MeshInstance3D" parent="Dock" unique_id=1300248972]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.435, 0)
+mesh = SubResource("BoxMesh_dock_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="PostR3" type="MeshInstance3D" parent="Dock" unique_id=1311356092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.435, 2.8)
+mesh = SubResource("BoxMesh_dock_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="RailL" type="MeshInstance3D" parent="Dock" unique_id=352285209]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.3, 0.78, 0)
+mesh = SubResource("BoxMesh_dock_rail")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="RailR" type="MeshInstance3D" parent="Dock" unique_id=2134068840]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1, 0.78, 0)
+mesh = SubResource("BoxMesh_dock_rail")
+surface_material_override/0 = SubResource("StandardMaterial3D_dock")
+
+[node name="Boulder1" type="MeshInstance3D" parent="." unique_id=1337360805]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8079853, 0.2, -1)
+mesh = SubResource("SphereMesh_boulder")
+surface_material_override/0 = SubResource("StandardMaterial3D_boulder")
+
+[node name="Boulder2" type="MeshInstance3D" parent="." unique_id=1265955756]
+transform = Transform3D(0.9, 0, 0.2, 0, 1, 0, -0.2, 0, 0.9, 3.2, 0.15, -3.2)
+mesh = SubResource("SphereMesh_boulder_sm")
+surface_material_override/0 = SubResource("StandardMaterial3D_boulder")
+
+[node name="Boulder3" type="MeshInstance3D" parent="." unique_id=1580667078]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.2, 3.2)
+mesh = SubResource("SphereMesh_boulder")
+surface_material_override/0 = SubResource("StandardMaterial3D_boulder")
+
+[node name="Boulder4" type="MeshInstance3D" parent="." unique_id=2008001686]
+transform = Transform3D(1.1, 0, 0, 0, 0.9, 0, 0, 0, 1, -1, 0.18, -4.4610853)
+mesh = SubResource("SphereMesh_boulder")
+surface_material_override/0 = SubResource("StandardMaterial3D_boulder")
+
+[node name="Boulder5" type="MeshInstance3D" parent="." unique_id=1877459606]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.14, -3.8)
+mesh = SubResource("SphereMesh_boulder_sm")
+surface_material_override/0 = SubResource("StandardMaterial3D_boulder")
+
+[node name="Boulder6" type="MeshInstance3D" parent="." unique_id=1834781030]
+transform = Transform3D(0.85, 0, 0.15, 0, 1, 0, -0.15, 0, 0.85, -3.5, 0.22, 2)
+mesh = SubResource("SphereMesh_boulder")
+surface_material_override/0 = SubResource("StandardMaterial3D_boulder")
+
+[node name="NPC_Animal" parent="." unique_id=1780516412 instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5)
+
+[node name="NPC_Animal2" parent="." unique_id=1079621328 instance=ExtResource("2_pigeon")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1, 6)
+
+[node name="Ranger" parent="." unique_id=162982115 instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.525, -5)
+notice_distance = 4.2
+suspicion_gain_per_second = 22.0
+suspicion_loss_per_second = 30.0
+peck_loss_per_second = 25.0
+investigate_threshold = 70.0
+chase_threshold = 93.0
+food_aim_gain_per_second = 13.0
+stare_gain_per_second = 11.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+
+[node name="Ranger2" parent="." unique_id=368505262 instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.525, 2)
+notice_distance = 4.2
+suspicion_gain_per_second = 22.0
+suspicion_loss_per_second = 30.0
+peck_loss_per_second = 25.0
+investigate_threshold = 70.0
+chase_threshold = 93.0
+food_aim_gain_per_second = 13.0
+stare_gain_per_second = 11.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+is_primary = false
+
+[node name="Ranger3" parent="." unique_id=1934881466 instance=ExtResource("3_ranger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.525, 7)
+notice_distance = 4.2
+suspicion_gain_per_second = 22.0
+suspicion_loss_per_second = 30.0
+peck_loss_per_second = 25.0
+investigate_threshold = 70.0
+chase_threshold = 93.0
+food_aim_gain_per_second = 13.0
+stare_gain_per_second = 11.0
+separation_gain_per_second = 5.0
+straight_line_gain_per_second = 7.0
+still_gain_per_second = 5.0
+is_primary = false
+
+[node name="ParkVisitor1" parent="." unique_id=1367022363 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, -3)
+
+[node name="ParkVisitor2" parent="." unique_id=853749611 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.525, -5)
+shirt_color = Color(0.85, 0.55, 0.15, 1)
+pants_color = Color(0.3, 0.28, 0.25, 1)
+
+[node name="ParkVisitor3" parent="." unique_id=235844713 instance=ExtResource("4_visitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0.525, -7)
+shirt_color = Color(0.2, 0.65, 0.55, 1)
+pants_color = Color(0.4, 0.38, 0.35, 1)
+
+[node name="PicnicFood" parent="." unique_id=1026211928 instance=ExtResource("7_bread")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.13, -6)
+
+[node name="PicnicFood2" parent="." unique_id=1722624028 instance=ExtResource("8_fries")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.04, -8)
+
+[node name="PicnicFood3" parent="." unique_id=1016822561 instance=ExtResource("9_grapes")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.13, 4)
+
+[node name="PicnicFood4" parent="." unique_id=1606286980 instance=ExtResource("10_popcorn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.06, 3)
+
+[node name="PicnicFood5" parent="." unique_id=701650392 instance=ExtResource("11_apple")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.15, 4)
+
+[node name="EscapeZone" parent="." unique_id=1236307889 instance=ExtResource("6_escape")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.25, -8)
+
+[node name="Tree" parent="." unique_id=296357250 instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 6)
+
+[node name="Tree2" parent="." unique_id=1896736997 instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0, -6)
+
+[node name="Tree3" parent="." unique_id=1101464403 instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 7)
+
+[node name="Tree4" parent="." unique_id=604367889 instance=ExtResource("12_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -7)
+
+[node name="Bench" parent="." unique_id=986674167 instance=ExtResource("13_bench")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 6)
+
+[node name="Bench2" parent="." unique_id=1705795766 instance=ExtResource("13_bench")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, -5, 0, 2)
+
+[node name="PicnicTable" parent="." unique_id=128883743 instance=ExtResource("14_table")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 2)
+
+[node name="TrashCan" parent="." unique_id=620823121 instance=ExtResource("15_trash")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 7)
+
+[node name="HUD" parent="." unique_id=114219329 instance=ExtResource("5_hud")]
+
+[node name="GameTimer" type="Node" parent="." unique_id=1944646839]
+script = ExtResource("16_gtmr")
+time_limit = 80.0
+next_level_scene = "res://scenes/levels/Level04_Festival.tscn"
+
+[node name="TitleScreen" type="CanvasLayer" parent="." unique_id=1061497331]
+layer = 10
+
+[node name="Background" type="ColorRect" parent="TitleScreen" unique_id=1848120044]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.04, 0.04, 0.08, 1)
+
+[node name="StartLabel" type="Label" parent="TitleScreen" unique_id=448575346]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -60.0
+offset_right = 200.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 24
+text = "LEVEL 3: LAKESIDE
+Don't fall in — or get caught.
+
+Press SPACE to begin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TransitionLayer" type="CanvasLayer" parent="." unique_id=830566959]
+layer = 20
+
+[node name="FadeRect" type="ColorRect" parent="TransitionLayer" unique_id=1538775105]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="PauseMenu" type="CanvasLayer" parent="." unique_id=832338532]
+layer = 15
+visible = false
+script = ExtResource("25_pmenu")
+
+[node name="Background" type="ColorRect" parent="PauseMenu" unique_id=322861901]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0.02, 0, 0.88)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu" unique_id=671835597]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -270.0
+offset_right = 200.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer" unique_id=357136032]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1)
+theme_override_font_sizes/font_size = 36
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Divider" type="Label" parent="PauseMenu/VBoxContainer" unique_id=2009704865]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=1524192989]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "RESUME  (Escape)"
+
+[node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer" unique_id=981508806]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=743056851]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "AUDIO  ▶"
+
+[node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer" unique_id=372214510]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=447757741]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=1275447621]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=261216823]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Sound Effects Volume"
+
+[node name="SFXSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel" unique_id=871256501]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="ControlsButton" type="Button" parent="PauseMenu/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "CONTROLS"
+
+[node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer" unique_id=446419849]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer" unique_id=53990919]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "──────────────────────────────────"
+horizontal_alignment = 1
+
+[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=759445330]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "MAIN MENU"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=472023236]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "QUIT"

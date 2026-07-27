@@ -1320,9 +1320,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -235.0
+offset_top = -270.0
 offset_right = 200.0
-offset_bottom = 235.0
+offset_bottom = 270.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
@@ -1395,6 +1395,16 @@ layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 1.0
+
+[node name="ControlsButton" type="Button" parent="PauseMenu/VBoxContainer" unique_id=2003000018]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
+text = "CONTROLS"
 
 [node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer" unique_id=2003000012]
 custom_minimum_size = Vector2(0, 10)

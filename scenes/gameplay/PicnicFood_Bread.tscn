@@ -12,6 +12,7 @@ rings = 4
 albedo_color = Color(0.92, 0.8, 0.58, 1)
 
 [node name="PicnicFood" type="Node3D"]
+scale = Vector3(1.5, 1.5, 1.5)
 script = ExtResource("1_food")
 
 [node name="FoodMesh" type="MeshInstance3D" parent="."]

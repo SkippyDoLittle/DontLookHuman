@@ -6,10 +6,15 @@ extends CanvasLayer
 const _CONTENT := """DON'T LOOK HUMAN
 
 CONTROLS
-  WASD        Move
-  Shift       Sprint  (depletes stamina bar)
-  Space       Peck    (reduces suspicion while stationary)
-  Esc         Pause
+  WASD              Move
+  Shift             Sprint  (depletes stamina bar)
+  E                 Peck food  (lowers suspicion; can't sprint while pecking)
+  Esc               Pause / resume
+  R                 Retry current level
+  Space             Next level  (after a successful escape)
+  Mouse             Rotate camera
+  Scroll Wheel      Zoom camera in / out
+  H                 Close this screen
 
 OBJECTIVE
   Steal all 5 food items scattered around the park,
@@ -27,9 +32,7 @@ THE RANGER GETS SUSPICIOUS IF YOU:
 TIPS
   Peck often while resting — it looks natural and lowers suspicion.
   Weave as you walk; pigeons don’t march in straight lines.
-  Stay near the NPC pigeons to blend in.
-
-Press H to close"""
+  Stay near the NPC pigeons to blend in."""
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -47,10 +50,10 @@ func _ready() -> void:
 	panel.anchor_right  = 0.5
 	panel.anchor_top    = 0.5
 	panel.anchor_bottom = 0.5
-	panel.offset_left   = -270
-	panel.offset_right  = 270
-	panel.offset_top    = -280
-	panel.offset_bottom = 280
+	panel.offset_left   = -300
+	panel.offset_right  = 300
+	panel.offset_top    = -340
+	panel.offset_bottom = 340
 	add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -58,12 +61,45 @@ func _ready() -> void:
 		margin.add_theme_constant_override(side, 24)
 	panel.add_child(margin)
 
+	# VBoxContainer holds the text label and the close button stacked vertically.
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 16)
+	margin.add_child(vbox)
+
 	var lbl := Label.new()
 	lbl.text = _CONTENT
 	lbl.add_theme_font_size_override("font_size", 14)
 	lbl.add_theme_color_override("font_color", Color(0.92, 0.92, 0.92))
 	lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
-	margin.add_child(lbl)
+	vbox.add_child(lbl)
+
+	# Close button — styled to match the main menu green button theme.
+	var style_normal := StyleBoxFlat.new()
+	style_normal.bg_color          = Color(0.06, 0.13, 0.06, 0.88)
+	style_normal.border_color       = Color(0.22, 0.52, 0.22, 1.0)
+	for s in ["border_width_left", "border_width_top", "border_width_right", "border_width_bottom"]:
+		style_normal.set(s, 1)
+	for s in ["corner_radius_top_left", "corner_radius_top_right", "corner_radius_bottom_right", "corner_radius_bottom_left"]:
+		style_normal.set(s, 4)
+
+	var style_hover := StyleBoxFlat.new()
+	style_hover.bg_color           = Color(0.11, 0.24, 0.11, 0.95)
+	style_hover.border_color        = Color(0.35, 0.70, 0.35, 1.0)
+	for s in ["border_width_left", "border_width_top", "border_width_right", "border_width_bottom"]:
+		style_hover.set(s, 1)
+	for s in ["corner_radius_top_left", "corner_radius_top_right", "corner_radius_bottom_right", "corner_radius_bottom_left"]:
+		style_hover.set(s, 4)
+
+	var btn := Button.new()
+	btn.text = "CLOSE"
+	btn.custom_minimum_size = Vector2(0, 44)
+	btn.add_theme_font_size_override("font_size", 16)
+	btn.add_theme_color_override("font_color", Color(0.85, 0.98, 0.85, 1.0))
+	btn.add_theme_stylebox_override("normal",  style_normal)
+	btn.add_theme_stylebox_override("hover",   style_hover)
+	btn.add_theme_stylebox_override("pressed", style_normal)
+	btn.pressed.connect(func(): visible = false)
+	vbox.add_child(btn)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_H and event.pressed and not event.echo:
