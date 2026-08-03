@@ -16,7 +16,7 @@
 
 ## Final publishing tasks
 
-- [ ] Replace the automated preview with a hand-edited 20–30 second trailer showing a full escape
+- [x] Replace the automated preview with a directed hook-first trailer showing a full escape
 - [x] Add a final game icon and store capsule art
 - [ ] Perform a clean-machine Windows playtest of the exported executable
 - [ ] Choose a license before publishing source code
@@ -46,11 +46,20 @@
 - [x] Windows `0.9.0` release-candidate metadata
 - [x] Publishing-status documentation and automated publishing validation
 
-## Suggested video shot list
+## Completed in Phase 10
 
-1. Open with Festival or Lakeside for the strongest color palette.
-2. Show the pigeon weaving through NPC cover.
-3. Sprint near a ranger until the HUD changes to Investigating.
-4. Peck to reduce suspicion and steal one food item.
-5. Cut to the final collectible and glowing exit.
-6. End on the escape results screen and game title.
+- [x] Directed 33-second, 1280×720 release trailer spanning four escalating gameplay sequences
+- [x] Immediate gameplay hook, beat-synchronized cuts, original score, emphasized effects, and animated wishlist reveal
+- [x] Versioned Windows ZIP packaging with included controls and SHA-256 checksum
+- [x] Automated trailer-container and release-workflow validation
+
+## Final trailer structure
+
+1. Open immediately on a Festival theft beside a ranger.
+2. Turn the first pickup into an alert and chase within the opening second.
+3. Use the Lakeside flock for the "ACT NATURAL." visual gag.
+4. Cut three Playground pickups to the rising beat and suspicion level.
+5. Escalate into a four-ranger Botanical Gardens gauntlet and glowing exit.
+6. Hard cut from the escape flash to "JUST A PIGEON.", then reveal the logo and wishlist call to action.
+
+See `docs/trailer_treatment.md` for the full creative rationale and future footage priorities.

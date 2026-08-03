@@ -2,7 +2,7 @@
 
 Don't Look Human is a short 3D behavior-stealth game built with Godot 4. You play a suspiciously intelligent pigeon stealing picnic food while trying to move like an ordinary park animal. Sprinting, staring at rangers, walking too directly, standing alone, or lingering in water can expose you.
 
-![Don't Look Human store artwork](docs/branding/store_capsule.png)
+![Don't Look Human store artwork](assets/branding/store_capsule.png)
 
 ## Gameplay
 
@@ -74,6 +74,7 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/pha
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase7_release_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase8_ux_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase9_publishing_validation.gd
+Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase10_release_media_validation.gd
 ```
 
 In debug builds, the `F3` overlay shows the current level ID, session state, remaining collectibles, player water state, FPS, and every ranger's state and suspicion. Release exports disable the overlay.
@@ -90,9 +91,21 @@ In debug builds, the `F3` overlay shows the current level ID, session state, rem
 
 ![Botanical Gardens](docs/screenshots/level_05_botanical_gardens.png)
 
-## Gameplay preview
+## Release trailer
 
-[Watch or download the 10-second Festival gameplay clip](docs/gameplay_preview.avi). It is captured from the live project and shows ranger suspicion, a food pickup, recovery, crowds, and the minimap.
+[Watch or download the 33-second release trailer](docs/gameplay_preview.avi). The hook-first 1280×720 cut opens directly on a theft beside a ranger, escalates through flock blending and a three-pickup montage, then ends with a four-ranger escape, the "JUST A PIGEON." hook, and an animated wishlist reveal. Gameplay sound is mixed with an original generated trailer score.
+
+## Windows release package
+
+Create a versioned Windows ZIP and SHA-256 checksum from PowerShell:
+
+```powershell
+.\tools\package_windows_release.ps1 `
+  -GodotPath "C:\path\to\Godot_v4.7-stable_win64_console.exe" `
+  -Version "0.9.0"
+```
+
+The generated package remains under the ignored `export/release/` directory.
 
 ## Project documentation
 
@@ -101,5 +114,6 @@ In debug builds, the `F3` overlay shows the current level ID, session state, rem
 - [Known issues and limitations](docs/known_issues.md)
 - [Portfolio and release checklist](docs/portfolio_checklist.md)
 - [Publishing status](docs/publishing.md)
+- [Trailer creative direction](docs/trailer_treatment.md)
 
 Windows export settings are included in `export_presets.cfg`. Generated exports and ZIP packages are intentionally ignored by Git.

@@ -1,6 +1,6 @@
 # Branding Assets
 
-- `store_capsule.png` is the wide release/store artwork.
+- `../../assets/branding/store_capsule.png` is the wide release/store artwork.
 - `../../assets/branding/game_icon.png` is the square runtime and Windows application icon.
 
 Both assets were generated with OpenAI's built-in image-generation tool for this project, then copied into the repository without modifying the original generated files.

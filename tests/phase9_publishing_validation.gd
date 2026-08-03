@@ -132,7 +132,7 @@ func _validate_release_branding() -> void:
 		"Project metadata uses the custom pigeon icon"
 	)
 	_check(FileAccess.file_exists("res://assets/branding/game_icon.png"), "Custom game icon is present")
-	_check(FileAccess.file_exists("res://docs/branding/store_capsule.png"), "Store capsule artwork is present")
+	_check(FileAccess.file_exists("res://assets/branding/store_capsule.png"), "Store capsule artwork is present")
 	var export_config := ConfigFile.new()
 	_check(export_config.load("res://export_presets.cfg") == OK, "Windows export metadata loads")
 	_check(
