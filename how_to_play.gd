@@ -3,18 +3,20 @@
 # Starts hidden; press H at any time (including title screen) to toggle.
 extends CanvasLayer
 
+var _close_button: Button
+
 const _CONTENT := """DON'T LOOK HUMAN
 
 CONTROLS
-  WASD              Move
-  Shift             Sprint  (depletes stamina bar)
-  E                 Peck food  (lowers suspicion; can't sprint while pecking)
-  Esc               Pause / resume
-  R                 Retry current level
-  Space             Next level  (after a successful escape)
-  Mouse             Rotate camera
-  Scroll Wheel      Zoom camera in / out
-  H                 Close this screen
+  WASD / Left Stick       Move
+  Shift / Left Shoulder   Sprint  (depletes stamina bar)
+  E / A                   Peck food
+  Esc / Start             Pause / resume
+  R / Y                   Retry current level
+  Space / A               Start or continue
+  Mouse / Right Stick     Rotate camera
+  Scroll / D-pad Up/Down  Zoom camera
+  H / B                   Close this screen
 
 OBJECTIVE
   Steal all 5 food items scattered around the park,
@@ -90,18 +92,34 @@ func _ready() -> void:
 	for s in ["corner_radius_top_left", "corner_radius_top_right", "corner_radius_bottom_right", "corner_radius_bottom_left"]:
 		style_hover.set(s, 4)
 
-	var btn := Button.new()
-	btn.text = "CLOSE"
-	btn.custom_minimum_size = Vector2(0, 44)
-	btn.add_theme_font_size_override("font_size", 16)
-	btn.add_theme_color_override("font_color", Color(0.85, 0.98, 0.85, 1.0))
-	btn.add_theme_stylebox_override("normal",  style_normal)
-	btn.add_theme_stylebox_override("hover",   style_hover)
-	btn.add_theme_stylebox_override("pressed", style_normal)
-	btn.pressed.connect(func(): visible = false)
-	vbox.add_child(btn)
+	_close_button = Button.new()
+	_close_button.text = "CLOSE"
+	_close_button.custom_minimum_size = Vector2(0, 44)
+	_close_button.add_theme_font_size_override("font_size", 16)
+	_close_button.add_theme_color_override("font_color", Color(0.85, 0.98, 0.85, 1.0))
+	_close_button.add_theme_stylebox_override("normal",  style_normal)
+	_close_button.add_theme_stylebox_override("hover",   style_hover)
+	_close_button.add_theme_stylebox_override("pressed", style_normal)
+	_close_button.pressed.connect(_close_controls)
+	vbox.add_child(_close_button)
+
+func show_controls() -> void:
+	visible = true
+	_close_button.call_deferred("grab_focus")
+
+func _close_controls() -> void:
+	visible = false
+	var controls_button := get_node_or_null("../PauseMenu/VBoxContainer/ControlsButton") as Button
+	if controls_button != null and controls_button.is_visible_in_tree():
+		controls_button.call_deferred("grab_focus")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_H and event.pressed and not event.echo:
-		visible = not visible
+		if visible:
+			_close_controls()
+		else:
+			show_controls()
+		get_viewport().set_input_as_handled()
+	elif visible and event.is_action_pressed("ui_cancel"):
+		_close_controls()
 		get_viewport().set_input_as_handled()

@@ -22,6 +22,15 @@
 - [ ] Choose a license before publishing source code
 - [ ] Upload the packaged build to a release page or game platform rather than committing it to Git
 
+## Completed in Phase 7
+
+- [x] Persistent five-level campaign unlocks with existing-score migration
+- [x] Level Select best-score presentation and Continue behavior
+- [x] Controller gameplay, camera, pause, results, and menu navigation
+- [x] Deterministic focus for menu and pause UI
+- [x] Debug diagnostics disabled in release exports
+- [x] Automated campaign, input, focus, and release-gating validation
+
 ## Suggested video shot list
 
 1. Open with Festival or Lakeside for the strongest color palette.

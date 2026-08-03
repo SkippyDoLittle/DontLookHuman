@@ -8,6 +8,7 @@ extends CharacterBody3D
 @export var run_speed:       float = 4.0
 @export var turn_speed:        float = 10.0
 @export var mouse_sensitivity: float = 0.003
+@export var controller_look_speed: float = 2.4
 @export var peck_duration:   float = 0.55
 @export var peck_cooldown:   float = 0.3
 @export var max_stamina:     float = 100.0
@@ -95,7 +96,27 @@ func _input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_zoom_target = clampf(_zoom_target + zoom_step, ZOOM_MIN, ZOOM_MAX)
 
+func _update_controller_camera(delta: float) -> void:
+	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
+		return
+
+	var look_input := Input.get_vector("look_left", "look_right", "look_up", "look_down")
+	if look_input.length_squared() > 0.001:
+		camera_yaw -= look_input.x * controller_look_speed * delta
+		camera_pitch = clampf(
+			camera_pitch - look_input.y * controller_look_speed * delta,
+			-1.1,
+			0.5
+		)
+		spring_arm.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
+
+	if Input.is_action_just_pressed("zoom_in"):
+		_zoom_target = clampf(_zoom_target - zoom_step, ZOOM_MIN, ZOOM_MAX)
+	elif Input.is_action_just_pressed("zoom_out"):
+		_zoom_target = clampf(_zoom_target + zoom_step, ZOOM_MIN, ZOOM_MAX)
+
 func _physics_process(delta: float) -> void:
+	_update_controller_camera(delta)
 
 	# ── CAMERA ZOOM ──────────────────────────────────────────────────────────────
 	# Smoothly ease spring_length toward wherever the scroll wheel last set it.

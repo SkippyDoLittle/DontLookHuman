@@ -40,6 +40,7 @@ var _grade_thresholds: Array[float] = ScoreManager.default_thresholds()
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
 var _score_store := BestScoreStore.new()
+var _progress_store := CampaignProgressStore.new()
 var _hud := SessionHUDController.new()
 var _transition := TransitionController.new()
 
@@ -146,6 +147,7 @@ func _process_active_session(delta: float) -> void:
 
 func _pause_session() -> void:
 	_pause_menu.visible = true
+	_pause_menu.call_deferred("focus_resume")
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	_set_state(SessionState.PAUSED)
@@ -238,6 +240,8 @@ func _finish(success: bool, headline: String) -> void:
 	var is_new_best: bool = success and score > 0 and score > best_score
 	if is_new_best:
 		_score_store.save_best(level_id, score)
+	if success:
+		_progress_store.record_completion(level_id)
 
 	_hud.show_result(
 		headline,

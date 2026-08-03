@@ -190,15 +190,15 @@ horizontal_alignment = 1
 [node name="ControlsLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000025]
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(0.80, 0.92, 0.80, 1.0)
-text = "WASD               Move
-Shift              Sprint  (drains stamina bar)
-E                  Peck food  (can't sprint while pecking)
-Esc                Pause / resume
-R                  Retry current level
-Space              Next level  (after a successful escape)
-Mouse              Rotate camera
-Scroll Wheel       Zoom camera in / out
-H                  Controls reference  (in-game)"
+text = "WASD / Left Stick       Move
+Shift / Left Shoulder   Sprint  (drains stamina)
+E / A                   Peck food
+Esc / Start             Pause / resume
+R / Y                   Retry current level
+Space / A               Start or continue
+Mouse / Right Stick     Rotate camera
+Scroll / D-pad Up/Down  Zoom camera
+H / B                   Close controls"
 horizontal_alignment = 1
 
 [node name="Spacer2" type="Control" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000026]

@@ -45,6 +45,10 @@ func _on_resume_pressed() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	resumed.emit()
 
+func focus_resume() -> void:
+	if visible and is_instance_valid(_resume_btn):
+		_resume_btn.grab_focus()
+
 func _on_main_menu_pressed() -> void:
 	# Unpause before changing scene — otherwise MainMenu.tscn inherits the paused state.
 	get_tree().paused = false
@@ -61,7 +65,10 @@ func _on_controls_pressed() -> void:
 	# Open the in-game controls screen (HowToPlayScreen). H key or its CLOSE button dismisses it.
 	var htp := get_node_or_null("../HowToPlayScreen")
 	if htp:
-		htp.visible = true
+		if htp.has_method("show_controls"):
+			htp.call("show_controls")
+		else:
+			htp.visible = true
 
 func _on_music_slider_changed(value: float) -> void:
 	SoundManager.set_music_volume(value)

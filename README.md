@@ -18,18 +18,18 @@ Steal every food item, manage ranger suspicion by blending into the flock, and r
 
 ## Controls
 
-| Input | Action |
-|---|---|
-| `WASD` | Move |
-| `Shift` | Sprint |
-| `E` | Peck and collect nearby food |
-| Mouse | Rotate camera |
-| Mouse wheel | Zoom |
-| `Escape` | Pause or resume |
-| `R` | Restart after a result |
-| `Space` | Start or continue to the next level |
-| `H` | In-game controls reference |
-| `F3` | Development/debug overlay |
+| Keyboard and mouse | Controller | Action |
+|---|---|---|
+| `WASD` | Left stick | Move |
+| `Shift` | Left shoulder | Sprint |
+| `E` | A | Peck and collect nearby food |
+| Mouse | Right stick | Rotate camera |
+| Mouse wheel | D-pad up/down | Zoom |
+| `Escape` | Start | Pause or resume |
+| `R` | Y | Restart after a result |
+| `Space` | A | Start or continue to the next level |
+| `H` | Pause menu → Controls | In-game controls reference |
+| `F3` | — | Debug-build diagnostics overlay |
 
 ## Highlights
 
@@ -37,7 +37,9 @@ Steal every food item, manage ranger suspicion by blending into the flock, and r
 - Rangers use patrol, investigate, and chase states with level-specific tuning.
 - NPC pigeons provide blending cover and react to the closest ranger.
 - Five levels share reusable player, HUD, session, ranger, prop, food, water, and escape components.
-- Per-level scores, grade thresholds, timers, progression, and dynamic collectible counts.
+- Persistent campaign unlocks and per-level best-score presentation.
+- Per-level grade thresholds, timers, progression paths, and dynamic collectible counts.
+- Full keyboard/mouse and controller gameplay plus menu navigation.
 - Dynamic minimap support for arbitrary ranger and collectible counts.
 - Procedural ambient audio and sound effects.
 - MultiMesh scenery for large prop populations.
@@ -49,7 +51,7 @@ Requirements: Godot 4.7 or a compatible Godot 4 release.
 
 1. Open `project.godot` in Godot.
 2. Run the project with the editor's Play button.
-3. Select **Play** for the campaign or **Level Select** to inspect a particular map.
+3. Select **Play** to start or continue the campaign. **Level Select** replays unlocked maps and shows their best scores.
 
 From PowerShell:
 
@@ -67,9 +69,10 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/pha
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase4_ranger_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase5_balance_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase6_reliability_validation.gd
+Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase7_release_validation.gd
 ```
 
-The `F3` overlay shows the current level ID, session state, remaining collectibles, player water state, FPS, and every ranger's state and suspicion.
+In debug builds, the `F3` overlay shows the current level ID, session state, remaining collectibles, player water state, FPS, and every ranger's state and suspicion. Release exports disable the overlay.
 
 ## Screenshots
 

@@ -5,18 +5,28 @@ const RANGER_STATE_NAMES: Array[String] = ["PATROL", "INVESTIGATE", "CHASE"]
 const SESSION_STATE_NAMES: Array[String] = ["TITLE", "COUNTDOWN", "ACTIVE", "PAUSED", "FINISHED"]
 
 @export_range(0.05, 2.0, 0.05) var update_interval: float = 0.20
+@export var allow_in_release: bool = false
 
 @onready var _label: Label = $MarginContainer/DebugText
 
 var _level_root: Node
 var _elapsed: float = 0.0
+var diagnostics_enabled: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_level_root = get_parent().get_parent()
+	set_diagnostics_enabled(OS.is_debug_build() or allow_in_release)
+
+func set_diagnostics_enabled(enabled: bool) -> void:
+	diagnostics_enabled = enabled
 	visible = false
+	set_process(enabled)
+	set_process_unhandled_input(enabled)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not diagnostics_enabled:
+		return
 	if (
 		event is InputEventKey
 		and event.pressed

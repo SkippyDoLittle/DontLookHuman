@@ -25,7 +25,7 @@ func configure(level_root: Node) -> void:
 
 func add_controls_hint() -> Label:
 	_help_hint = Label.new()
-	_help_hint.text = "H — controls"
+	_help_hint.text = "H / Pause menu - controls"
 	_help_hint.add_theme_font_size_override("font_size", 13)
 	_help_hint.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.60))
 	_help_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
@@ -107,11 +107,11 @@ func show_result(
 		_result_label.text += "\nBest score: %d pts" % best_score
 
 	if success and has_next_level:
-		_result_label.text += "\n\nSPACE — next level    R — restart"
+		_result_label.text += "\n\nSPACE / A - next level    R / Y - restart"
 	elif success:
-		_result_label.text += "\n\n★  ALL LEVELS COMPLETE!  ★\nPress R to play again"
+		_result_label.text += "\n\n★  ALL LEVELS COMPLETE!  ★\nPress R / Y to play again"
 	else:
-		_result_label.text += "\n\nPress R to retry"
+		_result_label.text += "\n\nPress R / Y to retry"
 
 	_result_label.modulate = Color(0.35, 1.0, 0.45) if success else Color(1.0, 0.35, 0.35)
 	_result_bg.color = Color(0.03, 0.14, 0.06, 0.88) if success else Color(0.14, 0.03, 0.03, 0.88)

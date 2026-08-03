@@ -1311,7 +1311,7 @@ offset_bottom = 50.0
 theme_override_font_sizes/font_size = 26
 text = "READY?
 
-Press SPACE to begin"
+Press SPACE / A to begin"
 horizontal_alignment = 1
 vertical_alignment = 1
 

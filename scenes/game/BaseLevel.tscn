@@ -87,7 +87,7 @@ offset_top = -60.0
 offset_right = 200.0
 offset_bottom = 60.0
 theme_override_font_sizes/font_size = 24
-text = "READY?\n\nPress SPACE to begin"
+text = "READY?\n\nPress SPACE / A to begin"
 horizontal_alignment = 1
 vertical_alignment = 1
 
