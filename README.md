@@ -2,7 +2,7 @@
 
 Don't Look Human is a short 3D behavior-stealth game built with Godot 4. You play a suspiciously intelligent pigeon stealing picnic food while trying to move like an ordinary park animal. Sprinting, staring at rangers, walking too directly, standing alone, or lingering in water can expose you.
 
-![Park Festival gameplay](docs/screenshots/level_04_festival.png)
+![Don't Look Human store artwork](docs/branding/store_capsule.png)
 
 ## Gameplay
 
@@ -38,6 +38,7 @@ Steal every food item, manage ranger suspicion by blending into the flock, and r
 - NPC pigeons provide blending cover and react to the closest ranger.
 - Five levels share reusable player, HUD, session, ranger, prop, food, water, and escape components.
 - Persistent campaign unlocks and per-level best-score presentation.
+- Confirmed campaign-and-record reset plus persistent camera sensitivity and inverted-Y settings.
 - Per-level grade thresholds, timers, progression paths, and dynamic collectible counts.
 - Full keyboard/mouse and controller gameplay plus menu navigation.
 - Frozen result screens with focused next-level, replay, campaign replay, and main-menu actions.
@@ -72,6 +73,7 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/pha
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase6_reliability_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase7_release_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase8_ux_validation.gd
+Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase9_publishing_validation.gd
 ```
 
 In debug builds, the `F3` overlay shows the current level ID, session state, remaining collectibles, player water state, FPS, and every ranger's state and suspicion. Release exports disable the overlay.
@@ -98,5 +100,6 @@ In debug builds, the `F3` overlay shows the current level ID, session state, rem
 - [Level balance targets](docs/level_balance.md)
 - [Known issues and limitations](docs/known_issues.md)
 - [Portfolio and release checklist](docs/portfolio_checklist.md)
+- [Publishing status](docs/publishing.md)
 
 Windows export settings are included in `export_presets.cfg`. Generated exports and ZIP packages are intentionally ignored by Git.

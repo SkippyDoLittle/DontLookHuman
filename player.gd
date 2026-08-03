@@ -3,12 +3,17 @@
 
 extends CharacterBody3D
 
+const SETTINGS_PATH: String = "user://settings.cfg"
+
+@export var settings_path: String = SETTINGS_PATH
+
 # Inspector-tunable values
 @export var walk_speed:      float = 1.2
 @export var run_speed:       float = 4.0
 @export var turn_speed:        float = 10.0
 @export var mouse_sensitivity: float = 0.003
 @export var controller_look_speed: float = 2.4
+@export var invert_camera_y: bool = false
 @export var peck_duration:   float = 0.55
 @export var peck_cooldown:   float = 0.3
 @export var max_stamina:     float = 100.0
@@ -64,6 +69,7 @@ var _zoom_target: float = 4.0
 @onready var _stamina_bar:  ProgressBar   = get_node("../HUD/StaminaBar")
 
 func _ready() -> void:
+	_load_camera_settings()
 	# Record rest positions so peck and bob animations know where to return to.
 	head_y_rest = head.position.y
 	beak_y_rest = beak.position.y
@@ -84,7 +90,8 @@ func _input(event: InputEvent) -> void:
 
 	if event is InputEventMouseMotion:
 		camera_yaw   -= event.relative.x * mouse_sensitivity
-		camera_pitch -= event.relative.y * mouse_sensitivity
+		var pitch_direction := 1.0 if invert_camera_y else -1.0
+		camera_pitch += event.relative.y * mouse_sensitivity * pitch_direction
 		# Clamp pitch: negative = looking up, positive = looking down at the character.
 		camera_pitch  = clampf(camera_pitch, -1.1, 0.5)
 		spring_arm.rotation = Vector3(camera_pitch, camera_yaw, 0.0)
@@ -103,8 +110,9 @@ func _update_controller_camera(delta: float) -> void:
 	var look_input := Input.get_vector("look_left", "look_right", "look_up", "look_down")
 	if look_input.length_squared() > 0.001:
 		camera_yaw -= look_input.x * controller_look_speed * delta
+		var pitch_direction := 1.0 if invert_camera_y else -1.0
 		camera_pitch = clampf(
-			camera_pitch - look_input.y * controller_look_speed * delta,
+			camera_pitch + look_input.y * controller_look_speed * delta * pitch_direction,
 			-1.1,
 			0.5
 		)
@@ -114,6 +122,22 @@ func _update_controller_camera(delta: float) -> void:
 		_zoom_target = clampf(_zoom_target - zoom_step, ZOOM_MIN, ZOOM_MAX)
 	elif Input.is_action_just_pressed("zoom_out"):
 		_zoom_target = clampf(_zoom_target + zoom_step, ZOOM_MIN, ZOOM_MAX)
+
+func _load_camera_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(settings_path) != OK:
+		return
+	mouse_sensitivity = clampf(
+		float(config.get_value("camera", "mouse_sensitivity", mouse_sensitivity)),
+		0.001,
+		0.008
+	)
+	controller_look_speed = clampf(
+		float(config.get_value("camera", "controller_sensitivity", controller_look_speed)),
+		0.8,
+		4.5
+	)
+	invert_camera_y = bool(config.get_value("camera", "invert_y", invert_camera_y))
 
 func _physics_process(delta: float) -> void:
 	_update_controller_camera(delta)

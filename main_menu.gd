@@ -32,7 +32,11 @@ const LEVEL_NAMES: Array[String] = [
 @onready var _levelselect_panel: Control       = $CanvasLayer/LevelSelectPanel
 @onready var _music_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider
 @onready var _sfx_slider:       HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider
+@onready var _mouse_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MouseSensitivitySlider
+@onready var _controller_slider: HSlider      = $CanvasLayer/SettingsPanel/VBoxContainer/ControllerSensitivitySlider
+@onready var _invert_y_check:   CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/InvertYCheck
 @onready var _fullscreen_check: CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/FullscreenCheck
+@onready var _reset_dialog: ConfirmationDialog = $CanvasLayer/ResetCampaignDialog
 @onready var _play_button:      Button        = $CanvasLayer/MainPanel/PlayButton
 @onready var _level_buttons: Array[Button] = [
 	$CanvasLayer/LevelSelectPanel/VBoxContainer/Level1Button,
@@ -45,6 +49,7 @@ const LEVEL_NAMES: Array[String] = [
 var _score_store := BestScoreStore.new()
 var _progress_store := CampaignProgressStore.new()
 var _continue_level_index: int = 0
+var settings_path: String = SETTINGS_PATH
 
 func _ready() -> void:
 	_migrate_score_progress()
@@ -139,6 +144,12 @@ func _on_sfx_slider_changed(value: float) -> void:
 	SoundManager.set_sfx_volume(value)
 	_save_settings()
 
+func _on_camera_setting_changed(_value: float = 0.0) -> void:
+	_save_settings()
+
+func _on_invert_y_toggled(_pressed: bool) -> void:
+	_save_settings()
+
 func _on_fullscreen_toggled(pressed: bool) -> void:
 	if pressed:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
@@ -146,19 +157,39 @@ func _on_fullscreen_toggled(pressed: bool) -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	_save_settings()
 
+func _on_reset_campaign_pressed() -> void:
+	_reset_dialog.popup_centered(Vector2i(480, 220))
+
+func _on_reset_campaign_confirmed() -> void:
+	var progress_error := _progress_store.clear_all()
+	var score_error := _score_store.clear_all()
+	if progress_error != OK or score_error != OK:
+		push_warning(
+			"Could not fully reset campaign data (progress %d, scores %d)."
+			% [progress_error, score_error]
+		)
+		return
+	_refresh_campaign_ui()
+
 func _save_settings() -> void:
 	var config := ConfigFile.new()
 	config.set_value("audio",   "music",      _music_slider.value)
 	config.set_value("audio",   "sfx",        _sfx_slider.value)
+	config.set_value("camera",  "mouse_sensitivity", _mouse_slider.value)
+	config.set_value("camera",  "controller_sensitivity", _controller_slider.value)
+	config.set_value("camera",  "invert_y", _invert_y_check.button_pressed)
 	config.set_value("display", "fullscreen",  _fullscreen_check.button_pressed)
-	config.save(SETTINGS_PATH)
+	config.save(settings_path)
 
 func _load_settings_into_ui() -> void:
 	# SoundManager already applied the saved volumes on startup.
 	# This only updates the slider positions to match what was loaded.
 	var config := ConfigFile.new()
-	if config.load(SETTINGS_PATH) != OK:
+	if config.load(settings_path) != OK:
 		return   # first run — UI defaults are fine
 	_music_slider.value              = config.get_value("audio",   "music",      1.0)
 	_sfx_slider.value                = config.get_value("audio",   "sfx",        1.0)
+	_mouse_slider.value              = config.get_value("camera",  "mouse_sensitivity", 0.003)
+	_controller_slider.value         = config.get_value("camera",  "controller_sensitivity", 2.4)
+	_invert_y_check.button_pressed   = config.get_value("camera",  "invert_y", false)
 	_fullscreen_check.button_pressed = config.get_value("display", "fullscreen", false)

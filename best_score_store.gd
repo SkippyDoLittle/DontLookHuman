@@ -39,6 +39,15 @@ func save_best(level_id: StringName, score: int) -> Error:
 	config.set_value(SCORE_SECTION, String(level_id), score)
 	return config.save(save_path)
 
+func clear_all() -> Error:
+	for path in [save_path, legacy_save_path]:
+		if not FileAccess.file_exists(path):
+			continue
+		var remove_error := DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+		if remove_error != OK:
+			return remove_error
+	return OK
+
 func _load_legacy_best() -> int:
 	if not FileAccess.file_exists(legacy_save_path):
 		return 0

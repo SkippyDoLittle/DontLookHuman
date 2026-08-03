@@ -51,6 +51,11 @@ func record_completion(level_id: StringName) -> Error:
 	config.set_value(CAMPAIGN_SECTION, HIGHEST_UNLOCKED_KEY, maxi(current_highest, next_index))
 	return config.save(save_path)
 
+func clear_all() -> Error:
+	if not FileAccess.file_exists(save_path):
+		return OK
+	return DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
+
 func _load_config() -> ConfigFile:
 	var config := ConfigFile.new()
 	var load_error := config.load(save_path)

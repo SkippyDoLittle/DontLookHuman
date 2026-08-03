@@ -17,7 +17,7 @@
 ## Final publishing tasks
 
 - [ ] Replace the automated preview with a hand-edited 20–30 second trailer showing a full escape
-- [ ] Add a final game icon and store capsule art
+- [x] Add a final game icon and store capsule art
 - [ ] Perform a clean-machine Windows playtest of the exported executable
 - [ ] Choose a license before publishing source code
 - [ ] Upload the packaged build to a release page or game platform rather than committing it to Git
@@ -37,6 +37,14 @@
 - [x] Modal controls overlay that cannot accidentally resume gameplay
 - [x] Lightweight ranger and visitor obstacle recovery
 - [x] Automated result, pause-modal, and obstacle-recovery validation
+
+## Completed in Phase 9
+
+- [x] Confirmed Reset Campaign & Scores flow
+- [x] Persistent mouse/controller sensitivity and inverted-Y settings
+- [x] Original low-poly pigeon icon and wide store capsule
+- [x] Windows `0.9.0` release-candidate metadata
+- [x] Publishing-status documentation and automated publishing validation
 
 ## Suggested video shot list
 

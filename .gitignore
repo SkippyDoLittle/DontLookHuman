@@ -10,3 +10,4 @@
 
 # Documentation media is not a runtime Godot resource.
 /docs/screenshots/*.png.import
+/docs/branding/*.png.import

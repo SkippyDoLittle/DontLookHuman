@@ -2,7 +2,7 @@
 
 The current build is a polished prototype, not a content-complete commercial release.
 
-- Keyboard/mouse and standard controller layouts are supported. Input remapping and accessibility presets are not implemented yet.
+- Keyboard/mouse and standard controller layouts are supported, including camera sensitivity and invert-Y options. Input remapping and broader accessibility presets are not implemented yet.
 - Rangers and visitors use lightweight collision recovery rather than a full navigation mesh, so movement around unusually complex obstacle layouts may still be imperfect.
 - Best records store the highest score per level. They do not retain a separate fastest-time leaderboard when two runs earn the same score tier.
 - The visuals and procedural audio are prototype-quality and use simple low-poly geometry rather than a final authored asset set.

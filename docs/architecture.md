@@ -31,7 +31,9 @@ Rangers and pigeons use groups rather than exact numbered node names. This allow
 
 ## Level configuration and persistence
 
-Each `LevelConfig` contains a stable save key, display text, time limit, next-level path, and Lightning/Great/Nice grade thresholds. Best scores use one `ConfigFile` key per level. Campaign state uses `user://campaign_progress.cfg`; existing per-level records are migrated into equivalent unlock progress. The earlier shared `user://best_score.dat` value remains readable as a Level 1 fallback, avoiding destructive migration.
+Each `LevelConfig` contains a stable save key, display text, time limit, next-level path, and Lightning/Great/Nice grade thresholds. Best scores use one `ConfigFile` key per level. Campaign state uses `user://campaign_progress.cfg`; existing per-level records are migrated into equivalent unlock progress. The earlier shared `user://best_score.dat` value remains readable as a Level 1 fallback, avoiding destructive migration. Settings offers a confirmed reset that clears campaign, current records, and the legacy fallback together.
+
+Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with audio and display preferences. Player instances load those camera values during `_ready()`.
 
 ## Reusable world systems
 
@@ -43,6 +45,6 @@ Each `LevelConfig` contains a stable save key, display text, time limit, next-le
 
 ## Verification
 
-Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks, dynamic collectibles, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, and release/debug diagnostics behavior.
+Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, and release/debug diagnostics behavior.
 
 `tools/capture_portfolio_screenshots.gd` reproduces the five portfolio screenshots from the actual scenes. `tools/capture_gameplay_video.gd` supplies a repeatable ten-second Festival demo route for Godot's Movie Maker mode.
