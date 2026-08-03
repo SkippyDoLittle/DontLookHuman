@@ -32,7 +32,7 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 @export var straight_line_gain_per_second: float = 10.0
 @export var still_threshold:           float = 3.5    # seconds motionless before suspicion rises
 @export var still_gain_per_second:     float = 8.0
-# Set false on Ranger2 so it runs full AI but leaves all HUD writes to the primary ranger.
+# Set false on secondary rangers so only the primary ranger writes to the shared HUD.
 @export var is_primary:                bool  = true
 
 # ── Node references ──────────────────────────────────────────────────────────────
@@ -64,17 +64,10 @@ var _straight_time:   float   = 0.0
 var _last_move_dir:   Vector2  = Vector2.ZERO   # player's movement direction last frame
 var _still_time:      float   = 0.0
 
-var npc_animals: Array = []
-
 func _ready() -> void:
 	add_to_group("rangers")
 	choose_new_patrol_direction()
 	_alert_label.visible = false
-
-	for npc_name in ["NPC_Animal", "NPC_Animal2", "NPC_Animal3", "NPC_Animal4", "NPC_Animal5"]:
-		var npc := get_node_or_null("../" + npc_name)
-		if npc:
-			npc_animals.append(npc)
 
 func _process(delta: float) -> void:
 	_desired_move = Vector3.ZERO
@@ -351,8 +344,13 @@ func _is_facing_ranger() -> bool:
 	return forward.normalized().dot(to_ranger.normalized()) >= stare_threshold
 
 func _is_isolated() -> bool:
-	for npc in npc_animals:
-		if is_instance_valid(npc) and player.global_position.distance_to(npc.global_position) <= separation_distance:
+	var separation_distance_squared := separation_distance * separation_distance
+	for npc in get_tree().get_nodes_in_group("pigeons"):
+		if (
+			is_instance_valid(npc)
+			and npc is Node3D
+			and player.global_position.distance_squared_to(npc.global_position) <= separation_distance_squared
+		):
 			return false   # at least one NPC is close enough — not isolated
 	return true
 

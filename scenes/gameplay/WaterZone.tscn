@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://water_zone.gd" id="1_water"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_pond"]
+points = PackedVector3Array(1.6, -0.5, 0, 1.131, -0.5, 0.815, 0, -0.5, 1.152, -1.131, -0.5, 0.815, -1.6, -0.5, 0, -1.131, -0.5, -0.815, 0, -0.5, -1.152, 1.131, -0.5, -0.815, 1.6, 1.5, 0, 1.131, 1.5, 0.815, 0, 1.5, 1.152, -1.131, 1.5, 0.815, -1.6, 1.5, 0, -1.131, 1.5, -0.815, 0, 1.5, -1.152, 1.131, 1.5, -0.815)
+
+[node name="WaterZone" type="Area3D"]
+script = ExtResource("1_water")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_pond")

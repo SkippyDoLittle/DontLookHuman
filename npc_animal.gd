@@ -1,5 +1,5 @@
-# npc_animal.gd — Attached to NPC_Animal, NPC_Animal2 … NPC_Animal5 in Main.tscn
-# Background pigeon NPCs that wander, pause-and-peck, and flee from the ranger.
+# npc_animal.gd — Attached to reusable and procedurally spawned pigeon NPCs.
+# Background pigeon NPCs that wander, pause-and-peck, and flee from nearby rangers.
 # Their presence near the player reduces "Acting alone" suspicion.
 
 extends CharacterBody3D
@@ -18,7 +18,8 @@ const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for su
 
 @onready var head:   MeshInstance3D = $PigeonVisual/Head
 @onready var beak:   MeshInstance3D = $PigeonVisual/Beak
-@onready var ranger: Node3D         = get_node_or_null("../Ranger")   # null-safe; validated each frame
+
+var ranger: Node3D = null   # closest valid ranger, refreshed each frame
 
 var direction:         Vector3 = Vector3.FORWARD
 var time_until_change: float   = 0.0
@@ -42,6 +43,8 @@ var _peck_sfx:  AudioStreamPlayer3D         # 3D positional audio — fades with
 var _step_sfx:  AudioStreamPlayer3D
 
 func _ready() -> void:
+	add_to_group("pigeons")
+
 	head_y_rest = head.position.y
 	beak_y_rest = beak.position.y
 	head_z_rest = head.position.z
@@ -71,6 +74,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_desired_move = Vector3.ZERO
 	_update_peck(delta)
+	ranger = _find_nearest_ranger()
 
 	if is_instance_valid(ranger):
 		is_fleeing = global_position.distance_to(ranger.global_position) < flee_distance
@@ -83,6 +87,21 @@ func _process(delta: float) -> void:
 		_do_wander(delta)
 
 	_update_walk_bob(delta)
+
+func _find_nearest_ranger() -> Node3D:
+	var nearest: Node3D = null
+	var nearest_distance_squared: float = INF
+
+	for candidate in get_tree().get_nodes_in_group("rangers"):
+		if not candidate is Node3D:
+			continue
+		var candidate_node := candidate as Node3D
+		var distance_squared := global_position.distance_squared_to(candidate_node.global_position)
+		if distance_squared < nearest_distance_squared:
+			nearest = candidate_node
+			nearest_distance_squared = distance_squared
+
+	return nearest
 
 func _physics_process(delta: float) -> void:
 	velocity.x = _desired_move.x

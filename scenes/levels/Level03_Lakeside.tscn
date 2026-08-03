@@ -24,6 +24,7 @@
 [ext_resource type="Script" uid="uid://ctqmerfs2ha5n" path="res://pigeon_scatter.gd" id="22_pigeon_sct"]
 [ext_resource type="Script" uid="uid://by71khwjhc3yn" path="res://visitor_scatter.gd" id="23_visitor_sct"]
 [ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd" id="25_pmenu"]
+[ext_resource type="Script" path="res://water_zone.gd" id="26_water"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
 shader = ExtResource("17_sky")
@@ -85,6 +86,7 @@ albedo_color = Color(0.06, 0.14, 0.24, 1)
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_lake"]
 radius = 3.8
+height = 3.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_dock_deck"]
 size = Vector3(1.8, 0.12, 6)
@@ -251,9 +253,10 @@ surface_material_override/0 = SubResource("StandardMaterial3D_lake")
 mesh = SubResource("CylinderMesh_lakebed")
 surface_material_override/0 = SubResource("StandardMaterial3D_lakebed")
 
-[node name="LakeCollision" type="StaticBody3D" parent="Lake" unique_id=1189636733]
+[node name="WaterZone" type="Area3D" parent="Lake" unique_id=1189636733]
+script = ExtResource("26_water")
 
-[node name="Shape" type="CollisionShape3D" parent="Lake/LakeCollision" unique_id=1328312699]
+[node name="Shape" type="CollisionShape3D" parent="Lake/WaterZone" unique_id=1328312699]
 shape = SubResource("CylinderShape3D_lake")
 
 [node name="Dock" type="Node3D" parent="." unique_id=719631754]

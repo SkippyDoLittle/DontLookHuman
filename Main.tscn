@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://trash_can_scatter.gd" id="trash_can_scatter_1"]
 [ext_resource type="Script" path="res://pigeon_scatter.gd" id="pigeon_scatter_1"]
 [ext_resource type="Script" path="res://visitor_scatter.gd" id="visitor_scatter_1"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/WaterZone.tscn" id="water_zone_1"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
 radius = 0.22
@@ -1446,6 +1447,9 @@ surface_material_override/0 = SubResource("StandardMaterial3D_ldbx0")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.003, -7)
 mesh = SubResource("CylinderMesh_pond")
 surface_material_override/0 = SubResource("StandardMaterial3D_pond_bed")
+
+[node name="WaterZone" parent="." instance=ExtResource("water_zone_1")]
+position = Vector3(-3, 0, -7)
 
 [node name="ParkVisitor1" type="CharacterBody3D" parent="." unique_id=1711111111]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.525, 4)

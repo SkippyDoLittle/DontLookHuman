@@ -46,6 +46,8 @@ var _stamina_depleted: bool  = false   # prevents exhaust sound firing every fra
 var _wall_bump_cooldown: float = 0.0  # prevents bump sound repeating every frame while held against wall
 
 var in_water: bool = false   # read by ranger.gd for suspicion; updated each frame
+var _water_zones: Dictionary = {}
+var _water_speed_multiplier: float = 1.0
 
 # Camera orbit angles — driven by mouse input in _input(), applied to spring_arm each frame.
 var camera_yaw:   float = 0.0
@@ -53,12 +55,6 @@ var camera_pitch: float = 0.0
 
 # Scroll-wheel zoom: _zoom_target is where we want to be; spring_length lerps toward it each frame.
 var _zoom_target: float = 4.0
-
-# Pond shape constants — must match the CylinderMesh in Main.tscn (z-scale 0.72 makes it oval)
-const _POND_CENTER         := Vector3(-3.0, 0.0, -7.0)
-const _POND_RADIUS_X:       float = 1.6
-const _POND_RADIUS_Z:       float = 1.6 * 0.72
-const _WATER_SPEED_FACTOR:  float = 0.5
 
 @onready var spring_arm:    SpringArm3D   = $SpringArm3D
 @onready var pigeon_visual: Node3D        = $PigeonVisual
@@ -138,12 +134,8 @@ func _physics_process(delta: float) -> void:
 	var current_speed: float = run_speed if sprinting else walk_speed
 
 	# ── WATER SLOW ───────────────────────────────────────────────────────────────
-	# Point-in-ellipse test: normalise X/Z offsets by each radius, then check unit circle.
-	var _dx: float = (global_position.x - _POND_CENTER.x) / _POND_RADIUS_X
-	var _dz: float = (global_position.z - _POND_CENTER.z) / _POND_RADIUS_Z
-	in_water = (_dx * _dx + _dz * _dz) <= 1.0
 	if in_water:
-		current_speed *= _WATER_SPEED_FACTOR
+		current_speed *= _water_speed_multiplier
 
 	# ── MOVEMENT (camera-relative) ──────────────────────────────────────────────
 	# Build world-space forward/right vectors from the camera's horizontal yaw,
@@ -247,3 +239,23 @@ func try_consume_peck() -> bool:
 		return false
 	_peck_consumed = true
 	return true
+
+func enter_water_zone(zone: Area3D, speed_multiplier: float) -> void:
+	_water_zones[zone] = clampf(speed_multiplier, 0.05, 1.0)
+	_refresh_water_state()
+
+func exit_water_zone(zone: Area3D) -> void:
+	_water_zones.erase(zone)
+	_refresh_water_state()
+
+func _refresh_water_state() -> void:
+	_water_speed_multiplier = 1.0
+	for zone in _water_zones.keys():
+		if not is_instance_valid(zone):
+			_water_zones.erase(zone)
+			continue
+		_water_speed_multiplier = minf(
+			_water_speed_multiplier,
+			float(_water_zones[zone])
+		)
+	in_water = not _water_zones.is_empty()

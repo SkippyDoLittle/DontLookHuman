@@ -30,6 +30,7 @@
 [ext_resource type="Script"                           path="res://visitor_scatter.gd"   id="23_visitor_sct"]
 [ext_resource type="Script" uid="uid://cxu6mnerk822l" path="res://how_to_play.gd"      id="24_howtoplay"]
 [ext_resource type="Script" uid="uid://c5spuv808m6cu" path="res://pause_menu.gd"       id="25_pmenu"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/WaterZone.tscn" id="26_water"]
 
 ; ── INLINE SUB-RESOURCES ──────────────────────────────────────────────────────
 ; Only resources needed by nodes that stay inline in this level file.
@@ -336,6 +337,9 @@ surface_material_override/0 = SubResource("StandardMaterial3D_water")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.72, -3, 0.003, -7)
 mesh = SubResource("CylinderMesh_pond")
 surface_material_override/0 = SubResource("StandardMaterial3D_pond_bed")
+
+[node name="WaterZone" parent="." instance=ExtResource("26_water")]
+position = Vector3(-3, 0, -7)
 
 ; ── TITLE SCREEN ──────────────────────────────────────────────────────────────
 [node name="TitleScreen" type="CanvasLayer" parent="."]
