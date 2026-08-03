@@ -45,6 +45,13 @@ var _countdown_timer: float = 0.0
 var _help_hint:      Label  = null
 
 func _ready() -> void:
+	var config: LevelConfig = null
+	if get_parent() is BaseLevel:
+		config = (get_parent() as BaseLevel).level_config
+	if config != null:
+		time_limit = config.time_limit
+		next_level_scene = config.next_level_scene
+
 	# SoundManager persists between scenes, so restart ambience if the previous
 	# level's result screen stopped it.
 	SoundManager.start_ambient()

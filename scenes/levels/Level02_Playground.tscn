@@ -1,11 +1,9 @@
 [gd_scene format=3 uid="uid://dwxes5r7rvilt"]
 
 ; ── EXTERNAL RESOURCES ────────────────────────────────────────────────────────
-[ext_resource type="PackedScene" uid="uid://scplayertscn1"  path="res://scenes/actors/Player.tscn"                   id="1_player"]
 [ext_resource type="PackedScene" uid="uid://scpgnnpctscn1"  path="res://scenes/actors/PigeonNPC.tscn"                 id="2_pigeon"]
 [ext_resource type="PackedScene" uid="uid://scrangertscn1"  path="res://scenes/actors/Ranger.tscn"                   id="3_ranger"]
 [ext_resource type="PackedScene" uid="uid://scvisitortscn"  path="res://scenes/actors/Visitor.tscn"                  id="4_visitor"]
-[ext_resource type="PackedScene" uid="uid://schud000tscn01" path="res://scenes/game/HUD.tscn"                        id="5_hud"]
 [ext_resource type="PackedScene" uid="uid://scesczonetscn"  path="res://scenes/gameplay/EscapeZone.tscn"             id="6_escape"]
 [ext_resource type="PackedScene" uid="uid://scbread0tscn1"  path="res://scenes/gameplay/PicnicFood_Bread.tscn"       id="7_bread"]
 [ext_resource type="PackedScene" uid="uid://scfries0tscn1"  path="res://scenes/gameplay/PicnicFood_Fries.tscn"       id="8_fries"]
@@ -16,7 +14,6 @@
 [ext_resource type="PackedScene" uid="uid://scbench0tscn01" path="res://scenes/props/Bench.tscn"                     id="13_bench"]
 [ext_resource type="PackedScene" uid="uid://scptable0tscn1" path="res://scenes/props/PicnicTable.tscn"               id="14_table"]
 [ext_resource type="PackedScene" uid="uid://sctrash0tscn01" path="res://scenes/props/TrashCan.tscn"                  id="15_trash"]
-[ext_resource type="Script" uid="uid://n0wwguurpwxa"        path="res://game_timer.gd"                               id="16_gtmr"]
 [ext_resource type="Shader"                                  path="res://sky.gdshader"                                id="17_sky"]
 [ext_resource type="Script"                                  path="res://tree_scatter.gd"                             id="18_tree_sct"]
 [ext_resource type="Script"                                  path="res://bench_scatter.gd"                            id="19_bench_sct"]
@@ -24,7 +21,8 @@
 [ext_resource type="Script"                                  path="res://trash_can_scatter.gd"                        id="21_trash_sct"]
 [ext_resource type="Script"                                  path="res://pigeon_scatter.gd"                           id="22_pigeon_sct"]
 [ext_resource type="Script"                                  path="res://visitor_scatter.gd"                          id="23_visitor_sct"]
-[ext_resource type="Script" uid="uid://c5spuv808m6cu"       path="res://pause_menu.gd"                               id="25_pmenu"]
+[ext_resource type="PackedScene" path="res://scenes/game/BaseLevel.tscn" id="27_base"]
+[ext_resource type="Script" path="res://level_config.gd" id="28_level_config"]
 
 ; ── INLINE SUB-RESOURCES ──────────────────────────────────────────────────────
 
@@ -104,58 +102,16 @@ size = Vector3(0.42, 0.06, 0.22)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_seat"]
 albedo_color = Color(0.22, 0.18, 0.14, 1)
 
-; Pause menu button styles
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-bg_color = Color(0.06, 0.13, 0.06, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.22, 0.52, 0.22, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
+[sub_resource type="Resource" id="LevelConfig_level"]
+script = ExtResource("28_level_config")
+level_id = &"level_02"
+display_name = "Playground"
+time_limit = 85.0
+next_level_scene = "res://scenes/levels/Level03_Lakeside.tscn"
+intro_text = "LEVEL 2: PLAYGROUND\nWatch out — it's crowded out there.\n\nPress SPACE to begin"
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_p"]
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-bg_color = Color(0.03, 0.07, 0.03, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.18, 0.4, 0.18, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_h"]
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-bg_color = Color(0.11, 0.24, 0.11, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.35, 0.7, 0.35, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-; ── SCENE TREE ────────────────────────────────────────────────────────────────
-
-[node name="Level02_Playground" type="Node3D"]
+[node name="Level02_Playground" instance=ExtResource("27_base")]
+level_config = SubResource("LevelConfig_level")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
@@ -190,7 +146,7 @@ script = ExtResource("22_pigeon_sct")
 script = ExtResource("23_visitor_sct")
 
 ; ── PLAYER ────────────────────────────────────────────────────────────────────
-[node name="Player" parent="." instance=ExtResource("1_player")]
+[node name="Player" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 ; ── GROUND + WALLS ────────────────────────────────────────────────────────────
@@ -398,188 +354,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 
 [node name="TrashCan" parent="." instance=ExtResource("15_trash")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 1)
-
-; ── HUD ───────────────────────────────────────────────────────────────────────
-[node name="HUD" parent="." instance=ExtResource("5_hud")]
-
-; ── GAME MANAGER ──────────────────────────────────────────────────────────────
-[node name="GameTimer" type="Node" parent="."]
-script = ExtResource("16_gtmr")
-time_limit = 85.0
-next_level_scene = "res://scenes/levels/Level03_Lakeside.tscn"
-
-; ── TITLE SCREEN ──────────────────────────────────────────────────────────────
-[node name="TitleScreen" type="CanvasLayer" parent="."]
-layer = 10
-
-[node name="Background" type="ColorRect" parent="TitleScreen"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0.04, 0.07, 0.04, 1)
-
-[node name="StartLabel" type="Label" parent="TitleScreen"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -60.0
-offset_right = 200.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 24
-text = "LEVEL 2: PLAYGROUND
-Watch out — it's crowded out there.
-
-Press SPACE to begin"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-; ── SCENE TRANSITION OVERLAY ──────────────────────────────────────────────────
-[node name="TransitionLayer" type="CanvasLayer" parent="."]
-layer = 20
-
-[node name="FadeRect" type="ColorRect" parent="TransitionLayer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-
-; ── PAUSE MENU ────────────────────────────────────────────────────────────────
-[node name="PauseMenu" type="CanvasLayer" parent="."]
-layer = 15
-visible = false
-script = ExtResource("25_pmenu")
-
-[node name="Background" type="ColorRect" parent="PauseMenu"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0, 0.02, 0, 0.88)
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -270.0
-offset_right = 200.0
-offset_bottom = 270.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 10
-
-[node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1)
-theme_override_font_sizes/font_size = 36
-text = "PAUSED"
-horizontal_alignment = 1
-
-[node name="Divider" type="Label" parent="PauseMenu/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
-theme_override_font_sizes/font_size = 14
-text = "──────────────────────────────────"
-horizontal_alignment = 1
-
-[node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
-text = "RESUME  (Escape)"
-
-[node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
-text = "AUDIO  ▶"
-
-[node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer"]
-visible = false
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
-theme_override_font_sizes/font_size = 16
-text = "Music Volume"
-
-[node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel"]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 1.0
-
-[node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
-theme_override_font_sizes/font_size = 16
-text = "Sound Effects Volume"
-
-[node name="SFXSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel"]
-custom_minimum_size = Vector2(0, 32)
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 1.0
-
-[node name="ControlsButton" type="Button" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
-text = "CONTROLS"
-
-[node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
-theme_override_font_sizes/font_size = 14
-text = "──────────────────────────────────"
-horizontal_alignment = 1
-
-[node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
-text = "MAIN MENU"
-
-[node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1)
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
-text = "QUIT"
