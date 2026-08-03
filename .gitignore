@@ -1,3 +1,9 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Generated game exports
+/export/
+/export - Copy/
+/export.zip
+/export (3).zip
