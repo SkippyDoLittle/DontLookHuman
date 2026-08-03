@@ -6,15 +6,14 @@ extends Node3D
 
 @export var collect_distance: float = 1.2
 
-@onready var player:          Node3D = get_node("../Player") as Node3D
-@onready var objective_label: Label  = get_node("../HUD/ObjectiveStatus") as Label
+@onready var player: Node3D = get_node("../Player") as Node3D
 
 var collected: bool = false
 # Guard flag — queue_free() isn't instant, so without this the collection logic
 # could run twice in the one-frame gap before the node is actually removed.
 
 func _ready() -> void:
-	# Joining "collectibles" is how ranger.gd, escape_zone.gd, and game_timer.gd
+	# Joining "collectibles" is how ranger suspicion, EscapeZone, and GameSession
 	# all find and count food items. queue_free() removes the node from the group automatically.
 	add_to_group("collectibles")
 
@@ -29,14 +28,6 @@ func _process(_delta: float) -> void:
 		collected = true
 		SoundManager.play_collect()
 		_spawn_burst()
-
-		# Count remaining AFTER this one — still in the group until queue_free runs,
-		# so subtract 1 to get the post-collection count.
-		var remaining: int = get_tree().get_nodes_in_group("collectibles").size() - 1
-		if remaining <= 0:
-			objective_label.text = "All items stolen! Reach the exit!"
-		else:
-			objective_label.text = "%d item(s) left to steal!" % remaining
 
 		queue_free()
 

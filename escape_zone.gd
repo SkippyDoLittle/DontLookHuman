@@ -4,10 +4,10 @@
 extends Node3D
 
 signal player_escaped
+signal escape_blocked(remaining: int)
 
-@onready var player:          Node3D = get_node("../Player") as Node3D
-@onready var objective_label: Label  = get_node("../HUD/ObjectiveStatus") as Label
-@onready var exit_area:       Area3D = $ExitArea
+@onready var player: Node3D = get_node("../Player") as Node3D
+@onready var exit_area: Area3D = $ExitArea
 
 var escaped:          bool = false
 var _portal_revealed: bool = false   # guard so the reveal chime fires only once
@@ -35,9 +35,8 @@ func _on_body_entered(body: Node3D) -> void:
 
 	var items_remaining: int = get_tree().get_nodes_in_group("collectibles").size()
 	if items_remaining > 0:
-		objective_label.text = "%d item(s) still out there — steal them first!" % items_remaining
+		escape_blocked.emit(items_remaining)
 		return
 
 	escaped = true
-	objective_label.text = "YOU ESCAPED!"
 	player_escaped.emit()

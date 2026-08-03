@@ -19,6 +19,7 @@
 [ext_resource type="Script" path="res://pigeon_scatter.gd" id="pigeon_scatter_1"]
 [ext_resource type="Script" path="res://visitor_scatter.gd" id="visitor_scatter_1"]
 [ext_resource type="PackedScene" path="res://scenes/gameplay/WaterZone.tscn" id="water_zone_1"]
+[ext_resource type="Script" path="res://ranger_hud_controller.gd" id="ranger_hud_1"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_pgbody"]
 radius = 0.22
@@ -725,6 +726,7 @@ mesh = SubResource("CylinderMesh_ranger_hatcrown")
 surface_material_override/0 = SubResource("StandardMaterial3D_ranger_hat")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=289501067]
+script = ExtResource("ranger_hud_1")
 
 [node name="VignetteRect" type="ColorRect" parent="HUD" unique_id=-1961633996]
 material = SubResource("ShaderMaterial_vgnt1")

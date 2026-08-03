@@ -3,6 +3,8 @@
 
 extends CanvasLayer
 
+signal resumed
+
 const SETTINGS_PATH: String = "user://settings.cfg"
 const MENU_SCENE:    String = "res://MainMenu.tscn"
 
@@ -41,6 +43,7 @@ func _on_resume_pressed() -> void:
 	visible = false
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	resumed.emit()
 
 func _on_main_menu_pressed() -> void:
 	# Unpause before changing scene — otherwise MainMenu.tscn inherits the paused state.

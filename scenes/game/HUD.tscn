@@ -2,6 +2,7 @@
 
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="1_vgnt"]
 [ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="2_mmap"]
+[ext_resource type="Script" path="res://ranger_hud_controller.gd" id="3_ranger_hud"]
 
 ; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
 
@@ -26,8 +27,9 @@ corner_radius_bottom_left = 3
 ; ── SCENE TREE ────────────────────────────────────────────────────────────────
 
 [node name="HUD" type="CanvasLayer"]
+script = ExtResource("3_ranger_hud")
 
-; Full-screen vignette overlay — ranger.gd sets its intensity when suspicion rises.
+; Full-screen vignette overlay — RangerHUDController sets its intensity.
 [node name="VignetteRect" type="ColorRect" parent="."]
 material = SubResource("ShaderMaterial_vgnt")
 anchors_preset = 15
@@ -119,7 +121,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-; Fade-in overlay — game_timer.gd tweens its alpha from 1 to 0 on scene load.
+; Fade-in overlay — TransitionController tweens its alpha on scene load.
 [node name="FadeOverlay" type="ColorRect" parent="."]
 z_index = 100
 anchors_preset = 15
