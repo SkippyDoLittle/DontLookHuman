@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://scesczonetscn"]
 
 [ext_resource type="Script" uid="uid://dpjy1itkpqr4o" path="res://escape_zone.gd" id="1_escape"]
-[ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="2_exitarea"]
 
 ; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
 
@@ -26,9 +25,8 @@ script = ExtResource("1_escape")
 mesh = SubResource("BoxMesh_marker")
 surface_material_override/0 = SubResource("StandardMaterial3D_green")
 
-; Area3D trigger — exit_area.gd fires on body_entered to set the "escaped" flag.
+; Area3D trigger — EscapeZone owns and handles body_entered.
 [node name="ExitArea" type="Area3D" parent="."]
-script = ExtResource("2_exitarea")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ExitArea"]
 shape = SubResource("BoxShape3D_trigger")

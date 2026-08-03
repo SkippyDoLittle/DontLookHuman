@@ -5,7 +5,6 @@
 [ext_resource type="Script" uid="uid://cqvl4a5y5bpjp" path="res://ranger.gd" id="4_cm0pq"]
 [ext_resource type="Script" uid="uid://s8x4yqy1rlay" path="res://picnic_food.gd" id="5_fos0i"]
 [ext_resource type="Script" uid="uid://dpjy1itkpqr4o" path="res://escape_zone.gd" id="6_escz"]
-[ext_resource type="Script" uid="uid://c0j32a1bf6wsd" path="res://exit_area.gd" id="7_lgr22"]
 [ext_resource type="Script" uid="uid://n0wwguurpwxa" path="res://game_timer.gd" id="8_gtmr1"]
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="9_vgnt1"]
 [ext_resource type="Shader" path="res://sky.gdshader" id="sky_1"]
@@ -1015,7 +1014,6 @@ mesh = SubResource("BoxMesh_01hvr")
 surface_material_override/0 = SubResource("StandardMaterial3D_lgr22")
 
 [node name="ExitArea" type="Area3D" parent="EscapeZone" unique_id=1598190625]
-script = ExtResource("7_lgr22")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="EscapeZone/ExitArea" unique_id=636492439]
 shape = SubResource("BoxShape3D_u0gv2")

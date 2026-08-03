@@ -1,16 +1,19 @@
-# escape_zone.gd — Attached to the EscapeZone Node3D in Main.tscn
-# Controls portal visibility (hidden until all food collected) and distance-based escape detection.
-# Note: game_timer.gd reads "escaped" from exit_area.gd (the Area3D), not this script.
+# escape_zone.gd — Attached to the reusable EscapeZone scene.
+# Owns portal visibility, its Area3D trigger, and escape validation.
 
 extends Node3D
 
-@export var exit_distance: float = 2.5
+signal player_escaped
 
 @onready var player:          Node3D = get_node("../Player") as Node3D
 @onready var objective_label: Label  = get_node("../HUD/ObjectiveStatus") as Label
+@onready var exit_area:       Area3D = $ExitArea
 
 var escaped:          bool = false
 var _portal_revealed: bool = false   # guard so the reveal chime fires only once
+
+func _ready() -> void:
+	exit_area.body_entered.connect(_on_body_entered)
 
 func _process(_delta: float) -> void:
 	if escaped:
@@ -25,14 +28,16 @@ func _process(_delta: float) -> void:
 		_portal_revealed = true
 		SoundManager.play_portal()
 
-	if items_remaining > 0:
+
+func _on_body_entered(body: Node3D) -> void:
+	if escaped or body != player:
 		return
 
-	# Use 2D (XZ) distance to ignore any tiny Y-axis differences between player and portal.
-	var player_flat := Vector2(player.global_position.x, player.global_position.z)
-	var exit_flat   := Vector2(global_position.x, global_position.z)
+	var items_remaining: int = get_tree().get_nodes_in_group("collectibles").size()
+	if items_remaining > 0:
+		objective_label.text = "%d item(s) still out there — steal them first!" % items_remaining
+		return
 
-	if player_flat.distance_to(exit_flat) <= exit_distance:
-		escaped = true
-		objective_label.text = "YOU ESCAPED! City Park complete."
-		print("You escaped the park!")
+	escaped = true
+	objective_label.text = "YOU ESCAPED!"
+	player_escaped.emit()

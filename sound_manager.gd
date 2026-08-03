@@ -46,7 +46,10 @@ func _ready() -> void:
 		add_child(p)
 		p.bus = "SFX"
 
-	_ambient.play()   # loops forever; no need to call again
+	# Ambient audio is controlled independently by the Music slider. SoundManager is
+	# an autoload, so level scenes explicitly restart it through start_ambient().
+	_ambient.bus = "Music"
+	start_ambient()
 
 # ── PUBLIC API ───────────────────────────────────────────────────────────────────
 
@@ -59,7 +62,13 @@ func play_tick()    -> void: _tick.play()
 func play_portal()  -> void: _portal.play()
 func play_exhaust()   -> void: _exhaust.play()
 func play_wall_bump() -> void: _wall_bump.play()
-func stop_ambient()   -> void: _ambient.stop()
+
+func start_ambient() -> void:
+	if not _ambient.playing:
+		_ambient.play()
+
+func stop_ambient() -> void:
+	_ambient.stop()
 
 func play_step(sprint: bool) -> void:
 	if sprint: _step_run.play()

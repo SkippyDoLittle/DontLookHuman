@@ -15,7 +15,7 @@ extends Node
 @onready var objective_label:   Label        = get_node("../HUD/ObjectiveStatus")
 @onready var suspicion_bar:     ProgressBar  = get_node("../HUD/SuspicionBar")
 @onready var ranger:            Node3D       = get_node("../Ranger")   # primary ranger (kept for compatibility)
-@onready var exit_area:         Node         = get_node("../EscapeZone/ExitArea")
+@onready var escape_zone:       Node         = get_node("../EscapeZone")
 @onready var _camera:           Camera3D     = get_node("../Player/SpringArm3D/Camera3D")
 @onready var _title_screen:     CanvasLayer  = get_node("../TitleScreen")
 @onready var _exit_marker:      MeshInstance3D = get_node("../EscapeZone/ExitMarker")
@@ -45,6 +45,11 @@ var _countdown_timer: float = 0.0
 var _help_hint:      Label  = null
 
 func _ready() -> void:
+	# SoundManager persists between scenes, so restart ambience if the previous
+	# level's result screen stopped it.
+	SoundManager.start_ambient()
+	escape_zone.connect("player_escaped", _on_player_escaped)
+
 	# Fade in from black on scene load.
 	var tween := create_tween()
 	tween.tween_property(_fade_overlay, "modulate:a", 0.0, 0.8)
@@ -164,10 +169,6 @@ func _process(delta: float) -> void:
 		if is_instance_valid(r) and bool(r.get("caught")):
 			_finish(false, "CAUGHT!")
 			return
-	if bool(exit_area.get("escaped")):
-		_finish(true, "ESCAPED!")
-		return
-
 	# ── TIMER ────────────────────────────────────────────────────────────────────
 	time_remaining = maxf(time_remaining - delta, 0.0)
 	_update_timer()
@@ -187,6 +188,9 @@ func _process(delta: float) -> void:
 
 	if time_remaining <= 0.0:
 		_finish(false, "TIME'S UP!")
+
+func _on_player_escaped() -> void:
+	_finish(true, "ESCAPED!")
 
 func _update_timer() -> void:
 	# ceili() rounds UP so the display reads "1" while any fraction of a second remains.

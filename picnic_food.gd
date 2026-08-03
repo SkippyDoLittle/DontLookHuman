@@ -1,5 +1,5 @@
 # picnic_food.gd — Attached to each PicnicFood node
-# Detects proximity collection, plays effects, and removes the node.
+# Detects a nearby player peck, plays effects, and removes the node.
 # Each instance is independent — PicnicFood and PicnicFood2 have separate "collected" flags.
 
 extends Node3D
@@ -22,7 +22,10 @@ func _process(_delta: float) -> void:
 	if collected:
 		return
 
-	if global_position.distance_to(player.global_position) <= collect_distance:
+	if (
+		global_position.distance_to(player.global_position) <= collect_distance
+		and bool(player.call("try_consume_peck"))
+	):
 		collected = true
 		SoundManager.play_collect()
 		_spawn_burst()

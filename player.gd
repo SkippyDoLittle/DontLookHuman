@@ -30,6 +30,7 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var is_pecking:          bool  = false
 var peck_time:           float = 0.0
 var peck_cooldown_timer: float = 0.0
+var _peck_consumed:      bool  = false
 
 # Head/beak resting positions — recorded in _ready() so animations can offset from them.
 var head_y_rest: float = 0.0
@@ -193,6 +194,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("peck") and not is_pecking and peck_cooldown_timer <= 0.0 and not sprinting:
 		is_pecking = true
 		peck_time  = 0.0
+		_peck_consumed = false
 		SoundManager.play_peck()
 
 	# ── PECK ANIMATION ───────────────────────────────────────────────────────────
@@ -237,3 +239,11 @@ func _physics_process(delta: float) -> void:
 	if is_on_wall() and _wall_bump_cooldown <= 0.0:
 		SoundManager.play_wall_bump()
 		_wall_bump_cooldown = 0.6
+
+# Lets one nearby food item claim the current peck. Keeping this state on the
+# player prevents overlapping collectibles from all responding to the same input.
+func try_consume_peck() -> bool:
+	if not is_pecking or _peck_consumed:
+		return false
+	_peck_consumed = true
+	return true
