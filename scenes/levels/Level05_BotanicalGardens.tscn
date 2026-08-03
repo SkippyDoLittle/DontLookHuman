@@ -158,6 +158,9 @@ display_name = "Botanical Gardens"
 time_limit = 65.0
 next_level_scene = ""
 intro_text = "LEVEL 5: BOTANICAL GARDENS\nOne wrong step and you're caught.\n\nPress SPACE to begin"
+lightning_time = 32.0
+great_time = 45.0
+nice_time = 58.0
 
 [node name="Level05_BotanicalGardens" instance=ExtResource("27_base")]
 level_config = SubResource("LevelConfig_level")

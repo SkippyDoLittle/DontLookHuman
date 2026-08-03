@@ -104,6 +104,9 @@ display_name = "Festival"
 time_limit = 85.0
 next_level_scene = "res://scenes/levels/Level05_BotanicalGardens.tscn"
 intro_text = "LEVEL 4: FESTIVAL\nIt's chaos out there — use it.\n\nPress SPACE to begin"
+lightning_time = 48.0
+great_time = 65.0
+nice_time = 80.0
 
 [node name="Level04_Festival" instance=ExtResource("27_base")]
 level_config = SubResource("LevelConfig_level")

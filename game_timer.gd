@@ -27,6 +27,7 @@ var peak_suspicion: float = 0.0
 var game_over: bool = false
 var game_started: bool = false
 var state: SessionState = SessionState.TITLE
+var level_id: StringName = &"legacy_level"
 
 var _success: bool = false
 var _exit_material: StandardMaterial3D
@@ -34,6 +35,7 @@ var _exit_pulse_time: float = 0.0
 var _last_collectible_count: int = -1
 var _connected_rangers: Dictionary = {}
 var _caught_reason: String = ""
+var _grade_thresholds: Array[float] = ScoreManager.default_thresholds()
 
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
@@ -89,8 +91,14 @@ func _apply_level_config() -> void:
 	if get_parent() is BaseLevel:
 		var config := (get_parent() as BaseLevel).level_config
 		if config != null:
+			level_id = config.level_id
 			time_limit = config.time_limit
 			next_level_scene = config.next_level_scene
+			_grade_thresholds = config.grade_thresholds()
+			return
+	var scene_path := get_parent().scene_file_path
+	if not scene_path.is_empty():
+		level_id = StringName(scene_path.get_file().get_basename().to_snake_case())
 
 func _connect_components() -> void:
 	_timer.time_changed.connect(_on_time_changed)
@@ -101,6 +109,8 @@ func _connect_components() -> void:
 
 func _initialize_world_connections() -> void:
 	_connect_new_rangers()
+	items_total = get_tree().get_nodes_in_group("collectibles").size()
+	_last_collectible_count = -1
 	_refresh_collectible_count()
 
 func _begin_countdown() -> void:
@@ -220,13 +230,14 @@ func _finish(success: bool, headline: String) -> void:
 		time_limit,
 		time_remaining,
 		items_total,
-		remaining
+		remaining,
+		_grade_thresholds
 	)
-	var best_score := _score_store.load_best()
+	var best_score := _score_store.load_best(level_id)
 	var score: int = int(summary.score)
 	var is_new_best: bool = success and score > 0 and score > best_score
 	if is_new_best:
-		_score_store.save_best(score)
+		_score_store.save_best(level_id, score)
 
 	_hud.show_result(
 		headline,

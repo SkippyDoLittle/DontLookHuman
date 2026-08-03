@@ -127,6 +127,9 @@ display_name = "Lakeside"
 time_limit = 75.0
 next_level_scene = "res://scenes/levels/Level04_Festival.tscn"
 intro_text = "LEVEL 3: LAKESIDE\nDon't fall in — or get caught.\n\nPress SPACE to begin"
+lightning_time = 35.0
+great_time = 48.0
+nice_time = 65.0
 
 [node name="Level03_Lakeside" instance=ExtResource("27_base")]
 level_config = SubResource("LevelConfig_level")

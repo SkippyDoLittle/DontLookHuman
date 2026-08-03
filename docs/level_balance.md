@@ -2,13 +2,13 @@
 
 These targets describe the intended difficulty curve after the Phase 5 balance pass. Route estimates come from the shortest flat route through all five collectibles and the exit. They include a movement/interaction allowance, but they do not model collision detours, waiting for patrols, or water slowdown. Real playtest results should replace the estimates over time.
 
-| Level | Timer | Route | First-attempt target | Experienced target | Rangers | Pigeons | Visitors | Intended pressure |
-|---|---:|---:|---:|---:|---:|---:|---:|---|
-| Park | 85s | 47.5m | 60–75s | 35–45s | 2 | 13 | 8 | Tutorial: readable patrols and abundant blending cover |
-| Playground | 80s | 51.1m | 65–80s | 38–50s | 3 | 15 | 16 | Crowds and blocked sightlines with moderate detection pressure |
-| Lakeside | 75s | 41.2m | 60–75s | 35–50s | 3 | 9 | Route choice, exposed food, slower recovery, and water slowdown |
-| Festival | 85s | 57.8m | 75–85s | 45–60s | 3 | 12 | 22 | Longest route and densest moving crowd |
-| Botanical Gardens | 65s | 35.4m | 55–65s | 35–50s | 4 | 6 | Short route offset by limited cover and consistent four-ranger pressure |
+| Level | Timer | Grade thresholds | Route | First-attempt target | Experienced target | Rangers | Pigeons | Visitors | Intended pressure |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Park | 85s | 40 / 55 / 75s | 47.5m | 60–75s | 35–45s | 2 | 13 | 8 | Tutorial: readable patrols and abundant blending cover |
+| Playground | 80s | 42 / 55 / 72s | 51.1m | 65–80s | 38–50s | 3 | 15 | 16 | Crowds and blocked sightlines with moderate detection pressure |
+| Lakeside | 75s | 35 / 48 / 65s | 41.2m | 60–75s | 35–50s | 3 | 9 | 10 | Route choice, exposed food, slower recovery, and water slowdown |
+| Festival | 85s | 48 / 65 / 80s | 57.8m | 75–85s | 45–60s | 3 | 12 | 22 | Longest route and densest moving crowd |
+| Botanical Gardens | 65s | 32 / 45 / 58s | 35.4m | 55–65s | 35–50s | 4 | 6 | 7 | Short route offset by limited cover and consistent four-ranger pressure |
 
 ## Difficulty progression
 

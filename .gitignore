@@ -7,3 +7,6 @@
 /export - Copy/
 /export.zip
 /export (3).zip
+
+# Documentation media is not a runtime Godot resource.
+/docs/screenshots/*.png.import

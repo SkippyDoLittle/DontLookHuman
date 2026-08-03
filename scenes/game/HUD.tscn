@@ -1,8 +1,9 @@
-[gd_scene format=3 uid="uid://schud000tscn01"]
+[gd_scene load_steps=8 format=3 uid="uid://schud000tscn01"]
 
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="1_vgnt"]
 [ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="2_mmap"]
 [ext_resource type="Script" path="res://ranger_hud_controller.gd" id="3_ranger_hud"]
+[ext_resource type="Script" path="res://debug_overlay.gd" id="4_debug"]
 
 ; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
 
@@ -23,6 +24,18 @@ corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_debug"]
+bg_color = Color(0.02, 0.03, 0.04, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.85, 0.5, 0.8)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 ; ── SCENE TREE ────────────────────────────────────────────────────────────────
 
@@ -217,3 +230,31 @@ layout_mode = 0
 offset_right = 8.0
 offset_bottom = 8.0
 color = Color(0.2, 1, 0.3, 1)
+
+[node name="DebugOverlay" type="PanelContainer" parent="."]
+visible = false
+z_index = 200
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -350.0
+offset_top = 140.0
+offset_right = -10.0
+offset_bottom = 385.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_debug")
+script = ExtResource("4_debug")
+
+[node name="MarginContainer" type="MarginContainer" parent="DebugOverlay"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="DebugText" type="Label" parent="DebugOverlay/MarginContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 1, 0.84, 1)
+theme_override_font_sizes/font_size = 14
+text = "DEBUG — F3 to hide"

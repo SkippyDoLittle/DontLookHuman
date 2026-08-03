@@ -95,6 +95,9 @@ display_name = "Park"
 time_limit = 85.0
 next_level_scene = "res://scenes/levels/Level02_Playground.tscn"
 intro_text = "READY?\n\nPress SPACE to begin"
+lightning_time = 40.0
+great_time = 55.0
+nice_time = 75.0
 
 [node name="Level01_Park" instance=ExtResource("27_base")]
 level_config = SubResource("LevelConfig_level")
