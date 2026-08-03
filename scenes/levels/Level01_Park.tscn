@@ -92,7 +92,7 @@ albedo_color = Color(0.08, 0.18, 0.28, 1)
 script = ExtResource("28_level_config")
 level_id = &"level_01"
 display_name = "Park"
-time_limit = 90.0
+time_limit = 85.0
 next_level_scene = "res://scenes/levels/Level02_Playground.tscn"
 intro_text = "READY?\n\nPress SPACE to begin"
 
@@ -127,9 +127,11 @@ park_half_size = 18.0
 
 [node name="PigeonScatter" type="Node3D" parent="."]
 script = ExtResource("22_pigeon_sct")
+pigeon_count = 8
 
 [node name="VisitorScatter" type="Node3D" parent="."]
 script = ExtResource("23_visitor_sct")
+visitor_count = 5
 
 ; ── PLAYER ────────────────────────────────────────────────────────────────────
 [node name="Player" parent="." index="0"]
@@ -191,10 +193,32 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 2)
 ; Ranger is the primary (writes to HUD). Ranger2 runs AI silently (is_primary=false).
 [node name="Ranger" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -5)
+notice_distance = 4.5
+suspicion_gain_per_second = 18.0
+suspicion_loss_per_second = 36.0
+peck_loss_per_second = 28.0
+investigate_threshold = 75.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 10.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 4.0
+straight_line_gain_per_second = 6.0
+still_gain_per_second = 4.0
 
 [node name="Ranger2" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, 5)
 is_primary = false
+notice_distance = 4.5
+suspicion_gain_per_second = 18.0
+suspicion_loss_per_second = 36.0
+peck_loss_per_second = 28.0
+investigate_threshold = 75.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 10.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 4.0
+straight_line_gain_per_second = 6.0
+still_gain_per_second = 4.0
 
 ; ── PARK VISITORS ─────────────────────────────────────────────────────────────
 ; ParkVisitor1 is also the template for VisitorScatter (get_node_or_null("../ParkVisitor1")).

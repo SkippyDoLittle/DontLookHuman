@@ -46,6 +46,7 @@ enum RangerState { PATROL, INVESTIGATE, CHASE }
 var suspicion: float = 0.0
 var caught: bool = false
 var state: int = RangerState.PATROL
+var last_suspicion_reason: String = ""
 
 var _suspicion_model := RangerSuspicion.new()
 var _state_machine := RangerStateMachine.new()
@@ -65,6 +66,10 @@ func _process(delta: float) -> void:
 
 	var previous_suspicion := suspicion
 	var observation := _suspicion_model.update(delta)
+	var active_gain := float(observation.active_gain)
+	var reason := String(observation.reason)
+	if active_gain > 0.0 and not reason.is_empty():
+		last_suspicion_reason = reason
 	suspicion = _suspicion_model.suspicion
 	if not is_equal_approx(suspicion, previous_suspicion):
 		suspicion_changed.emit(suspicion)
@@ -88,9 +93,9 @@ func _process(delta: float) -> void:
 	_movement.update(delta, state)
 	_presentation.update(delta, state)
 	observation_changed.emit(
-		String(observation.reason),
+		reason,
 		bool(observation.is_nearby),
-		float(observation.active_gain)
+		active_gain
 	)
 
 func _physics_process(delta: float) -> void:

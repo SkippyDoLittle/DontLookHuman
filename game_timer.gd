@@ -33,6 +33,7 @@ var _exit_material: StandardMaterial3D
 var _exit_pulse_time: float = 0.0
 var _last_collectible_count: int = -1
 var _connected_rangers: Dictionary = {}
+var _caught_reason: String = ""
 
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
@@ -162,12 +163,13 @@ func _connect_new_rangers() -> void:
 			continue
 		_connected_rangers[instance_id] = ranger_node
 		ranger_node.connect("suspicion_changed", _on_ranger_suspicion_changed)
-		ranger_node.connect("player_caught", _on_ranger_caught)
+		ranger_node.connect("player_caught", _on_ranger_caught.bind(ranger_node))
 
 func _on_ranger_suspicion_changed(value: float) -> void:
 	peak_suspicion = maxf(peak_suspicion, value)
 
-func _on_ranger_caught() -> void:
+func _on_ranger_caught(ranger_node: Node) -> void:
+	_caught_reason = String(ranger_node.get("last_suspicion_reason"))
 	_finish(false, "CAUGHT!")
 
 func _refresh_collectible_count() -> int:
@@ -232,7 +234,8 @@ func _finish(success: bool, headline: String) -> void:
 		summary,
 		best_score,
 		is_new_best,
-		not next_level_scene.is_empty()
+		not next_level_scene.is_empty(),
+		_caught_reason
 	)
 	_sound_manager.call("stop_ambient")
 	level_finished.emit(success)

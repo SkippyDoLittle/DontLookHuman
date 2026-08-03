@@ -1,4 +1,4 @@
-# visitor_scatter.gd — Spawns extra background park visitors spread across the whole map.
+# visitor_scatter.gd — Spawns extra background visitors inside the playable park.
 # Attach to a VisitorScatter Node3D in Main.tscn.
 #
 # ── PERFORMANCE NOTE ──────────────────────────────────────────────────────────
@@ -7,17 +7,8 @@
 # than npc_animal.gd — no peck animation, no audio — so visitors cost less per
 # frame than pigeons.
 #
-# Combined NPC count at defaults:
-#   5  original park pigeons  (npc_animal.gd — heaviest: animation + audio)
-#   20 scatter pigeons        (npc_animal.gd)
-#   3  original park visitors (park_visitor.gd — lighter)
-#   15 scatter visitors       (park_visitor.gd)
-#   1  Ranger                 (ranger.gd)
-#   ─────────────────────────────────────────────────────
-#   44 total CharacterBody3D nodes
-#
-# On a typical modern PC this is fine.  On older/weaker hardware, reduce
-# pigeon_count in PigeonScatter and visitor_count here until frame rate is smooth.
+# Each level overrides the crowd size to support its theme. On older hardware,
+# reduce both scatter counts while keeping the hand-placed NPCs intact.
 extends Node3D
 
 # ── Tunable in Inspector ──────────────────────────────────────────────────────
@@ -28,16 +19,15 @@ extends Node3D
 # Visitors won't spawn closer than this to the world origin.
 @export var min_radius:    float = 6.0
 
-# Visitors won't spawn further than this from the world origin.
-@export var max_radius:    float = 70.0
+# Visitors stay inside the playable park walls so level crowds are visible and relevant.
+@export var max_radius:    float = 14.0
 
 # Change this number to get a completely different layout.
 @export var rng_seed:      int   = 43
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-# Clear bubble around where the player starts.
-const PLAYER_START: Vector3 = Vector3(3.0, 0.0, 0.0)
+# Clear bubble around the level's actual player spawn.
 const PLAYER_CLEAR: float   = 4.5
 
 # Minimum gap between any two spawn points so visitors don't pile up.
@@ -61,15 +51,19 @@ func _spawn() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
 
-	var positions := _gen_positions(rng)
+	var player := get_node_or_null("../Player") as Node3D
+	var player_start := player.global_position if player != null else Vector3.ZERO
+	var occupied: Array[Vector3] = []
+	for child in get_parent().get_children():
+		if child is Node3D and child.name.begins_with("ParkVisitor"):
+			occupied.append(child.global_position)
+	var positions := _gen_positions(rng, player_start, occupied)
 
 	for i in positions.size():
 		var dup := template.duplicate()
 		dup.name = "Visitor_s%d" % i
 
-		# Widen wander_radius BEFORE add_child so _ready() picks the first target
-		# in the wider range — otherwise distant visitors walk straight back to the
-		# park centre on their very first move.
+		# Set wander_radius BEFORE add_child so _ready() uses this level's playable radius.
 		dup.set("wander_radius", max_radius)
 
 		get_parent().add_child(dup)
@@ -78,7 +72,11 @@ func _spawn() -> void:
 		dup.global_position = positions[i]
 
 
-func _gen_positions(rng: RandomNumberGenerator) -> Array[Vector3]:
+func _gen_positions(
+	rng: RandomNumberGenerator,
+	player_start: Vector3,
+	occupied: Array[Vector3]
+) -> Array[Vector3]:
 	# Returns up to visitor_count well-separated spawn points in a ring around the origin.
 	var result: Array[Vector3] = []
 	var attempts := 0
@@ -91,12 +89,12 @@ func _gen_positions(rng: RandomNumberGenerator) -> Array[Vector3]:
 		var pos   := Vector3(cos(angle) * dist, VISITOR_Y, sin(angle) * dist)
 
 		# Skip if too close to player start.
-		if pos.distance_to(PLAYER_START) < PLAYER_CLEAR:
+		if Vector2(pos.x, pos.z).distance_to(Vector2(player_start.x, player_start.z)) < PLAYER_CLEAR:
 			continue
 
 		# Skip if too close to another already-chosen spawn point.
 		var too_close := false
-		for existing: Vector3 in result:
+		for existing: Vector3 in occupied + result:
 			if pos.distance_to(existing) < MIN_SEP:
 				too_close = true
 				break

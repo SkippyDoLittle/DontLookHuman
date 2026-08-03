@@ -88,24 +88,31 @@ func _validate_signal_flow() -> void:
 	ranger.connect("player_caught", func(): caught_events[0] += 1)
 
 	var suspicion_model := ranger.get("_suspicion_model") as RangerSuspicion
-	suspicion_model.suspicion = 70.0
+	suspicion_model.suspicion = 80.0
 	ranger.call("_process", 0.0)
 	_check(ranger.state == RangerStateMachine.State.INVESTIGATE, "Ranger enters investigate state")
 	_check(ranger.get_node("AlertLabel").visible, "Investigate alert is presented")
-	_check(is_equal_approx(hud.get_node("SuspicionBar").value, 70.0), "HUD receives suspicion signal")
-	_check(is_equal_approx(session.peak_suspicion, 70.0), "GameSession receives suspicion signal")
+	_check(is_equal_approx(hud.get_node("SuspicionBar").value, 80.0), "HUD receives suspicion signal")
+	_check(is_equal_approx(session.peak_suspicion, 80.0), "GameSession receives suspicion signal")
 
-	suspicion_model.suspicion = 95.0
+	suspicion_model.suspicion = 97.0
 	ranger.call("_process", 0.0)
 	_check(ranger.state == RangerStateMachine.State.CHASE, "Ranger enters chase state")
 	_check(ranger.get_node("AlertLabel").text == "!!", "Chase alert is presented")
 
+	var player := level.get_node("Player") as CharacterBody3D
+	player.global_position = ranger.global_position + Vector3(1.0, 0.0, 0.0)
+	player.velocity = Vector3(3.0, 0.0, 0.0)
 	suspicion_model.suspicion = 100.0
 	ranger.call("_process", 0.0)
 	_check(ranger.caught, "Ranger catch state is preserved")
 	_check(caught_events[0] == 1, "Catch signal emits exactly once")
 	_check(session.state == GameSession.SessionState.FINISHED, "Catch signal finishes GameSession")
 	_check(level.get_node("HUD/ResultLabel").visible, "Catch signal displays results")
+	_check(
+		"The ranger noticed: Too fast!" in level.get_node("HUD/ResultLabel").text,
+		"Catch result explains the suspicious behavior"
+	)
 	_check(state_events == [RangerStateMachine.State.INVESTIGATE, RangerStateMachine.State.CHASE], "State signals preserve transition order")
 
 	paused = false

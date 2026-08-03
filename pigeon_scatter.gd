@@ -1,4 +1,4 @@
-# pigeon_scatter.gd — Spawns extra background pigeons spread across the whole map.
+# pigeon_scatter.gd — Spawns extra blending pigeons inside the playable park.
 # Attach to a PigeonScatter Node3D in Main.tscn.
 #
 # ── PERFORMANCE NOTE ──────────────────────────────────────────────────────────
@@ -21,17 +21,15 @@ extends Node3D
 # Pigeons won't spawn closer than this to the world origin.
 @export var min_radius:   float = 6.0
 
-# Pigeons won't spawn further than this from the world origin.
-# 70 keeps them visible at normal camera distances; beyond ~100 they become tiny dots.
-@export var max_radius:   float = 70.0
+# Pigeons stay inside the playable park walls so they can provide real blending cover.
+@export var max_radius:   float = 14.0
 
 # Change this number to get a completely different layout.
 @export var rng_seed:     int   = 31
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-# Clear bubble around where the player starts so a pigeon isn't standing on them.
-const PLAYER_START: Vector3 = Vector3(3.0, 0.0, 0.0)
+# Clear bubble around the level's actual player spawn.
 const PLAYER_CLEAR: float   = 4.5
 
 # Minimum gap between any two spawn points so pigeons don't pile up.
@@ -55,14 +53,19 @@ func _spawn() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
 
-	var positions := _gen_positions(rng)
+	var player := get_node_or_null("../Player") as Node3D
+	var player_start := player.global_position if player != null else Vector3.ZERO
+	var occupied: Array[Vector3] = []
+	for pigeon in get_tree().get_nodes_in_group("pigeons"):
+		if pigeon is Node3D:
+			occupied.append(pigeon.global_position)
+	var positions := _gen_positions(rng, player_start, occupied)
 
 	for i in positions.size():
 		var dup := template.duplicate()
 		dup.name = "Pigeon_s%d" % i
 
-		# Increase wander_radius BEFORE add_child so _ready() initialises with the wider value.
-		# This stops distant pigeons from immediately marching back toward the park centre.
+		# Set wander_radius BEFORE add_child so _ready() uses this level's playable radius.
 		dup.set("wander_radius", max_radius)
 
 		get_parent().add_child(dup)
@@ -71,7 +74,11 @@ func _spawn() -> void:
 		dup.global_position = positions[i]
 
 
-func _gen_positions(rng: RandomNumberGenerator) -> Array[Vector3]:
+func _gen_positions(
+	rng: RandomNumberGenerator,
+	player_start: Vector3,
+	occupied: Array[Vector3]
+) -> Array[Vector3]:
 	# Returns up to pigeon_count well-separated spawn points inside an annular ring.
 	var result: Array[Vector3] = []
 	var attempts := 0
@@ -84,12 +91,12 @@ func _gen_positions(rng: RandomNumberGenerator) -> Array[Vector3]:
 		var pos   := Vector3(cos(angle) * dist, PIGEON_Y, sin(angle) * dist)
 
 		# Skip if too close to player start.
-		if pos.distance_to(PLAYER_START) < PLAYER_CLEAR:
+		if Vector2(pos.x, pos.z).distance_to(Vector2(player_start.x, player_start.z)) < PLAYER_CLEAR:
 			continue
 
 		# Skip if too close to another already-chosen spawn point.
 		var too_close := false
-		for existing: Vector3 in result:
+		for existing: Vector3 in occupied + result:
 			if pos.distance_to(existing) < MIN_SEP:
 				too_close = true
 				break

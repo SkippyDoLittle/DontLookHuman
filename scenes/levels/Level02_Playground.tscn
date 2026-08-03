@@ -106,7 +106,7 @@ albedo_color = Color(0.22, 0.18, 0.14, 1)
 script = ExtResource("28_level_config")
 level_id = &"level_02"
 display_name = "Playground"
-time_limit = 85.0
+time_limit = 80.0
 next_level_scene = "res://scenes/levels/Level03_Lakeside.tscn"
 intro_text = "LEVEL 2: PLAYGROUND\nWatch out — it's crowded out there.\n\nPress SPACE to begin"
 
@@ -141,9 +141,13 @@ park_half_size = 18.0
 
 [node name="PigeonScatter" type="Node3D" parent="."]
 script = ExtResource("22_pigeon_sct")
+pigeon_count = 12
+rng_seed = 47
 
 [node name="VisitorScatter" type="Node3D" parent="."]
 script = ExtResource("23_visitor_sct")
+visitor_count = 12
+rng_seed = 59
 
 ; ── PLAYER ────────────────────────────────────────────────────────────────────
 [node name="Player" parent="." index="0"]
@@ -252,14 +256,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, -4)
 ; ── RANGERS — 3 rangers for a crowded playground ──────────────────────────────
 [node name="Ranger" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -6)
-notice_distance = 4.0
-suspicion_gain_per_second = 20.0
-suspicion_loss_per_second = 32.0
-peck_loss_per_second = 25.0
-investigate_threshold = 72.0
-chase_threshold = 94.0
-food_aim_gain_per_second = 12.0
-stare_gain_per_second = 10.0
+notice_distance = 4.2
+suspicion_gain_per_second = 22.0
+suspicion_loss_per_second = 29.0
+peck_loss_per_second = 23.0
+investigate_threshold = 70.0
+chase_threshold = 93.0
+food_aim_gain_per_second = 13.0
+stare_gain_per_second = 11.0
 separation_gain_per_second = 5.0
 straight_line_gain_per_second = 7.0
 still_gain_per_second = 5.0
@@ -267,14 +271,14 @@ still_gain_per_second = 5.0
 [node name="Ranger2" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.525, 4)
 is_primary = false
-notice_distance = 4.0
-suspicion_gain_per_second = 20.0
-suspicion_loss_per_second = 32.0
-peck_loss_per_second = 25.0
-investigate_threshold = 72.0
-chase_threshold = 94.0
-food_aim_gain_per_second = 12.0
-stare_gain_per_second = 10.0
+notice_distance = 4.2
+suspicion_gain_per_second = 22.0
+suspicion_loss_per_second = 29.0
+peck_loss_per_second = 23.0
+investigate_threshold = 70.0
+chase_threshold = 93.0
+food_aim_gain_per_second = 13.0
+stare_gain_per_second = 11.0
 separation_gain_per_second = 5.0
 straight_line_gain_per_second = 7.0
 still_gain_per_second = 5.0
@@ -282,14 +286,14 @@ still_gain_per_second = 5.0
 [node name="Ranger3" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, 2)
 is_primary = false
-notice_distance = 4.0
-suspicion_gain_per_second = 20.0
-suspicion_loss_per_second = 32.0
-peck_loss_per_second = 25.0
-investigate_threshold = 72.0
-chase_threshold = 94.0
-food_aim_gain_per_second = 12.0
-stare_gain_per_second = 10.0
+notice_distance = 4.2
+suspicion_gain_per_second = 22.0
+suspicion_loss_per_second = 29.0
+peck_loss_per_second = 23.0
+investigate_threshold = 70.0
+chase_threshold = 93.0
+food_aim_gain_per_second = 13.0
+stare_gain_per_second = 11.0
 separation_gain_per_second = 5.0
 straight_line_gain_per_second = 7.0
 still_gain_per_second = 5.0

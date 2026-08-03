@@ -155,7 +155,7 @@ albedo_color = Color(0.62, 0.6, 0.56, 1)
 script = ExtResource("28_level_config")
 level_id = &"level_05"
 display_name = "Botanical Gardens"
-time_limit = 70.0
+time_limit = 65.0
 next_level_scene = ""
 intro_text = "LEVEL 5: BOTANICAL GARDENS\nOne wrong step and you're caught.\n\nPress SPACE to begin"
 
@@ -175,9 +175,13 @@ directional_shadow_max_distance = 32.0
 
 [node name="PigeonScatter" type="Node3D" parent="." unique_id=485191734]
 script = ExtResource("22_pigeon_sct")
+pigeon_count = 4
+rng_seed = 127
 
 [node name="VisitorScatter" type="Node3D" parent="." unique_id=1278541028]
 script = ExtResource("23_visitor_sct")
+visitor_count = 4
+rng_seed = 139
 
 [node name="Player" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1, 7)
@@ -384,60 +388,60 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, -4)
 [node name="Ranger" parent="." unique_id=93225094 instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.525, -5)
 notice_distance = 4.2
-suspicion_gain_per_second = 22.0
-suspicion_loss_per_second = 30.0
-peck_loss_per_second = 25.0
-investigate_threshold = 70.0
-chase_threshold = 93.0
-food_aim_gain_per_second = 13.0
-stare_gain_per_second = 11.0
-separation_gain_per_second = 5.0
-straight_line_gain_per_second = 7.0
-still_gain_per_second = 5.0
+suspicion_gain_per_second = 24.0
+suspicion_loss_per_second = 26.0
+peck_loss_per_second = 20.0
+investigate_threshold = 68.0
+chase_threshold = 91.0
+food_aim_gain_per_second = 14.0
+stare_gain_per_second = 12.0
+separation_gain_per_second = 6.0
+straight_line_gain_per_second = 8.0
+still_gain_per_second = 6.0
 
 [node name="Ranger2" parent="." unique_id=487821128 instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.525, -5)
-notice_distance = 3.8
-suspicion_gain_per_second = 17.0
-suspicion_loss_per_second = 35.0
-peck_loss_per_second = 28.0
-investigate_threshold = 74.0
-chase_threshold = 95.0
-food_aim_gain_per_second = 10.0
-stare_gain_per_second = 9.0
-separation_gain_per_second = 2.0
-straight_line_gain_per_second = 5.0
-still_gain_per_second = 3.0
+notice_distance = 4.2
+suspicion_gain_per_second = 24.0
+suspicion_loss_per_second = 26.0
+peck_loss_per_second = 20.0
+investigate_threshold = 68.0
+chase_threshold = 91.0
+food_aim_gain_per_second = 14.0
+stare_gain_per_second = 12.0
+separation_gain_per_second = 6.0
+straight_line_gain_per_second = 8.0
+still_gain_per_second = 6.0
 is_primary = false
 
 [node name="Ranger3" parent="." unique_id=1714679995 instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.525, 5)
-notice_distance = 3.8
-suspicion_gain_per_second = 17.0
-suspicion_loss_per_second = 35.0
-peck_loss_per_second = 28.0
-investigate_threshold = 74.0
-chase_threshold = 95.0
-food_aim_gain_per_second = 10.0
-stare_gain_per_second = 9.0
-separation_gain_per_second = 2.0
-straight_line_gain_per_second = 5.0
-still_gain_per_second = 3.0
+notice_distance = 4.2
+suspicion_gain_per_second = 24.0
+suspicion_loss_per_second = 26.0
+peck_loss_per_second = 20.0
+investigate_threshold = 68.0
+chase_threshold = 91.0
+food_aim_gain_per_second = 14.0
+stare_gain_per_second = 12.0
+separation_gain_per_second = 6.0
+straight_line_gain_per_second = 8.0
+still_gain_per_second = 6.0
 is_primary = false
 
 [node name="Ranger4" parent="." unique_id=184837902 instance=ExtResource("3_ranger")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.525, 5)
-notice_distance = 3.8
-suspicion_gain_per_second = 17.0
-suspicion_loss_per_second = 35.0
-peck_loss_per_second = 28.0
-investigate_threshold = 74.0
-chase_threshold = 95.0
-food_aim_gain_per_second = 10.0
-stare_gain_per_second = 9.0
-separation_gain_per_second = 2.0
-straight_line_gain_per_second = 5.0
-still_gain_per_second = 3.0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.525, 4)
+notice_distance = 4.2
+suspicion_gain_per_second = 24.0
+suspicion_loss_per_second = 26.0
+peck_loss_per_second = 20.0
+investigate_threshold = 68.0
+chase_threshold = 91.0
+food_aim_gain_per_second = 14.0
+stare_gain_per_second = 12.0
+separation_gain_per_second = 6.0
+straight_line_gain_per_second = 8.0
+still_gain_per_second = 6.0
 is_primary = false
 
 [node name="ParkVisitor1" parent="." unique_id=1672750538 instance=ExtResource("4_visitor")]

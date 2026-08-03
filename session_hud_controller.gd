@@ -75,13 +75,18 @@ func show_result(
 	summary: Dictionary,
 	best_score: int,
 	is_new_best: bool,
-	has_next_level: bool
+	has_next_level: bool,
+	caught_reason: String
 ) -> void:
 	var flavor: String
 	if headline == "ESCAPED!":
 		flavor = "\"Just a pigeon. Nothing to see here.\""
 	elif headline == "CAUGHT!":
-		flavor = "Caught red-beaked by the ranger!"
+		flavor = (
+			"The ranger noticed: %s" % caught_reason
+			if not caught_reason.is_empty()
+			else "Caught red-beaked by the ranger!"
+		)
 	else:
 		flavor = "The picnic packed up before you could escape."
 

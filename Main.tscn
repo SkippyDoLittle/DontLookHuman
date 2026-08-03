@@ -581,6 +581,17 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
 [node name="Ranger" type="CharacterBody3D" parent="." unique_id=733888097]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -5)
 script = ExtResource("4_cm0pq")
+notice_distance = 4.5
+suspicion_gain_per_second = 18.0
+suspicion_loss_per_second = 36.0
+peck_loss_per_second = 28.0
+investigate_threshold = 75.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 10.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 4.0
+straight_line_gain_per_second = 6.0
+still_gain_per_second = 4.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ranger" unique_id=1891000001]
 shape = SubResource("CapsuleShape3D_ranger")
@@ -655,6 +666,17 @@ surface_material_override/0 = SubResource("StandardMaterial3D_ranger_hat")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, 5)
 script = ExtResource("4_cm0pq")
 is_primary = false
+notice_distance = 4.5
+suspicion_gain_per_second = 18.0
+suspicion_loss_per_second = 36.0
+peck_loss_per_second = 28.0
+investigate_threshold = 75.0
+chase_threshold = 96.0
+food_aim_gain_per_second = 10.0
+stare_gain_per_second = 8.0
+separation_gain_per_second = 4.0
+straight_line_gain_per_second = 6.0
+still_gain_per_second = 4.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ranger2" unique_id=1891000100]
 shape = SubResource("CapsuleShape3D_ranger")
@@ -1578,9 +1600,11 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
 
 [node name="PigeonScatter" type="Node3D" parent="." unique_id=1800000002]
 script = ExtResource("pigeon_scatter_1")
+pigeon_count = 8
 
 [node name="VisitorScatter" type="Node3D" parent="." unique_id=1800000003]
 script = ExtResource("visitor_scatter_1")
+visitor_count = 5
 
 [node name="HowToPlayScreen" type="CanvasLayer" parent="." unique_id=1919386971]
 layer = 15
