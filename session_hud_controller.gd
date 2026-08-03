@@ -1,6 +1,13 @@
 class_name SessionHUDController
 extends RefCounted
 
+signal result_action_requested(action: StringName)
+
+const ACTION_NEXT: StringName = &"next"
+const ACTION_RETRY: StringName = &"retry"
+const ACTION_REPLAY_CAMPAIGN: StringName = &"replay_campaign"
+const ACTION_MENU: StringName = &"menu"
+
 var _hud: CanvasLayer
 var _timer_label: Label
 var _result_bg: ColorRect
@@ -11,6 +18,11 @@ var _suspicion_bar: ProgressBar
 var _stamina_bar: ProgressBar
 var _countdown_label: Label
 var _help_hint: Label
+var _result_actions: HBoxContainer
+var _primary_button: Button
+var _retry_button: Button
+var _menu_button: Button
+var _primary_action: StringName = ACTION_NEXT
 
 func configure(level_root: Node) -> void:
 	_hud = level_root.get_node("HUD") as CanvasLayer
@@ -22,6 +34,40 @@ func configure(level_root: Node) -> void:
 	_suspicion_bar = _hud.get_node("SuspicionBar") as ProgressBar
 	_stamina_bar = _hud.get_node("StaminaBar") as ProgressBar
 	_countdown_label = _hud.get_node("CountdownLabel") as Label
+	_result_actions = _hud.get_node_or_null("ResultActions") as HBoxContainer
+	if _result_actions == null:
+		_result_actions = _create_result_actions()
+	_primary_button = _result_actions.get_node("PrimaryButton") as Button
+	_retry_button = _result_actions.get_node("RetryButton") as Button
+	_menu_button = _result_actions.get_node("MenuButton") as Button
+	_primary_button.pressed.connect(_on_primary_pressed)
+	_retry_button.pressed.connect(func(): result_action_requested.emit(ACTION_RETRY))
+	_menu_button.pressed.connect(func(): result_action_requested.emit(ACTION_MENU))
+
+func _create_result_actions() -> HBoxContainer:
+	var actions := HBoxContainer.new()
+	actions.name = "ResultActions"
+	actions.process_mode = Node.PROCESS_MODE_ALWAYS
+	actions.visible = false
+	actions.set_anchors_preset(Control.PRESET_CENTER)
+	actions.position = Vector2(-238.0, 115.0)
+	actions.size = Vector2(476.0, 55.0)
+	actions.add_theme_constant_override("separation", 10)
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	_hud.add_child(actions)
+
+	for spec in [
+		{"name": "PrimaryButton", "text": "NEXT LEVEL"},
+		{"name": "RetryButton", "text": "RETRY"},
+		{"name": "MenuButton", "text": "MAIN MENU"},
+	]:
+		var button := Button.new()
+		button.name = String(spec.name)
+		button.text = String(spec.text)
+		button.custom_minimum_size = Vector2(145.0, 52.0)
+		button.add_theme_font_size_override("font_size", 16)
+		actions.add_child(button)
+	return actions
 
 func add_controls_hint() -> Label:
 	_help_hint = Label.new()
@@ -106,12 +152,8 @@ func show_result(
 	elif best_score > 0:
 		_result_label.text += "\nBest score: %d pts" % best_score
 
-	if success and has_next_level:
-		_result_label.text += "\n\nSPACE / A - next level    R / Y - restart"
-	elif success:
-		_result_label.text += "\n\n★  ALL LEVELS COMPLETE!  ★\nPress R / Y to play again"
-	else:
-		_result_label.text += "\n\nPress R / Y to retry"
+	if success and not has_next_level:
+		_result_label.text += "\n\n★  ALL LEVELS COMPLETE!  ★"
 
 	_result_label.modulate = Color(0.35, 1.0, 0.45) if success else Color(1.0, 0.35, 0.35)
 	_result_bg.color = Color(0.03, 0.14, 0.06, 0.88) if success else Color(0.14, 0.03, 0.03, 0.88)
@@ -122,3 +164,23 @@ func show_result(
 	_objective_label.visible = false
 	_suspicion_bar.visible = false
 	_stamina_bar.visible = false
+
+	_primary_button.visible = success
+	if success and has_next_level:
+		_primary_action = ACTION_NEXT
+		_primary_button.text = "NEXT LEVEL"
+	elif success:
+		_primary_action = ACTION_REPLAY_CAMPAIGN
+		_primary_button.text = "PLAY AGAIN"
+	_retry_button.text = "REPLAY LEVEL" if success else "RETRY"
+	_result_actions.visible = true
+	var focus_target := _primary_button if _primary_button.visible else _retry_button
+	focus_target.call_deferred("grab_focus")
+
+func disable_result_actions() -> void:
+	_primary_button.disabled = true
+	_retry_button.disabled = true
+	_menu_button.disabled = true
+
+func _on_primary_pressed() -> void:
+	result_action_requested.emit(_primary_action)

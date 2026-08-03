@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://schud000tscn01"]
+[gd_scene load_steps=11 format=3 uid="uid://schud000tscn01"]
 
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="1_vgnt"]
 [ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="2_mmap"]
@@ -36,6 +36,42 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_result_normal"]
+bg_color = Color(0.06, 0.13, 0.06, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.52, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_result_hover"]
+bg_color = Color(0.11, 0.24, 0.11, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.7, 0.35, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_result_pressed"]
+bg_color = Color(0.03, 0.07, 0.03, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.4, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 ; ── SCENE TREE ────────────────────────────────────────────────────────────────
 
@@ -114,9 +150,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -250.0
-offset_top = -150.0
+offset_top = -210.0
 offset_right = 250.0
-offset_bottom = 150.0
+offset_bottom = 210.0
 color = Color(0.05, 0.05, 0.05, 0.82)
 
 [node name="ResultLabel" type="Label" parent="."]
@@ -127,12 +163,59 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -230.0
-offset_top = -130.0
+offset_top = -190.0
 offset_right = 230.0
-offset_bottom = 130.0
+offset_bottom = 90.0
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+
+[node name="ResultActions" type="HBoxContainer" parent="."]
+process_mode = 3
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -238.0
+offset_top = 115.0
+offset_right = 238.0
+offset_bottom = 170.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="PrimaryButton" type="Button" parent="ResultActions"]
+custom_minimum_size = Vector2(145, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_result_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_result_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_result_pressed")
+text = "NEXT LEVEL"
+
+[node name="RetryButton" type="Button" parent="ResultActions"]
+custom_minimum_size = Vector2(145, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_result_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_result_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_result_pressed")
+text = "RETRY"
+
+[node name="MenuButton" type="Button" parent="ResultActions"]
+custom_minimum_size = Vector2(145, 52)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_result_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_result_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_result_pressed")
+text = "MAIN MENU"
 
 ; Fade-in overlay — TransitionController tweens its alpha on scene load.
 [node name="FadeOverlay" type="ColorRect" parent="."]

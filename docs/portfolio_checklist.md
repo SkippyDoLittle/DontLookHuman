@@ -31,6 +31,13 @@
 - [x] Debug diagnostics disabled in release exports
 - [x] Automated campaign, input, focus, and release-gating validation
 
+## Completed in Phase 8
+
+- [x] Frozen result state with Next Level, Replay Level, Main Menu, and Play Again actions
+- [x] Modal controls overlay that cannot accidentally resume gameplay
+- [x] Lightweight ranger and visitor obstacle recovery
+- [x] Automated result, pause-modal, and obstacle-recovery validation
+
 ## Suggested video shot list
 
 1. Open with Festival or Lakeside for the strongest color palette.

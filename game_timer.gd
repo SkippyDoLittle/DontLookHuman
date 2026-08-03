@@ -5,6 +5,9 @@
 class_name GameSession
 extends Node
 
+const MENU_SCENE: String = "res://MainMenu.tscn"
+const FIRST_LEVEL_SCENE: String = "res://scenes/levels/Level01_Park.tscn"
+
 signal session_state_changed(new_state: SessionState)
 signal collectible_count_changed(remaining: int)
 signal level_finished(success: bool)
@@ -36,6 +39,8 @@ var _last_collectible_count: int = -1
 var _connected_rangers: Dictionary = {}
 var _caught_reason: String = ""
 var _grade_thresholds: Array[float] = ScoreManager.default_thresholds()
+var _result_transition_started: bool = false
+var _controls_closed_frame: int = -1
 
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
@@ -58,6 +63,11 @@ func _ready() -> void:
 		escape_zone.connect("escape_blocked", _on_escape_blocked)
 	if _pause_menu.has_signal("resumed"):
 		_pause_menu.connect("resumed", _on_pause_menu_resumed)
+	if _how_to_play != null:
+		if _how_to_play.has_signal("controls_opened"):
+			_how_to_play.connect("controls_opened", _on_controls_opened)
+		if _how_to_play.has_signal("controls_closed"):
+			_how_to_play.connect("controls_closed", _on_controls_closed)
 
 	_transition.fade_in()
 	_timer.reset(time_limit)
@@ -83,8 +93,7 @@ func _process(delta: float) -> void:
 		SessionState.ACTIVE:
 			_process_active_session(delta)
 		SessionState.PAUSED:
-			if Input.is_action_just_pressed("pause_game") or not _pause_menu.visible:
-				_resume_session()
+			_process_paused_input()
 		SessionState.FINISHED:
 			_process_finished_input()
 
@@ -107,6 +116,7 @@ func _connect_components() -> void:
 	_timer.expired.connect(_on_timer_expired)
 	_timer.countdown_changed.connect(_hud.show_countdown)
 	_timer.countdown_finished.connect(_on_countdown_finished)
+	_hud.result_action_requested.connect(_on_result_action_requested)
 
 func _initialize_world_connections() -> void:
 	_connect_new_rangers()
@@ -152,6 +162,15 @@ func _pause_session() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	_set_state(SessionState.PAUSED)
 
+func _process_paused_input() -> void:
+	if Input.is_action_just_pressed("pause_game"):
+		if _how_to_play != null and _how_to_play.visible:
+			_how_to_play.call("close_controls")
+		elif _controls_closed_frame != Engine.get_process_frames():
+			_resume_session()
+	elif not _pause_menu.visible and not (_how_to_play != null and _how_to_play.visible):
+		_resume_session()
+
 func _resume_session() -> void:
 	_pause_menu.visible = false
 	get_tree().paused = false
@@ -162,11 +181,48 @@ func _on_pause_menu_resumed() -> void:
 	if state == SessionState.PAUSED:
 		_resume_session()
 
+func _on_controls_opened() -> void:
+	if state == SessionState.ACTIVE:
+		_pause_session()
+
+func _on_controls_closed() -> void:
+	_controls_closed_frame = Engine.get_process_frames()
+
 func _process_finished_input() -> void:
+	if _result_transition_started:
+		return
 	if Input.is_action_just_pressed("restart"):
-		_transition.fade_to_black(0.4, func(): get_tree().reload_current_scene())
-	elif _success and not next_level_scene.is_empty() and Input.is_action_just_pressed("ui_accept"):
-		_transition.fade_to_black(0.4, func(): get_tree().change_scene_to_file(next_level_scene))
+		_on_result_action_requested(SessionHUDController.ACTION_RETRY)
+	elif Input.is_action_just_pressed("ui_cancel"):
+		_on_result_action_requested(SessionHUDController.ACTION_MENU)
+
+func _on_result_action_requested(action: StringName) -> void:
+	if state != SessionState.FINISHED or _result_transition_started:
+		return
+
+	match action:
+		SessionHUDController.ACTION_NEXT:
+			if _success and not next_level_scene.is_empty():
+				_transition_from_result(func(): _change_scene_unpaused(next_level_scene))
+		SessionHUDController.ACTION_RETRY:
+			_transition_from_result(func():
+				get_tree().paused = false
+				get_tree().reload_current_scene()
+			)
+		SessionHUDController.ACTION_REPLAY_CAMPAIGN:
+			if _success and next_level_scene.is_empty():
+				_transition_from_result(func(): _change_scene_unpaused(FIRST_LEVEL_SCENE))
+		SessionHUDController.ACTION_MENU:
+			_transition_from_result(func(): _change_scene_unpaused(MENU_SCENE))
+
+func _transition_from_result(completion: Callable) -> void:
+	_result_transition_started = true
+	_hud.disable_result_actions()
+	_transition.fade_to_black(0.4, completion)
+
+func _change_scene_unpaused(scene_path: String) -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file(scene_path)
 
 func _connect_new_rangers() -> void:
 	for ranger_node in get_tree().get_nodes_in_group("rangers"):
@@ -253,6 +309,7 @@ func _finish(success: bool, headline: String) -> void:
 		_caught_reason
 	)
 	_sound_manager.call("stop_ambient")
+	get_tree().paused = true
 	level_finished.emit(success)
 
 func _set_state(new_state: SessionState) -> void:

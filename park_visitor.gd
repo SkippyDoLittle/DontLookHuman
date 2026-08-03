@@ -15,6 +15,8 @@ var _target:       Vector3 = Vector3.ZERO
 var _wait_timer:   float   = 0.0
 var _is_waiting:   bool    = false
 var _desired_move: Vector3 = Vector3.ZERO   # bridge between AI logic and physics
+var _blocked_time: float = 0.0
+var obstacle_recoveries: int = 0
 
 func _ready() -> void:
 	# Apply per-instance colours to clothing meshes.
@@ -55,6 +57,8 @@ func _process(delta: float) -> void:
 	look_at(look_target, Vector3.UP)
 
 func _physics_process(delta: float) -> void:
+	var position_before := global_position
+	var intended_speed := Vector2(_desired_move.x, _desired_move.z).length()
 	velocity.x = _desired_move.x
 	velocity.z = _desired_move.z
 	if not is_on_floor():
@@ -62,6 +66,27 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = 0.0
 	move_and_slide()
+
+	var moved_distance := Vector2(
+		global_position.x - position_before.x,
+		global_position.z - position_before.z
+	).length()
+	if intended_speed > 0.1 and (
+		is_on_wall()
+		or moved_distance < intended_speed * delta * 0.12
+	):
+		_blocked_time += delta
+		if _blocked_time >= 0.35:
+			_recover_from_obstacle()
+	else:
+		_blocked_time = maxf(_blocked_time - delta * 2.0, 0.0)
+
+func _recover_from_obstacle() -> void:
+	_blocked_time = 0.0
+	obstacle_recoveries += 1
+	_is_waiting = true
+	_wait_timer = 0.25
+	_desired_move = Vector3.ZERO
 
 func _pick_new_target() -> void:
 	var angle: float = randf_range(0.0, TAU)

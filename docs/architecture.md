@@ -13,7 +13,7 @@ All five playable maps inherit `scenes/game/BaseLevel.tscn`. The base scene owns
 - `score_manager.gd` calculates completion grades from level-specific thresholds.
 - `best_score_store.gd` persists scores by stable level ID in `user://best_scores.cfg`.
 - `campaign_progress_store.gd` records completed levels and the highest unlocked campaign level.
-- `session_hud_controller.gd` owns objective, timer, and result presentation.
+- `session_hud_controller.gd` owns objective, timer, result presentation, and focused result actions.
 - `transition_controller.gd` owns fades and screen shake.
 
 Collectibles and the escape zone emit gameplay events. They do not manipulate the HUD directly. `GameSession` counts live members of the `collectibles` group, so levels are not tied to a fixed item count.
@@ -23,7 +23,7 @@ Collectibles and the escape zone emit gameplay events. They do not manipulate th
 - `ranger.gd` is the scene-facing coordinator and signal source.
 - `ranger_suspicion.gd` evaluates suspicious player behavior.
 - `ranger_state_machine.gd` selects patrol, investigate, or chase.
-- `ranger_movement.gd` handles navigation and pursuit movement.
+- `ranger_movement.gd` handles pursuit movement and lightweight obstacle recovery.
 - `ranger_presentation.gd` handles world-space alerts.
 - `ranger_hud_controller.gd` aggregates multiple ranger signals for the shared HUD.
 
@@ -43,6 +43,6 @@ Each `LevelConfig` contains a stable save key, display text, time limit, next-le
 
 ## Verification
 
-Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks, dynamic collectibles, controller mappings, menu focus, progression paths, and release/debug diagnostics behavior.
+Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks, dynamic collectibles, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, and release/debug diagnostics behavior.
 
 `tools/capture_portfolio_screenshots.gd` reproduces the five portfolio screenshots from the actual scenes. `tools/capture_gameplay_video.gd` supplies a repeatable ten-second Festival demo route for Godot's Movie Maker mode.

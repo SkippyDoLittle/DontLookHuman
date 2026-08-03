@@ -3,6 +3,9 @@
 # Starts hidden; press H at any time (including title screen) to toggle.
 extends CanvasLayer
 
+signal controls_opened
+signal controls_closed
+
 var _close_button: Button
 
 const _CONTENT := """DON'T LOOK HUMAN
@@ -54,8 +57,8 @@ func _ready() -> void:
 	panel.anchor_bottom = 0.5
 	panel.offset_left   = -300
 	panel.offset_right  = 300
-	panel.offset_top    = -340
-	panel.offset_bottom = 340
+	panel.offset_top    = -300
+	panel.offset_bottom = 300
 	add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -100,15 +103,21 @@ func _ready() -> void:
 	_close_button.add_theme_stylebox_override("normal",  style_normal)
 	_close_button.add_theme_stylebox_override("hover",   style_hover)
 	_close_button.add_theme_stylebox_override("pressed", style_normal)
-	_close_button.pressed.connect(_close_controls)
+	_close_button.pressed.connect(close_controls)
 	vbox.add_child(_close_button)
 
 func show_controls() -> void:
+	if visible:
+		return
 	visible = true
+	controls_opened.emit()
 	_close_button.call_deferred("grab_focus")
 
-func _close_controls() -> void:
+func close_controls() -> void:
+	if not visible:
+		return
 	visible = false
+	controls_closed.emit()
 	var controls_button := get_node_or_null("../PauseMenu/VBoxContainer/ControlsButton") as Button
 	if controls_button != null and controls_button.is_visible_in_tree():
 		controls_button.call_deferred("grab_focus")
@@ -116,10 +125,10 @@ func _close_controls() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_H and event.pressed and not event.echo:
 		if visible:
-			_close_controls()
+			close_controls()
 		else:
 			show_controls()
 		get_viewport().set_input_as_handled()
 	elif visible and event.is_action_pressed("ui_cancel"):
-		_close_controls()
+		close_controls()
 		get_viewport().set_input_as_handled()
