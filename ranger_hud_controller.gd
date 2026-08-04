@@ -73,7 +73,10 @@ func _on_grab_missed(_ranger: Node) -> void:
 
 func _on_capture_started(_ranger: Node) -> void:
 	_status_label.text = "CAUGHT!"
-	_show_warning("GOTCHA!", Color(1.0, 0.12, 0.08, 1.0), 0.8)
+	# The ranger's world-space personality callout owns the capture punchline.
+	# Clear DODGE rather than stacking a second large banner over it.
+	_warning_timer = 0.0
+	_warning_label.visible = false
 
 func _on_observation_changed(reason: String, is_nearby: bool, active_gain: float, ranger: Node) -> void:
 	if ranger != _primary_ranger:

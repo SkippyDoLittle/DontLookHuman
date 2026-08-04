@@ -109,17 +109,57 @@ func _validate_campaign_rollout() -> void:
 			var contact_distance := float(ranger.get("grab_contact_distance"))
 			var recovery := float(ranger.get("grab_recovery_duration"))
 			var personality := String(ranger.get("capture_personality"))
+			var dodge_minimum := _modeled_dodge_minimum(ranger, 0.18, 4.0)
+			var no_dodge_final := absf(
+				start_distance
+				- lunge_speed * float(ranger.get("grab_lunge_duration"))
+			)
 			personalities[personality] = true
 			_check(bool(ranger.get("physical_capture_enabled")), "%s enables physical capture" % ranger.name)
 			_check(windup >= float(spec.min_windup), "%s keeps a readable wind-up" % ranger.name)
 			_check(lunge_speed <= float(spec.max_lunge), "%s respects the level speed cap" % ranger.name)
 			_check(start_distance - contact_distance >= 1.5, "%s leaves meaningful dodge distance" % ranger.name)
 			_check(recovery >= 0.95, "%s gives a useful miss-recovery opening" % ranger.name)
+			_check(no_dodge_final <= contact_distance, "%s catches a player who does not dodge" % ranger.name)
+			_check(
+				dodge_minimum >= contact_distance + 0.15,
+				"%s lets a sprinting player dodge after a 180 ms reaction" % ranger.name
+			)
+			print(
+				"PLAYTEST|%s|%s|personality=%s|windup=%.2f|dodge_margin=%.2f|recovery=%.2f"
+				% [
+					spec.path.get_file().get_basename(),
+					ranger.name,
+					personality,
+					windup,
+					dodge_minimum - contact_distance,
+					recovery,
+				]
+			)
 		paused = false
 		level.queue_free()
 		await process_frame
 	for personality in ["Rookie", "Steady", "Hothead", "Veteran"]:
 		_check(personalities.has(personality), "Campaign includes the %s ranger personality" % personality)
+
+func _modeled_dodge_minimum(ranger: Node, reaction_delay: float, player_speed: float) -> float:
+	var windup := float(ranger.get("grab_windup_duration"))
+	var lunge_duration := float(ranger.get("grab_lunge_duration"))
+	var lunge_speed := float(ranger.get("grab_lunge_speed"))
+	var start_distance := float(ranger.get("grab_start_distance"))
+	var lateral_at_lock := maxf(windup - reaction_delay, 0.0) * player_speed
+	var player_at_lock := Vector2(lateral_at_lock, start_distance)
+	var lunge_direction := player_at_lock.normalized()
+	var minimum := INF
+	for sample in 121:
+		var elapsed := lunge_duration * float(sample) / 120.0
+		var ranger_position := lunge_direction * lunge_speed * elapsed
+		var player_position := Vector2(
+			lateral_at_lock + player_speed * elapsed,
+			start_distance
+		)
+		minimum = minf(minimum, ranger_position.distance_to(player_position))
+	return minimum
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:
