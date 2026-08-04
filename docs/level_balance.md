@@ -14,7 +14,7 @@ These targets describe the intended difficulty curve after the Phase 5 balance p
 
 - Park uses lower suspicion gain, faster recovery, and higher thresholds than later levels. The player starts outside both notice radii.
 - Playground introduces three moderately alert rangers, but its large pigeon and visitor population supplies frequent cover.
-- Playground also prototypes physical grabs: full suspicion starts a telegraphed, dodgeable lunge instead of an automatic loss. Suspicion rates and the level timer remain unchanged while the new catch timing is playtested.
+- Every campaign level uses physical grabs: full suspicion starts a telegraphed, dodgeable lunge instead of an automatic loss. Suspicion rates and level timers remain unchanged. Park uses the slowest, most forgiving grabs; middle levels introduce personality variation; Botanical Gardens preserves readable wind-ups and capped lunge speeds despite having four rangers.
 - Lakeside increases detection and reduces suspicion recovery while placing three collectibles inside initial ranger coverage. Water adds route risk.
 - Festival's rangers now react comparably to the middle levels. Its dense crowd provides cover while its timer accounts for the longest route.
 - Botanical Gardens has the fewest pigeons, four consistently alert rangers, slower recovery, and four initially exposed collectibles. Its nearest ranger still does not detect the player at spawn.
@@ -38,4 +38,4 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/pha
 
 ## Manual playtest notes
 
-For each run, record the level, completion time, result, where suspicion first reached Investigate and Chase, and whether the final catch explanation matched the behavior that caused it. On Playground, also record grab attempts, dodges, catches, and whether the wind-up felt readable. Adjust one lever at a time: timer, ranger notice distance, suspicion rates, grab wind-up/recovery, NPC count, or a single spawn position.
+For each run, record the level, completion time, result, where suspicion first reached Investigate and Chase, and whether the final catch explanation matched the behavior that caused it. Also record grab attempts, dodges, catches, and whether each personality's wind-up felt readable. Adjust one lever at a time: timer, ranger notice distance, suspicion rates, grab wind-up/recovery, NPC count, or a single spawn position.

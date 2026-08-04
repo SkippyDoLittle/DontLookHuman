@@ -8,6 +8,8 @@ func _initialize() -> void:
 	call_deferred("_validate")
 
 func _validate() -> void:
+	await _validate_campaign_rollout()
+
 	var level := (
 		load("res://scenes/levels/Level02_Playground.tscn") as PackedScene
 	).instantiate() as BaseLevel
@@ -84,6 +86,40 @@ func _validate() -> void:
 	if _failures == 0:
 		print("PHASE11_CONTROLLED_CHAOS_VALIDATION_OK")
 	quit(_failures)
+
+func _validate_campaign_rollout() -> void:
+	var specs: Array[Dictionary] = [
+		{"path": "res://scenes/levels/Level01_Park.tscn", "count": 2, "min_windup": 0.55, "max_lunge": 6.4},
+		{"path": "res://scenes/levels/Level02_Playground.tscn", "count": 3, "min_windup": 0.42, "max_lunge": 7.2},
+		{"path": "res://scenes/levels/Level03_Lakeside.tscn", "count": 3, "min_windup": 0.4, "max_lunge": 7.15},
+		{"path": "res://scenes/levels/Level04_Festival.tscn", "count": 3, "min_windup": 0.4, "max_lunge": 7.2},
+		{"path": "res://scenes/levels/Level05_BotanicalGardens.tscn", "count": 4, "min_windup": 0.42, "max_lunge": 7.1},
+	]
+	var personalities: Dictionary = {}
+	for spec in specs:
+		var level := (load(spec.path) as PackedScene).instantiate() as BaseLevel
+		root.add_child(level)
+		await process_frame
+		var rangers := get_nodes_in_group("rangers")
+		_check(rangers.size() == int(spec.count), "%s retains its ranger count" % spec.path)
+		for ranger in rangers:
+			var windup := float(ranger.get("grab_windup_duration"))
+			var lunge_speed := float(ranger.get("grab_lunge_speed"))
+			var start_distance := float(ranger.get("grab_start_distance"))
+			var contact_distance := float(ranger.get("grab_contact_distance"))
+			var recovery := float(ranger.get("grab_recovery_duration"))
+			var personality := String(ranger.get("capture_personality"))
+			personalities[personality] = true
+			_check(bool(ranger.get("physical_capture_enabled")), "%s enables physical capture" % ranger.name)
+			_check(windup >= float(spec.min_windup), "%s keeps a readable wind-up" % ranger.name)
+			_check(lunge_speed <= float(spec.max_lunge), "%s respects the level speed cap" % ranger.name)
+			_check(start_distance - contact_distance >= 1.5, "%s leaves meaningful dodge distance" % ranger.name)
+			_check(recovery >= 0.95, "%s gives a useful miss-recovery opening" % ranger.name)
+		paused = false
+		level.queue_free()
+		await process_frame
+	for personality in ["Rookie", "Steady", "Hothead", "Veteran"]:
+		_check(personalities.has(personality), "Campaign includes the %s ranger personality" % personality)
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:

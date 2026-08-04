@@ -59,8 +59,13 @@ func update(delta: float, state: int) -> void:
 			var pulse := sin(_pulse_time * TAU * 6.0) * 0.5 + 0.5
 			_alert_label.modulate = Color(1.0, 0.2, 0.2, lerp(0.5, 1.0, pulse))
 
-func grab_windup(duration: float) -> void:
-	_show_alert("GRAB!", Color(1.0, 0.15, 0.08, 1.0), 1.85, 0.06, 0.10)
+func grab_windup(duration: float, personality: String = "Steady") -> void:
+	var callout := {
+		"Rookie": "UH-OH!",
+		"Hothead": "GOT YOU!",
+		"Veteran": "HALT!",
+	}.get(personality, "GRAB!") as String
+	_show_alert(callout, Color(1.0, 0.15, 0.08, 1.0), 1.85, 0.06, 0.10)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -79,8 +84,13 @@ func grab_lunge() -> void:
 	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.32, 0.08)
 	_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.12, 0.08)
 
-func grab_missed(recovery_duration: float) -> void:
-	_show_alert("WHIFF!", Color(1.0, 0.72, 0.15, 1.0), 1.55, 0.05, 0.10)
+func grab_missed(recovery_duration: float, personality: String = "Steady") -> void:
+	var callout := {
+		"Rookie": "OOPS!",
+		"Hothead": "NO FAIR!",
+		"Veteran": "MISSED.",
+	}.get(personality, "WHIFF!") as String
+	_show_alert(callout, Color(1.0, 0.72, 0.15, 1.0), 1.55, 0.05, 0.10)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -93,8 +103,13 @@ func grab_missed(recovery_duration: float) -> void:
 	var reset_delay := maxf(recovery_duration - 0.42, 0.12)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.28))
 
-func player_captured() -> void:
-	_show_alert("GOTCHA!", Color(1.0, 0.85, 0.18, 1.0), 1.8, 0.05, 0.12)
+func player_captured(personality: String = "Steady") -> void:
+	var callout := {
+		"Rookie": "I GOT ONE!",
+		"Hothead": "YES!",
+		"Veteran": "SECURED!",
+	}.get(personality, "GOTCHA!") as String
+	_show_alert(callout, Color(1.0, 0.85, 0.18, 1.0), 1.8, 0.05, 0.12)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)

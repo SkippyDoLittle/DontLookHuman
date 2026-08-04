@@ -88,6 +88,11 @@ func _validate_signal_flow() -> void:
 	ranger.connect("player_caught", func(): caught_events[0] += 1)
 
 	var suspicion_model := ranger.get("_suspicion_model") as RangerSuspicion
+	# Keep one explicit regression for the reusable scene's legacy auto-catch mode.
+	# Campaign levels opt into physical grabs and are covered by Phase 11.
+	ranger.set("physical_capture_enabled", false)
+	var suspicion_config := suspicion_model.get("_config") as Dictionary
+	suspicion_config["physical_capture_enabled"] = false
 	suspicion_model.suspicion = 80.0
 	ranger.call("_process", 0.0)
 	_check(ranger.state == RangerStateMachine.State.INVESTIGATE, "Ranger enters investigate state")

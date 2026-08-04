@@ -293,6 +293,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 1, -1)
 
 [node name="Ranger" parent="." unique_id=903673705 instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -7)
+physical_capture_enabled = true
+capture_personality = "Hothead"
+grab_windup_duration = 0.4
+grab_lunge_speed = 7.2
+grab_recovery_duration = 1.35
 notice_distance = 4.0
 suspicion_gain_per_second = 22.0
 suspicion_loss_per_second = 30.0
@@ -307,6 +312,11 @@ still_gain_per_second = 5.0
 
 [node name="Ranger2" parent="." unique_id=847337069 instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 0.525, 0)
+physical_capture_enabled = true
+capture_personality = "Rookie"
+grab_windup_duration = 0.52
+grab_lunge_speed = 6.6
+grab_recovery_duration = 1.35
 notice_distance = 4.0
 suspicion_gain_per_second = 22.0
 suspicion_loss_per_second = 30.0
@@ -322,6 +332,10 @@ is_primary = false
 
 [node name="Ranger3" parent="." unique_id=1729781696 instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, -3)
+physical_capture_enabled = true
+grab_windup_duration = 0.45
+grab_lunge_speed = 7.0
+grab_recovery_duration = 1.12
 notice_distance = 4.0
 suspicion_gain_per_second = 22.0
 suspicion_loss_per_second = 30.0

@@ -30,7 +30,7 @@ Collectibles and the escape zone emit gameplay events. They do not manipulate th
 
 Rangers and pigeons use groups rather than exact numbered node names. This allows later levels to add rangers or procedurally scattered pigeons without changing detection code.
 
-Playground currently acts as the controlled-chaos vertical slice. Its rangers opt into physical capture: a full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Other levels retain the legacy full-meter catch until the slice has been playtested and approved for rollout.
+The approved controlled-chaos capture system now runs across the campaign. A full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Levels tune wind-up, lunge speed, and recovery independently. Ranger personality labels provide visible Rookie, Steady, Hothead, and Veteran variations without changing the core controls.
 
 ## Level configuration and persistence
 

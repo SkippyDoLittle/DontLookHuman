@@ -46,6 +46,7 @@ enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
 
 @export_group("Physical Capture")
 @export var physical_capture_enabled: bool = false
+@export_enum("Rookie", "Steady", "Hothead", "Veteran") var capture_personality: String = "Steady"
 @export var grab_start_distance: float = 2.65
 @export var grab_contact_distance: float = 0.82
 @export var grab_windup_duration: float = 0.42
@@ -161,7 +162,7 @@ func _begin_grab() -> void:
 	_grab_timer = grab_windup_duration
 	_movement.stop()
 	_face_player()
-	_presentation.grab_windup(grab_windup_duration)
+	_presentation.grab_windup(grab_windup_duration, capture_personality)
 	_sound_manager.call("play_ranger_whistle")
 	_reaction_director.broadcast(
 		get_tree(),
@@ -207,7 +208,7 @@ func _begin_miss_recovery() -> void:
 	_grab_timer = grab_recovery_duration
 	missed_grabs += 1
 	_movement.stop()
-	_presentation.grab_missed(grab_recovery_duration)
+	_presentation.grab_missed(grab_recovery_duration, capture_personality)
 	_sound_manager.call("play_grab_miss")
 	_sound_manager.call("play_flock_panic")
 	_reaction_director.broadcast(
@@ -230,7 +231,7 @@ func _complete_physical_capture() -> void:
 			other_ranger.call("halt_for_capture")
 	if player.has_method("start_capture_reaction"):
 		player.call("start_capture_reaction", global_position)
-	_presentation.player_captured()
+	_presentation.player_captured(capture_personality)
 	_spawn_feather_burst()
 	_sound_manager.call("play_capture_impact")
 	_sound_manager.call("play_flock_panic")

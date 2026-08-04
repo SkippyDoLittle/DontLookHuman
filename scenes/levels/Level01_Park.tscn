@@ -196,6 +196,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 2)
 ; Ranger is the primary (writes to HUD). Ranger2 runs AI silently (is_primary=false).
 [node name="Ranger" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -5)
+physical_capture_enabled = true
+grab_windup_duration = 0.55
+grab_lunge_speed = 6.4
+grab_recovery_duration = 1.25
 notice_distance = 4.5
 suspicion_gain_per_second = 18.0
 suspicion_loss_per_second = 36.0
@@ -211,6 +215,11 @@ still_gain_per_second = 4.0
 [node name="Ranger2" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, 5)
 is_primary = false
+physical_capture_enabled = true
+capture_personality = "Rookie"
+grab_windup_duration = 0.6
+grab_lunge_speed = 6.1
+grab_recovery_duration = 1.4
 notice_distance = 4.5
 suspicion_gain_per_second = 18.0
 suspicion_loss_per_second = 36.0
