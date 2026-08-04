@@ -259,6 +259,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 1, -4)
 ; ── RANGERS — 3 rangers for a crowded playground ──────────────────────────────
 [node name="Ranger" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.525, -6)
+physical_capture_enabled = true
 notice_distance = 4.2
 suspicion_gain_per_second = 22.0
 suspicion_loss_per_second = 29.0
@@ -274,6 +275,7 @@ still_gain_per_second = 5.0
 [node name="Ranger2" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.525, 4)
 is_primary = false
+physical_capture_enabled = true
 notice_distance = 4.2
 suspicion_gain_per_second = 22.0
 suspicion_loss_per_second = 29.0
@@ -289,6 +291,7 @@ still_gain_per_second = 5.0
 [node name="Ranger3" parent="." instance=ExtResource("3_ranger")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.525, 2)
 is_primary = false
+physical_capture_enabled = true
 notice_distance = 4.2
 suspicion_gain_per_second = 22.0
 suspicion_loss_per_second = 29.0

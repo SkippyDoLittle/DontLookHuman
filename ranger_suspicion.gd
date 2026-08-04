@@ -86,7 +86,9 @@ func update(delta: float) -> Dictionary:
 			loss_rate += float(_config.peck_loss_per_second)
 		suspicion = maxf(suspicion - loss_rate * delta, 0.0)
 
-	if suspicion >= 100.0:
+	# Legacy rangers still catch at a full meter. Opt-in physical-capture rangers
+	# use 100 suspicion as EXPOSED and must make contact with a telegraphed grab.
+	if suspicion >= 100.0 and not bool(_config.get("physical_capture_enabled", false)):
 		caught = true
 
 	return {"active_gain": active_gain, "reason": reason, "is_nearby": is_nearby}

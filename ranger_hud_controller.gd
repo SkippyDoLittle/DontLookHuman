@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var _suspicion_bar: ProgressBar = $SuspicionBar
 @onready var _vignette_material: ShaderMaterial = $VignetteRect.material
 @onready var _warning_label: Label = $WarnLabel
+@onready var _sound_manager: Node = get_node("/root/SoundManager")
 
 var _connected_rangers: Dictionary = {}
 var _suspicion_by_ranger: Dictionary = {}
@@ -32,6 +33,12 @@ func _connect_new_rangers() -> void:
 		ranger.connect("state_changed", _on_state_changed.bind(ranger))
 		ranger.connect("player_caught", _on_player_caught.bind(ranger))
 		ranger.connect("observation_changed", _on_observation_changed.bind(ranger))
+		if ranger.has_signal("grab_started"):
+			ranger.connect("grab_started", _on_grab_started.bind(ranger))
+		if ranger.has_signal("grab_missed"):
+			ranger.connect("grab_missed", _on_grab_missed.bind(ranger))
+		if ranger.has_signal("capture_started"):
+			ranger.connect("capture_started", _on_capture_started.bind(ranger))
 		if bool(ranger.get("is_primary")):
 			_primary_ranger = ranger
 			_primary_state = int(ranger.get("state"))
@@ -55,6 +62,18 @@ func _on_player_caught(ranger: Node) -> void:
 	_update_max_suspicion()
 	if ranger == _primary_ranger:
 		_status_label.text = "CAUGHT!"
+
+func _on_grab_started(_ranger: Node) -> void:
+	_status_label.text = "Ranger: GRABBING!"
+	_show_warning("DODGE!", Color(1.0, 0.18, 0.08, 1.0), 0.75)
+
+func _on_grab_missed(_ranger: Node) -> void:
+	_status_label.text = "Ranger: Stumbled!"
+	_show_warning("CLOSE CALL!", Color(1.0, 0.82, 0.15, 1.0), 1.15)
+
+func _on_capture_started(_ranger: Node) -> void:
+	_status_label.text = "CAUGHT!"
+	_show_warning("GOTCHA!", Color(1.0, 0.12, 0.08, 1.0), 0.8)
 
 func _on_observation_changed(reason: String, is_nearby: bool, active_gain: float, ranger: Node) -> void:
 	if ranger != _primary_ranger:
@@ -82,6 +101,7 @@ func _update_max_suspicion() -> void:
 		maximum = maxf(maximum, float(value))
 	_suspicion_bar.value = maximum
 	_vignette_material.set_shader_parameter("intensity", maximum / 100.0 * 0.65)
+	_sound_manager.call("set_tension", maximum / 100.0)
 
 func _update_bar_pulse(delta: float) -> void:
 	match _primary_state:

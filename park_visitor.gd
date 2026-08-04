@@ -3,6 +3,8 @@
 
 extends CharacterBody3D
 
+const PARK_REACTIONS = preload("res://park_reaction_director.gd")
+
 @export var walk_speed:    float = 0.9    # slightly slower than the pigeon so you can weave around them
 @export var wander_radius: float = 7.5   # max distance from park centre
 
@@ -17,8 +19,17 @@ var _is_waiting:   bool    = false
 var _desired_move: Vector3 = Vector3.ZERO   # bridge between AI logic and physics
 var _blocked_time: float = 0.0
 var obstacle_recoveries: int = 0
+var reaction_count: int = 0
+var _reaction_event: StringName = &""
+var _reaction_origin: Vector3 = Vector3.ZERO
+var _reaction_delay: float = 0.0
+var _reaction_timer: float = 0.0
+var _reaction_time: float = 0.0
+var _body_rest_rotation: Vector3
+var _head_rest_position: Vector3
 
 func _ready() -> void:
+	add_to_group("visitors")
 	# Apply per-instance colours to clothing meshes.
 	# New materials so tinting one visitor never affects other instances.
 	var shirt_mat := StandardMaterial3D.new()
@@ -28,11 +39,15 @@ func _ready() -> void:
 	var pants_mat := StandardMaterial3D.new()
 	pants_mat.albedo_color = pants_color
 	$VisitorPants.set_surface_override_material(0, pants_mat)
+	_body_rest_rotation = $VisitorBody.rotation
+	_head_rest_position = $VisitorHead.position
 
 	_pick_new_target()
 
 func _process(delta: float) -> void:
 	_desired_move = Vector3.ZERO
+	if _update_park_reaction(delta):
+		return
 
 	if _is_waiting:
 		_wait_timer -= delta
@@ -55,6 +70,59 @@ func _process(delta: float) -> void:
 	# Build a flat look target to prevent the visitor from tilting up/down.
 	var look_target := Vector3(global_position.x + dir.x, global_position.y, global_position.z + dir.z)
 	look_at(look_target, Vector3.UP)
+
+func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
+	var distance := global_position.distance_to(origin)
+	var max_distance := 0.0
+	var duration := 0.0
+	match event_name:
+		PARK_REACTIONS.EVENT_GRAB_WINDUP:
+			max_distance = 8.0
+			duration = 0.8
+		PARK_REACTIONS.EVENT_GRAB_MISSED:
+			max_distance = 12.0
+			duration = 1.25
+		PARK_REACTIONS.EVENT_PLAYER_CAUGHT:
+			max_distance = 13.0
+			duration = 1.7
+		_:
+			return false
+	if distance > max_distance:
+		return false
+
+	_reaction_event = event_name
+	_reaction_origin = origin
+	_reaction_delay = distance * 0.025
+	_reaction_timer = duration
+	_reaction_time = 0.0
+	reaction_count += 1
+	return true
+
+func _update_park_reaction(delta: float) -> bool:
+	if _reaction_event.is_empty():
+		return false
+	_reaction_time += delta
+	if _reaction_delay > 0.0:
+		_reaction_delay = maxf(_reaction_delay - delta, 0.0)
+		return true
+
+	_reaction_timer = maxf(_reaction_timer - delta, 0.0)
+	if _reaction_timer <= 0.0:
+		_reaction_event = &""
+		$VisitorBody.rotation = _body_rest_rotation
+		$VisitorHead.position = _head_rest_position
+		_pick_new_target()
+		return false
+
+	var to_event := _reaction_origin - global_position
+	to_event.y = 0.0
+	if to_event.length_squared() > 0.001:
+		look_at(Vector3(_reaction_origin.x, global_position.y, _reaction_origin.z), Vector3.UP)
+	var bounce_speed := 14.0 if _reaction_event == PARK_REACTIONS.EVENT_GRAB_WINDUP else 20.0
+	var bounce := absf(sin(_reaction_time * bounce_speed))
+	$VisitorHead.position.y = _head_rest_position.y + bounce * 0.07
+	$VisitorBody.rotation.z = _body_rest_rotation.z + sin(_reaction_time * bounce_speed) * 0.08
+	return true
 
 func _physics_process(delta: float) -> void:
 	var position_before := global_position

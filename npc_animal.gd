@@ -4,6 +4,8 @@
 
 extends CharacterBody3D
 
+const PARK_REACTIONS = preload("res://park_reaction_director.gd")
+
 @export var speed:          float = 1.2    # normal wander speed (matches player walk speed)
 @export var flee_speed:     float = 2.2    # speed when running from the ranger
 @export var wander_radius:  float = 8.0   # max distance from park centre
@@ -18,6 +20,9 @@ const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for su
 
 @onready var head:   MeshInstance3D = $PigeonVisual/Head
 @onready var beak:   MeshInstance3D = $PigeonVisual/Beak
+@onready var body:   MeshInstance3D = $PigeonVisual/Body
+
+enum ReactionMode { NONE, WATCH, PANIC }
 
 var ranger: Node3D = null   # closest valid ranger, refreshed each frame
 
@@ -41,6 +46,14 @@ var _prev_sin:         float = 0.0   # previous frame sin value — for footstep
 var _desired_move: Vector3 = Vector3.ZERO   # set by AI, consumed by _physics_process
 var _peck_sfx:  AudioStreamPlayer3D         # 3D positional audio — fades with distance
 var _step_sfx:  AudioStreamPlayer3D
+var _reaction_mode: ReactionMode = ReactionMode.NONE
+var _reaction_origin: Vector3 = Vector3.ZERO
+var _reaction_delay: float = 0.0
+var _reaction_timer: float = 0.0
+var _reaction_time: float = 0.0
+var reaction_count: int = 0
+var _body_rest_rotation: Vector3
+var _body_rest_scale: Vector3
 
 func _ready() -> void:
 	add_to_group("pigeons")
@@ -49,6 +62,8 @@ func _ready() -> void:
 	beak_y_rest = beak.position.y
 	head_z_rest = head.position.z
 	beak_z_rest = beak.position.z
+	_body_rest_rotation = body.rotation
+	_body_rest_scale = body.scale
 
 	next_peck_timer = randf_range(0.5, 1.5)
 	choose_new_behavior()
@@ -75,6 +90,9 @@ func _process(delta: float) -> void:
 	_desired_move = Vector3.ZERO
 	_update_peck(delta)
 	ranger = _find_nearest_ranger()
+	if _update_park_reaction(delta):
+		_update_walk_bob(delta)
+		return
 
 	if is_instance_valid(ranger):
 		is_fleeing = global_position.distance_to(ranger.global_position) < flee_distance
@@ -87,6 +105,95 @@ func _process(delta: float) -> void:
 		_do_wander(delta)
 
 	_update_walk_bob(delta)
+
+func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
+	var distance := global_position.distance_to(origin)
+	var next_mode := ReactionMode.NONE
+	var duration := 0.0
+	var max_distance := 0.0
+	match event_name:
+		PARK_REACTIONS.EVENT_GRAB_WINDUP:
+			next_mode = ReactionMode.WATCH
+			duration = 0.65
+			max_distance = 7.0
+		PARK_REACTIONS.EVENT_GRAB_MISSED:
+			next_mode = ReactionMode.PANIC
+			duration = 1.45
+			max_distance = 10.0
+		PARK_REACTIONS.EVENT_PLAYER_CAUGHT:
+			next_mode = ReactionMode.PANIC
+			duration = 1.8
+			max_distance = 11.0
+		_:
+			return false
+	if distance > max_distance:
+		return false
+
+	_reaction_mode = next_mode
+	_reaction_origin = origin
+	_reaction_delay = distance * 0.035 if next_mode == ReactionMode.PANIC else 0.0
+	_reaction_timer = duration
+	_reaction_time = 0.0
+	reaction_count += 1
+	is_pecking = false
+	return true
+
+func _update_park_reaction(delta: float) -> bool:
+	if _reaction_mode == ReactionMode.NONE:
+		return false
+	_reaction_time += delta
+	if _reaction_delay > 0.0:
+		_reaction_delay = maxf(_reaction_delay - delta, 0.0)
+		_watch_reaction()
+		return true
+
+	_reaction_timer = maxf(_reaction_timer - delta, 0.0)
+	if _reaction_timer <= 0.0:
+		_finish_park_reaction()
+		return false
+
+	match _reaction_mode:
+		ReactionMode.WATCH:
+			_watch_reaction()
+		ReactionMode.PANIC:
+			_panic_reaction()
+	return true
+
+func _watch_reaction() -> void:
+	is_pausing = true
+	is_fleeing = false
+	_desired_move = Vector3.ZERO
+	var to_event := _reaction_origin - global_position
+	to_event.y = 0.0
+	if to_event.length_squared() > 0.001:
+		look_at(global_position - to_event.normalized(), Vector3.UP)
+	head.position.y = head_y_rest + 0.045
+	beak.position.y = beak_y_rest + 0.045
+	body.scale = _body_rest_scale * (1.0 + sin(_reaction_time * 18.0) * 0.035)
+
+func _panic_reaction() -> void:
+	is_pausing = false
+	is_fleeing = true
+	var away := global_position - _reaction_origin
+	away.y = 0.0
+	if away.length_squared() < 0.001:
+		away = direction
+	away = away.normalized()
+	direction = away
+	_desired_move = away * flee_speed * 1.35
+	look_at(global_position - away, Vector3.UP)
+	body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 26.0) * 0.13
+	body.scale = _body_rest_scale * (1.0 + absf(sin(_reaction_time * 20.0)) * 0.08)
+
+func _finish_park_reaction() -> void:
+	_reaction_mode = ReactionMode.NONE
+	_reaction_delay = 0.0
+	_reaction_timer = 0.0
+	body.rotation = _body_rest_rotation
+	body.scale = _body_rest_scale
+	head.position.y = head_y_rest
+	beak.position.y = beak_y_rest
+	choose_new_behavior()
 
 func _find_nearest_ranger() -> Node3D:
 	var nearest: Node3D = null

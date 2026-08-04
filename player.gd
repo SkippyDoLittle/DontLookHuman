@@ -54,6 +54,8 @@ var _wall_bump_cooldown: float = 0.0  # prevents bump sound repeating every fram
 var in_water: bool = false   # read by ranger.gd for suspicion; updated each frame
 var _water_zones: Dictionary = {}
 var _water_speed_multiplier: float = 1.0
+var is_captured: bool = false
+var _capture_reaction_time: float = 0.0
 
 # Camera orbit angles — driven by mouse input in _input(), applied to spring_arm each frame.
 var camera_yaw:   float = 0.0
@@ -84,6 +86,8 @@ func _ready() -> void:
 	_zoom_target = spring_arm.spring_length
 
 func _input(event: InputEvent) -> void:
+	if is_captured:
+		return
 	# Only handle camera input when the cursor is captured (active gameplay).
 	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
 		return
@@ -104,6 +108,8 @@ func _input(event: InputEvent) -> void:
 			_zoom_target = clampf(_zoom_target + zoom_step, ZOOM_MIN, ZOOM_MAX)
 
 func _update_controller_camera(delta: float) -> void:
+	if is_captured:
+		return
 	if Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
 		return
 
@@ -145,6 +151,17 @@ func _physics_process(delta: float) -> void:
 	# ── CAMERA ZOOM ──────────────────────────────────────────────────────────────
 	# Smoothly ease spring_length toward wherever the scroll wheel last set it.
 	spring_arm.spring_length = lerp(spring_arm.spring_length, _zoom_target, delta * zoom_smooth)
+
+	if is_captured:
+		_update_capture_reaction(delta)
+		if not is_on_floor():
+			velocity.y -= gravity * delta
+		else:
+			velocity.y = -0.1
+		velocity.x = 0.0
+		velocity.z = 0.0
+		move_and_slide()
+		return
 
 	# ── GRAVITY ──────────────────────────────────────────────────────────────────
 	if not is_on_floor():
@@ -280,10 +297,37 @@ func _physics_process(delta: float) -> void:
 # Lets one nearby food item claim the current peck. Keeping this state on the
 # player prevents overlapping collectibles from all responding to the same input.
 func try_consume_peck() -> bool:
-	if not is_pecking or _peck_consumed:
+	if is_captured or not is_pecking or _peck_consumed:
 		return false
 	_peck_consumed = true
 	return true
+
+func start_capture_reaction(ranger_position: Vector3) -> void:
+	if is_captured:
+		return
+	is_captured = true
+	is_pecking = false
+	_capture_reaction_time = 0.0
+	velocity.x = 0.0
+	velocity.z = 0.0
+	var to_ranger := ranger_position - global_position
+	to_ranger.y = 0.0
+	if to_ranger.length_squared() > 0.001:
+		pigeon_visual.rotation.y = atan2(to_ranger.x, to_ranger.z)
+	SoundManager.play_capture_flap()
+
+func _update_capture_reaction(delta: float) -> void:
+	_capture_reaction_time += delta
+	var struggle := sin(_capture_reaction_time * 24.0)
+	var squash := absf(sin(_capture_reaction_time * 17.0))
+	pigeon_visual.rotation.z = struggle * 0.24
+	pigeon_visual.scale = Vector3(
+		1.0 + squash * 0.16,
+		1.0 - squash * 0.12,
+		1.0 + squash * 0.16
+	)
+	head.position.y = head_y_rest + sin(_capture_reaction_time * 31.0) * 0.05
+	beak.position.y = beak_y_rest + sin(_capture_reaction_time * 31.0) * 0.05
 
 func enter_water_zone(zone: Area3D, speed_multiplier: float) -> void:
 	_water_zones[zone] = clampf(speed_multiplier, 0.05, 1.0)

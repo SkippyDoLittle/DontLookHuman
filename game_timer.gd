@@ -41,6 +41,7 @@ var _caught_reason: String = ""
 var _grade_thresholds: Array[float] = ScoreManager.default_thresholds()
 var _result_transition_started: bool = false
 var _controls_closed_frame: int = -1
+var _capture_sequence_active: bool = false
 
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
@@ -145,6 +146,8 @@ func _on_countdown_finished() -> void:
 	tween.tween_callback(_hud.hide_countdown)
 
 func _process_active_session(delta: float) -> void:
+	if _capture_sequence_active:
+		return
 	if Input.is_action_just_pressed("pause_game"):
 		_pause_session()
 		return
@@ -232,9 +235,20 @@ func _connect_new_rangers() -> void:
 		_connected_rangers[instance_id] = ranger_node
 		ranger_node.connect("suspicion_changed", _on_ranger_suspicion_changed)
 		ranger_node.connect("player_caught", _on_ranger_caught.bind(ranger_node))
+		if ranger_node.has_signal("capture_started"):
+			ranger_node.connect("capture_started", _on_capture_started)
+		if ranger_node.has_signal("grab_missed"):
+			ranger_node.connect("grab_missed", _on_ranger_grab_missed)
 
 func _on_ranger_suspicion_changed(value: float) -> void:
 	peak_suspicion = maxf(peak_suspicion, value)
+
+func _on_capture_started() -> void:
+	_capture_sequence_active = true
+	_transition.start_shake(0.8)
+
+func _on_ranger_grab_missed() -> void:
+	_transition.start_shake(0.45)
 
 func _on_ranger_caught(ranger_node: Node) -> void:
 	_caught_reason = String(ranger_node.get("last_suspicion_reason"))
@@ -273,6 +287,7 @@ func _finish(success: bool, headline: String) -> void:
 		return
 
 	_success = success
+	_capture_sequence_active = false
 	_set_state(SessionState.FINISHED)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
@@ -308,6 +323,7 @@ func _finish(success: bool, headline: String) -> void:
 		not next_level_scene.is_empty(),
 		_caught_reason
 	)
+	_sound_manager.call("set_tension", 0.0)
 	_sound_manager.call("stop_ambient")
 	get_tree().paused = true
 	level_finished.emit(success)

@@ -46,6 +46,15 @@ func update(delta: float, state: int) -> void:
 func stop() -> void:
 	_desired_move = Vector3.ZERO
 
+func move_in_direction(direction: Vector3, speed: float) -> void:
+	var flat_direction := Vector3(direction.x, 0.0, direction.z)
+	if flat_direction.length_squared() < 0.001:
+		_desired_move = Vector3.ZERO
+		return
+	flat_direction = flat_direction.normalized()
+	_desired_move = flat_direction * speed
+	_ranger.look_at(_ranger.global_position + flat_direction, Vector3.UP)
+
 func physics_step(delta: float) -> void:
 	var position_before := _ranger.global_position
 	var intended_speed := Vector2(_desired_move.x, _desired_move.z).length()

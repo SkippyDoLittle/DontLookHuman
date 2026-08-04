@@ -18,6 +18,13 @@ var _step_run:  AudioStreamPlayer
 var _portal:    AudioStreamPlayer
 var _exhaust:    AudioStreamPlayer
 var _wall_bump:  AudioStreamPlayer
+var _ranger_whistle: AudioStreamPlayer
+var _grab_whoosh: AudioStreamPlayer
+var _grab_miss: AudioStreamPlayer
+var _capture_impact: AudioStreamPlayer
+var _capture_flap: AudioStreamPlayer
+var _flock_panic: AudioStreamPlayer
+var _heartbeat: AudioStreamPlayer
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
@@ -41,8 +48,15 @@ func _ready() -> void:
 	_portal    = _player(_chime([523.25, 783.99, 1046.5, 1318.5, 1568.0], [0.08, 0.08, 0.10, 0.12, 0.30]), -2.0)  # C5 G5 C6 E6 G6
 	_exhaust   = _player(_noise(0.08,   40.0,  0.12), -14.0)
 	_wall_bump = _player(_noise(0.06,   35.0,  0.18), -10.0)  # low thud for hitting park boundary
+	_ranger_whistle = _player(_sweep(1350.0, 2550.0, 0.24), -3.0)
+	_grab_whoosh = _player(_noise(0.16, 13.0, 0.12), -5.0)
+	_grab_miss = _player(_noise(0.22, 9.0, 0.07), -2.0)
+	_capture_impact = _player(_noise(0.15, 11.0, 0.22), 0.0)
+	_capture_flap = _player(_noise(0.38, 5.5, 0.09), -3.0)
+	_flock_panic = _player(_noise(0.45, 4.0, 0.04), -8.0)
+	_heartbeat = _player(_heartbeat_loop(), -80.0)
 
-	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump]:
+	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat]:
 		add_child(p)
 		p.bus = "SFX"
 
@@ -62,6 +76,23 @@ func play_tick()    -> void: _tick.play()
 func play_portal()  -> void: _portal.play()
 func play_exhaust()   -> void: _exhaust.play()
 func play_wall_bump() -> void: _wall_bump.play()
+func play_ranger_whistle() -> void: _ranger_whistle.play()
+func play_grab_whoosh() -> void: _grab_whoosh.play()
+func play_grab_miss() -> void: _grab_miss.play()
+func play_capture_impact() -> void: _capture_impact.play()
+func play_capture_flap() -> void: _capture_flap.play()
+func play_flock_panic() -> void: _flock_panic.play()
+
+func set_tension(amount: float) -> void:
+	var tension := clampf(amount, 0.0, 1.0)
+	if tension < 0.52:
+		_heartbeat.stop()
+		return
+	if not _heartbeat.playing:
+		_heartbeat.play()
+	var intensity := inverse_lerp(0.52, 1.0, tension)
+	_heartbeat.volume_db = lerpf(-24.0, -7.0, intensity)
+	_heartbeat.pitch_scale = lerpf(0.82, 1.38, intensity)
 
 func start_ambient() -> void:
 	if not _ambient.playing:
@@ -158,6 +189,29 @@ func _chime(freqs: Array, durs: Array) -> AudioStreamWAV:
 			_put(d, offset + i, sin(TAU * freq * t) * exp(-t * 6.0) * 0.85)
 		offset += frames + gap
 	return _done(d)
+
+func _heartbeat_loop() -> AudioStreamWAV:
+	var duration := 1.05
+	var frame_count := int(duration * float(SAMPLE_RATE))
+	var samples := PackedFloat32Array()
+	samples.resize(frame_count)
+	for beat_start in [0.0, 0.18]:
+		var start_frame := int(float(beat_start) * float(SAMPLE_RATE))
+		for frame in range(start_frame, frame_count):
+			var local_time := float(frame - start_frame) / float(SAMPLE_RATE)
+			if local_time > 0.16:
+				break
+			var thump := sin(TAU * 58.0 * local_time) * exp(-local_time * 28.0)
+			samples[frame] += thump * 0.85
+	var data := PackedByteArray()
+	data.resize(frame_count * 2)
+	for frame in frame_count:
+		_put(data, frame, clampf(samples[frame], -0.98, 0.98))
+	var stream := _done(data)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = frame_count - 1
+	return stream
 
 func _park_ambient() -> AudioStreamWAV:
 	var dur := 8.0

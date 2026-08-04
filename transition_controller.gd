@@ -26,8 +26,8 @@ func fade_to_black(duration: float, completion: Callable) -> void:
 func clear_transition() -> void:
 	_transition_rect.color.a = 0.0
 
-func start_shake() -> void:
-	_shake_trauma = 1.0
+func start_shake(strength: float = 1.0) -> void:
+	_shake_trauma = maxf(_shake_trauma, clampf(strength, 0.0, 1.0))
 
 func update_shake(delta: float) -> void:
 	if _shake_trauma > 0.0:

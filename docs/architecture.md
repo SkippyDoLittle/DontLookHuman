@@ -26,8 +26,11 @@ Collectibles and the escape zone emit gameplay events. They do not manipulate th
 - `ranger_movement.gd` handles pursuit movement and lightweight obstacle recovery.
 - `ranger_presentation.gd` handles world-space alerts.
 - `ranger_hud_controller.gd` aggregates multiple ranger signals for the shared HUD.
+- `park_reaction_director.gd` broadcasts grab wind-ups, misses, and catches to nearby pigeons and visitors; each actor owns its own distance, delay, and animation response.
 
 Rangers and pigeons use groups rather than exact numbered node names. This allows later levels to add rangers or procedurally scattered pigeons without changing detection code.
+
+Playground currently acts as the controlled-chaos vertical slice. Its rangers opt into physical capture: a full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Other levels retain the legacy full-meter catch until the slice has been playtested and approved for rollout.
 
 ## Level configuration and persistence
 
@@ -45,6 +48,6 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 
 ## Verification
 
-Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
+Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
 
 `tools/capture_portfolio_screenshots.gd` reproduces the five portfolio screenshots from the actual scenes. `tools/capture_gameplay_video.gd` directs a repeatable 33-second, four-sequence trailer in Godot Movie Maker mode. It owns the cinematic camera, deterministic gameplay staging, animated text and logo beats, trailer-only portal presentation, and audio mix. `tools/trailer_soundtrack.gd` generates the original synchronized score. `tools/finalize_trailer.ps1` normalizes Godot's RIFF length field and verifies all 990 video and audio chunks plus the AVI index without replacing any animated frame. `tools/package_windows_release.ps1` exports the Windows build into a versioned folder, adds player instructions, creates a ZIP, and writes its SHA-256 checksum.
