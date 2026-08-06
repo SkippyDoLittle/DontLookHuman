@@ -25,6 +25,11 @@ var _capture_impact: AudioStreamPlayer
 var _capture_flap: AudioStreamPlayer
 var _flock_panic: AudioStreamPlayer
 var _heartbeat: AudioStreamPlayer
+var _food_frenzy: AudioStreamPlayer
+var _water_splash: AudioStreamPlayer
+var _swing_chaos: AudioStreamPlayer
+var _sprinkler_burst: AudioStreamPlayer
+var _exposed_sting: AudioStreamPlayer
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
@@ -55,8 +60,13 @@ func _ready() -> void:
 	_capture_flap = _player(_noise(0.38, 5.5, 0.09), -3.0)
 	_flock_panic = _player(_noise(0.45, 4.0, 0.04), -8.0)
 	_heartbeat = _player(_heartbeat_loop(), -80.0)
+	_food_frenzy = _player(_chime([784.0, 988.0, 1318.5], [0.07, 0.07, 0.2]), -4.0)
+	_water_splash = _player(_noise(0.42, 5.2, 0.08), -2.0)
+	_swing_chaos = _player(_sweep(720.0, 180.0, 0.38), -4.0)
+	_sprinkler_burst = _player(_noise(0.85, 2.6, 0.05), -6.0)
+	_exposed_sting = _player(_sweep(240.0, 980.0, 0.34), -1.0)
 
-	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat]:
+	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat, _food_frenzy, _water_splash, _swing_chaos, _sprinkler_burst, _exposed_sting]:
 		add_child(p)
 		p.bus = "SFX"
 
@@ -82,6 +92,11 @@ func play_grab_miss() -> void: _grab_miss.play()
 func play_capture_impact() -> void: _capture_impact.play()
 func play_capture_flap() -> void: _capture_flap.play()
 func play_flock_panic() -> void: _flock_panic.play()
+func play_food_frenzy() -> void: _food_frenzy.play()
+func play_water_splash() -> void: _water_splash.play()
+func play_swing_chaos() -> void: _swing_chaos.play()
+func play_sprinkler_burst() -> void: _sprinkler_burst.play()
+func play_exposed_sting() -> void: _exposed_sting.play()
 
 func set_tension(amount: float) -> void:
 	var tension := clampf(amount, 0.0, 1.0)

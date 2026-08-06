@@ -103,6 +103,16 @@ func grab_missed(recovery_duration: float, personality: String = "Steady") -> vo
 	var reset_delay := maxf(recovery_duration - 0.42, 0.12)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.28))
 
+func chaos_reaction(callout: String, duration: float) -> void:
+	_show_alert(callout, Color(0.35, 0.9, 1.0, 1.0), 1.45, 0.06, 0.12)
+	_kill_action_tween()
+	_action_tween = _host.create_tween().set_parallel(true)
+	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.18, 0.12)
+	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:y", 0.65, 0.12)
+	var reset_delay := maxf(duration - 0.28, 0.18)
+	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.22))
+
 func player_captured(personality: String = "Steady") -> void:
 	var callout := {
 		"Rookie": "I GOT ONE!",

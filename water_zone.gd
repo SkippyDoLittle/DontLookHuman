@@ -2,6 +2,8 @@
 
 extends Area3D
 
+signal player_splashed(origin: Vector3)
+
 @export_range(0.05, 1.0, 0.05) var speed_multiplier: float = 0.5
 
 func _ready() -> void:
@@ -11,6 +13,7 @@ func _ready() -> void:
 func _on_body_entered(body: Node3D) -> void:
 	if body.has_method("enter_water_zone"):
 		body.call("enter_water_zone", self, speed_multiplier)
+		player_splashed.emit(body.global_position)
 
 func _on_body_exited(body: Node3D) -> void:
 	if body.has_method("exit_water_zone"):

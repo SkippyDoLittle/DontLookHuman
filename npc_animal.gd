@@ -22,7 +22,7 @@ const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for su
 @onready var beak:   MeshInstance3D = $PigeonVisual/Beak
 @onready var body:   MeshInstance3D = $PigeonVisual/Body
 
-enum ReactionMode { NONE, WATCH, PANIC }
+enum ReactionMode { NONE, WATCH, PANIC, SWARM }
 
 var ranger: Node3D = null   # closest valid ranger, refreshed each frame
 
@@ -51,6 +51,7 @@ var _reaction_origin: Vector3 = Vector3.ZERO
 var _reaction_delay: float = 0.0
 var _reaction_timer: float = 0.0
 var _reaction_time: float = 0.0
+var _reaction_target: Vector3 = Vector3.ZERO
 var reaction_count: int = 0
 var _body_rest_rotation: Vector3
 var _body_rest_scale: Vector3
@@ -124,6 +125,30 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 			next_mode = ReactionMode.PANIC
 			duration = 1.8
 			max_distance = 11.0
+		PARK_REACTIONS.EVENT_FOOD_FRENZY:
+			next_mode = ReactionMode.SWARM
+			duration = 2.7
+			max_distance = 16.0
+		PARK_REACTIONS.EVENT_FESTIVAL_FRENZY:
+			next_mode = ReactionMode.SWARM
+			duration = 3.4
+			max_distance = 24.0
+		PARK_REACTIONS.EVENT_SWING_CHAOS:
+			next_mode = ReactionMode.PANIC
+			duration = 1.65
+			max_distance = 11.0
+		PARK_REACTIONS.EVENT_WATER_SPLASH:
+			next_mode = ReactionMode.PANIC
+			duration = 1.9
+			max_distance = 14.0
+		PARK_REACTIONS.EVENT_SPRINKLER_BURST:
+			next_mode = ReactionMode.PANIC
+			duration = 2.15
+			max_distance = 18.0
+		PARK_REACTIONS.EVENT_PLAYER_EXPOSED:
+			next_mode = ReactionMode.PANIC
+			duration = 2.35
+			max_distance = 36.0
 		_:
 			return false
 	if distance > max_distance:
@@ -131,9 +156,12 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 
 	_reaction_mode = next_mode
 	_reaction_origin = origin
-	_reaction_delay = distance * 0.035 if next_mode == ReactionMode.PANIC else 0.0
+	_reaction_delay = distance * 0.035 if next_mode in [ReactionMode.PANIC, ReactionMode.SWARM] else 0.0
 	_reaction_timer = duration
 	_reaction_time = 0.0
+	var ring_angle := float(get_instance_id() % 19) / 19.0 * TAU
+	var ring_radius := 0.55 + float(get_instance_id() % 5) * 0.16
+	_reaction_target = origin + Vector3(sin(ring_angle), 0.0, cos(ring_angle)) * ring_radius
 	reaction_count += 1
 	is_pecking = false
 	return true
@@ -157,6 +185,8 @@ func _update_park_reaction(delta: float) -> bool:
 			_watch_reaction()
 		ReactionMode.PANIC:
 			_panic_reaction()
+		ReactionMode.SWARM:
+			_swarm_reaction()
 	return true
 
 func _watch_reaction() -> void:
@@ -184,6 +214,24 @@ func _panic_reaction() -> void:
 	look_at(global_position - away, Vector3.UP)
 	body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 26.0) * 0.13
 	body.scale = _body_rest_scale * (1.0 + absf(sin(_reaction_time * 20.0)) * 0.08)
+
+func _swarm_reaction() -> void:
+	is_fleeing = false
+	var toward_food := _reaction_target - global_position
+	toward_food.y = 0.0
+	if toward_food.length() > 0.42:
+		is_pausing = false
+		direction = toward_food.normalized()
+		_desired_move = direction * flee_speed * 1.15
+		look_at(global_position - direction, Vector3.UP)
+		body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 22.0) * 0.08
+	else:
+		is_pausing = true
+		_desired_move = Vector3.ZERO
+		var peck_pulse := absf(sin(_reaction_time * 16.0))
+		head.position.y = head_y_rest - peck_pulse * 0.1
+		beak.position.y = beak_y_rest - peck_pulse * 0.1
+		body.scale = _body_rest_scale * (1.0 + peck_pulse * 0.06)
 
 func _finish_park_reaction() -> void:
 	_reaction_mode = ReactionMode.NONE

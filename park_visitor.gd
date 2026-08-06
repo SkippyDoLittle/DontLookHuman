@@ -85,6 +85,24 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 		PARK_REACTIONS.EVENT_PLAYER_CAUGHT:
 			max_distance = 13.0
 			duration = 1.7
+		PARK_REACTIONS.EVENT_FOOD_FRENZY:
+			max_distance = 14.0
+			duration = 1.8
+		PARK_REACTIONS.EVENT_FESTIVAL_FRENZY:
+			max_distance = 24.0
+			duration = 2.5
+		PARK_REACTIONS.EVENT_SWING_CHAOS:
+			max_distance = 12.0
+			duration = 1.8
+		PARK_REACTIONS.EVENT_WATER_SPLASH:
+			max_distance = 15.0
+			duration = 1.9
+		PARK_REACTIONS.EVENT_SPRINKLER_BURST:
+			max_distance = 20.0
+			duration = 2.2
+		PARK_REACTIONS.EVENT_PLAYER_EXPOSED:
+			max_distance = 32.0
+			duration = 2.4
 		_:
 			return false
 	if distance > max_distance:

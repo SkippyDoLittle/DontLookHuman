@@ -56,6 +56,11 @@ var _water_zones: Dictionary = {}
 var _water_speed_multiplier: float = 1.0
 var is_captured: bool = false
 var _capture_reaction_time: float = 0.0
+var _camera_shake_timer: float = 0.0
+var _camera_shake_duration: float = 0.0
+var _camera_shake_intensity: float = 0.0
+var _camera_shake_time: float = 0.0
+var camera_shake_count: int = 0
 
 # Camera orbit angles — driven by mouse input in _input(), applied to spring_arm each frame.
 var camera_yaw:   float = 0.0
@@ -65,6 +70,7 @@ var camera_pitch: float = 0.0
 var _zoom_target: float = 4.0
 
 @onready var spring_arm:    SpringArm3D   = $SpringArm3D
+@onready var gameplay_camera: Camera3D     = $SpringArm3D/Camera3D
 @onready var pigeon_visual: Node3D        = $PigeonVisual
 @onready var head:          MeshInstance3D = $PigeonVisual/Head
 @onready var beak:          MeshInstance3D = $PigeonVisual/Beak
@@ -145,8 +151,31 @@ func _load_camera_settings() -> void:
 	)
 	invert_camera_y = bool(config.get_value("camera", "invert_y", invert_camera_y))
 
+func add_camera_trauma(intensity: float = 0.16, duration: float = 0.42) -> void:
+	_camera_shake_intensity = maxf(_camera_shake_intensity, clampf(intensity, 0.0, 0.35))
+	_camera_shake_duration = maxf(_camera_shake_duration, duration)
+	_camera_shake_timer = maxf(_camera_shake_timer, duration)
+	_camera_shake_time = 0.0
+	camera_shake_count += 1
+
+func _update_camera_shake(delta: float) -> void:
+	if _camera_shake_timer <= 0.0:
+		gameplay_camera.h_offset = lerpf(gameplay_camera.h_offset, 0.0, minf(delta * 18.0, 1.0))
+		gameplay_camera.v_offset = lerpf(gameplay_camera.v_offset, 0.0, minf(delta * 18.0, 1.0))
+		return
+	_camera_shake_timer = maxf(_camera_shake_timer - delta, 0.0)
+	_camera_shake_time += delta
+	var fade := _camera_shake_timer / maxf(_camera_shake_duration, 0.001)
+	var strength := _camera_shake_intensity * fade * fade
+	gameplay_camera.h_offset = sin(_camera_shake_time * 63.0) * strength
+	gameplay_camera.v_offset = sin(_camera_shake_time * 47.0 + 1.7) * strength * 0.62
+	if _camera_shake_timer <= 0.0:
+		_camera_shake_intensity = 0.0
+		_camera_shake_duration = 0.0
+
 func _physics_process(delta: float) -> void:
 	_update_controller_camera(delta)
+	_update_camera_shake(delta)
 
 	# ── CAMERA ZOOM ──────────────────────────────────────────────────────────────
 	# Smoothly ease spring_length toward wherever the scroll wheel last set it.

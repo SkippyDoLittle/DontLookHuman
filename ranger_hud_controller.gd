@@ -5,17 +5,34 @@ extends CanvasLayer
 @onready var _suspicion_bar: ProgressBar = $SuspicionBar
 @onready var _vignette_material: ShaderMaterial = $VignetteRect.material
 @onready var _warning_label: Label = $WarnLabel
+@onready var _danger_flash: ColorRect = get_node_or_null("DangerFlash") as ColorRect
 @onready var _sound_manager: Node = get_node("/root/SoundManager")
 
 var _connected_rangers: Dictionary = {}
 var _suspicion_by_ranger: Dictionary = {}
+var _state_by_ranger: Dictionary = {}
 var _primary_ranger: Node
 var _primary_state: int = RangerStateMachine.State.PATROL
+var _highest_state: int = RangerStateMachine.State.PATROL
 var _pulse_time: float = 0.0
 var _warning_timer: float = 0.0
+var _danger_flash_tween: Tween
+var exposure_feedback_count: int = 0
 
 func _ready() -> void:
+	_ensure_danger_flash()
 	call_deferred("_connect_new_rangers")
+
+func _ensure_danger_flash() -> void:
+	if _danger_flash != null:
+		return
+	_danger_flash = ColorRect.new()
+	_danger_flash.name = "DangerFlash"
+	_danger_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_danger_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_danger_flash.color = Color(0.82, 0.025, 0.01, 0.0)
+	add_child(_danger_flash)
+	move_child(_danger_flash, 0)
 
 func _process(delta: float) -> void:
 	_connect_new_rangers()
@@ -29,6 +46,7 @@ func _connect_new_rangers() -> void:
 			continue
 		_connected_rangers[instance_id] = ranger
 		_suspicion_by_ranger[instance_id] = float(ranger.get("suspicion"))
+		_state_by_ranger[instance_id] = int(ranger.get("state"))
 		ranger.connect("suspicion_changed", _on_suspicion_changed.bind(ranger))
 		ranger.connect("state_changed", _on_state_changed.bind(ranger))
 		ranger.connect("player_caught", _on_player_caught.bind(ranger))
@@ -43,12 +61,17 @@ func _connect_new_rangers() -> void:
 			_primary_ranger = ranger
 			_primary_state = int(ranger.get("state"))
 	_update_max_suspicion()
+	_update_highest_state()
 
 func _on_suspicion_changed(value: float, ranger: Node) -> void:
 	_suspicion_by_ranger[ranger.get_instance_id()] = value
 	_update_max_suspicion()
 
 func _on_state_changed(new_state: int, ranger: Node) -> void:
+	_state_by_ranger[ranger.get_instance_id()] = new_state
+	_update_highest_state()
+	if new_state == RangerStateMachine.State.CHASE:
+		_status_label.text = "Rangers: Alert!"
 	if ranger != _primary_ranger:
 		return
 	_primary_state = new_state
@@ -60,8 +83,7 @@ func _on_state_changed(new_state: int, ranger: Node) -> void:
 func _on_player_caught(ranger: Node) -> void:
 	_suspicion_by_ranger[ranger.get_instance_id()] = 100.0
 	_update_max_suspicion()
-	if ranger == _primary_ranger:
-		_status_label.text = "CAUGHT!"
+	_status_label.text = "CAUGHT!"
 
 func _on_grab_started(_ranger: Node) -> void:
 	_status_label.text = "Ranger: GRABBING!"
@@ -78,8 +100,24 @@ func _on_capture_started(_ranger: Node) -> void:
 	_warning_timer = 0.0
 	_warning_label.visible = false
 
+func trigger_exposure_feedback() -> void:
+	exposure_feedback_count += 1
+	_status_label.text = "Rangers: Alert!"
+	_show_warning("SPOTTED!", Color(1.0, 0.84, 0.12, 1.0), 1.35)
+	if _danger_flash_tween and _danger_flash_tween.is_valid():
+		_danger_flash_tween.kill()
+	_danger_flash.color = Color(0.82, 0.025, 0.01, 0.0)
+	_danger_flash_tween = create_tween()
+	_danger_flash_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_danger_flash_tween.tween_property(_danger_flash, "color:a", 0.24, 0.08)
+	_danger_flash_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_danger_flash_tween.tween_property(_danger_flash, "color:a", 0.0, 0.48)
+
 func _on_observation_changed(reason: String, is_nearby: bool, active_gain: float, ranger: Node) -> void:
 	if ranger != _primary_ranger:
+		return
+	if _highest_state == RangerStateMachine.State.CHASE and int(ranger.get("state")) != RangerStateMachine.State.CHASE:
+		_status_label.text = "Rangers: Alert!"
 		return
 	match int(ranger.get("state")):
 		RangerStateMachine.State.CHASE:
@@ -106,8 +144,13 @@ func _update_max_suspicion() -> void:
 	_vignette_material.set_shader_parameter("intensity", maximum / 100.0 * 0.65)
 	_sound_manager.call("set_tension", maximum / 100.0)
 
+func _update_highest_state() -> void:
+	_highest_state = RangerStateMachine.State.PATROL
+	for ranger_state in _state_by_ranger.values():
+		_highest_state = maxi(_highest_state, int(ranger_state))
+
 func _update_bar_pulse(delta: float) -> void:
-	match _primary_state:
+	match _highest_state:
 		RangerStateMachine.State.PATROL:
 			_pulse_time = 0.0
 			_suspicion_bar.modulate = Color.WHITE

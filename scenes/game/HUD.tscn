@@ -86,6 +86,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
+[node name="DangerFlash" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.82, 0.025, 0.01, 0)
+
 [node name="RangerStatus" type="Label" parent="."]
 offset_right = 40.0
 offset_bottom = 23.0
@@ -140,6 +147,9 @@ offset_top = 105.0
 offset_right = 160.0
 offset_bottom = 145.0
 theme_override_font_sizes/font_size = 32
+theme_override_colors/font_shadow_color = Color(0.02, 0.02, 0.02, 0.95)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
 horizontal_alignment = 1
 
 [node name="ResultBackground" type="ColorRect" parent="."]

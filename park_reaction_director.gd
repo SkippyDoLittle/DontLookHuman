@@ -7,6 +7,12 @@ extends RefCounted
 const EVENT_GRAB_WINDUP: StringName = &"ranger_grab_windup"
 const EVENT_GRAB_MISSED: StringName = &"ranger_grab_missed"
 const EVENT_PLAYER_CAUGHT: StringName = &"player_caught"
+const EVENT_FOOD_FRENZY: StringName = &"food_frenzy"
+const EVENT_SWING_CHAOS: StringName = &"swing_chaos"
+const EVENT_WATER_SPLASH: StringName = &"water_splash"
+const EVENT_FESTIVAL_FRENZY: StringName = &"festival_frenzy"
+const EVENT_SPRINKLER_BURST: StringName = &"sprinkler_burst"
+const EVENT_PLAYER_EXPOSED: StringName = &"player_exposed"
 
 const REACTION_GROUPS: Array[StringName] = [&"pigeons", &"visitors"]
 

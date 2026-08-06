@@ -4,6 +4,8 @@
 
 extends Node3D
 
+signal food_collected(food: Node3D, origin: Vector3)
+
 @export var collect_distance: float = 1.2
 
 @onready var player: Node3D = get_node("../Player") as Node3D
@@ -28,6 +30,7 @@ func _process(_delta: float) -> void:
 		collected = true
 		SoundManager.play_collect()
 		_spawn_burst()
+		food_collected.emit(self, global_position)
 
 		queue_free()
 

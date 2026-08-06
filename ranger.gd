@@ -78,6 +78,8 @@ var _grab_direction: Vector3 = Vector3.ZERO
 var _player_exposed: bool = false
 var _capture_signal_emitted: bool = false
 var _session_capture_in_progress: bool = false
+var _chaos_distraction_timer: float = 0.0
+var chaos_reaction_count: int = 0
 
 func _ready() -> void:
 	add_to_group("rangers")
@@ -91,6 +93,11 @@ func _process(delta: float) -> void:
 		return
 	if grab_phase != GrabPhase.IDLE:
 		_update_grab(delta)
+		_presentation.update(delta, state)
+		return
+	if _chaos_distraction_timer > 0.0:
+		_chaos_distraction_timer = maxf(_chaos_distraction_timer - delta, 0.0)
+		_movement.stop()
 		_presentation.update(delta, state)
 		return
 
@@ -143,6 +150,43 @@ func choose_new_patrol_direction() -> void:
 func halt_for_capture() -> void:
 	_session_capture_in_progress = true
 	_movement.stop()
+
+func apply_chaos_distraction(
+	origin: Vector3,
+	duration: float = 0.8,
+	suspicion_drop: float = 0.0,
+	callout: String = "WHAT?!"
+) -> bool:
+	if caught or _session_capture_in_progress or grab_phase == GrabPhase.CAPTURED:
+		return false
+	_chaos_distraction_timer = maxf(_chaos_distraction_timer, duration)
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	var previous_suspicion := suspicion
+	_suspicion_model.suspicion = maxf(_suspicion_model.suspicion - suspicion_drop, 0.0)
+	suspicion = _suspicion_model.suspicion
+	if not is_equal_approx(previous_suspicion, suspicion):
+		suspicion_changed.emit(suspicion)
+	chaos_reaction_count += 1
+	_presentation.chaos_reaction(callout, duration)
+	_movement.stop()
+	return true
+
+func stumble_from_environment(origin: Vector3, callout: String = "WHOA!") -> bool:
+	if caught or _session_capture_in_progress or grab_phase == GrabPhase.CAPTURED:
+		return false
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	grab_phase = GrabPhase.RECOVERY
+	_grab_timer = maxf(grab_recovery_duration, 1.15)
+	chaos_reaction_count += 1
+	_movement.stop()
+	_presentation.grab_missed(_grab_timer, capture_personality)
+	_alert_label.text = callout
+	_sound_manager.call("play_grab_miss")
+	return true
 
 func _update_exposed_state() -> void:
 	if suspicion >= 99.5:

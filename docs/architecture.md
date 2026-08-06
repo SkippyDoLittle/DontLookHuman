@@ -26,11 +26,14 @@ Collectibles and the escape zone emit gameplay events. They do not manipulate th
 - `ranger_movement.gd` handles pursuit movement and lightweight obstacle recovery.
 - `ranger_presentation.gd` handles world-space alerts.
 - `ranger_hud_controller.gd` aggregates multiple ranger signals for the shared HUD.
-- `park_reaction_director.gd` broadcasts grab wind-ups, misses, and catches to nearby pigeons and visitors; each actor owns its own distance, delay, and animation response.
+- `park_reaction_director.gd` broadcasts grabs, authored environmental surprises, and player exposure to pigeons and visitors; each actor owns its own distance, delay, and animation response.
+- `park_chaos_controller.gd` connects shared food, water, ranger, HUD, camera, and prop contracts. It owns one signature event per level plus a rearmable park-wide panic cascade when any ranger reaches Chase.
 
 Rangers and pigeons use groups rather than exact numbered node names. This allows later levels to add rangers or procedurally scattered pigeons without changing detection code.
 
 The approved controlled-chaos capture system now runs across the campaign. A full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Levels tune wind-up, lunge speed, and recovery independently. Ranger personality labels provide visible Rookie, Steady, Hothead, and Veteran variations without changing the core controls.
+
+Each campaign map also has one deterministic environmental story: Park feeding frenzy, Playground swing surprise, Lakeside splash alarm, Festival popcorn panic, and the Botanical Gardens sprinkler finale. Separately, the first Chase in each danger cycle scatters the flock, alerts visitors, flashes the HUD, adds a short camera punch, and plays an exposure sting. That feedback rearms only after suspicion falls below 55 and does not alter detection or capture difficulty.
 
 ## Level configuration and persistence
 
@@ -49,6 +52,8 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 ## Verification
 
 `tools/capture_physical_capture_playtest.gd` stages representative wind-up, miss, personality, crowd-reaction, and caught frames across the campaign for visual QA.
+
+`tools/capture_signature_chaos.gd` and `tools/capture_suspicion_escalation.gd` stage the environmental set pieces and park-wide exposure cascade for repeatable visual QA.
 
 Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
 
