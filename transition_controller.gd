@@ -6,6 +6,7 @@ var _fade_overlay: ColorRect
 var _transition_rect: ColorRect
 var _camera: Camera3D
 var _shake_trauma: float = 0.0
+var _was_shaking: bool = false
 
 func configure(host: Node, level_root: Node) -> void:
 	_host = host
@@ -31,10 +32,12 @@ func start_shake(strength: float = 1.0) -> void:
 
 func update_shake(delta: float) -> void:
 	if _shake_trauma > 0.0:
+		_was_shaking = true
 		_shake_trauma = maxf(_shake_trauma - delta * 1.8, 0.0)
 		var magnitude := _shake_trauma * _shake_trauma * 0.04
 		_camera.h_offset = randf_range(-magnitude, magnitude)
 		_camera.v_offset = randf_range(-magnitude, magnitude)
-	else:
+	elif _was_shaking:
 		_camera.h_offset = 0.0
 		_camera.v_offset = 0.0
+		_was_shaking = false

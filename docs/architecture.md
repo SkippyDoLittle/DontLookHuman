@@ -16,7 +16,7 @@ All five playable maps inherit `scenes/game/BaseLevel.tscn`. The base scene owns
 - `session_hud_controller.gd` owns objective, timer, result presentation, and focused result actions.
 - `transition_controller.gd` owns fades and screen shake.
 
-Collectibles and the escape zone emit gameplay events. They do not manipulate the HUD directly. `GameSession` counts live members of the `collectibles` group, so levels are not tied to a fixed item count.
+Collectibles and the escape zone emit gameplay events. They do not manipulate the HUD directly. `GameSession` counts live members of the `collectibles` group, so levels are not tied to a fixed item count. A successful peck removes food from that group immediately, then keeps its mesh alive for a short presentation-only arc into the moving player's beak. This preserves objective timing while the player body, wings, crumbs, trail, and synchronized sounds make the theft readable.
 
 ## Ranger components
 
@@ -54,6 +54,8 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 `tools/capture_physical_capture_playtest.gd` stages representative wind-up, miss, personality, crowd-reaction, and caught frames across the campaign for visual QA.
 
 `tools/capture_signature_chaos.gd` and `tools/capture_suspicion_escalation.gd` stage the environmental set pieces and park-wide exposure cascade for repeatable visual QA.
+
+`tools/capture_food_snatch.gd` stages a close successful pickup for repeatable animation, trail, and composition QA.
 
 Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
 

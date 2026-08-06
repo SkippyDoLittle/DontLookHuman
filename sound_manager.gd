@@ -30,6 +30,7 @@ var _water_splash: AudioStreamPlayer
 var _swing_chaos: AudioStreamPlayer
 var _sprinkler_burst: AudioStreamPlayer
 var _exposed_sting: AudioStreamPlayer
+var _food_snatch: AudioStreamPlayer
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
@@ -65,8 +66,9 @@ func _ready() -> void:
 	_swing_chaos = _player(_sweep(720.0, 180.0, 0.38), -4.0)
 	_sprinkler_burst = _player(_noise(0.85, 2.6, 0.05), -6.0)
 	_exposed_sting = _player(_sweep(240.0, 980.0, 0.34), -1.0)
+	_food_snatch = _player(_sweep(480.0, 1320.0, 0.16), -5.0)
 
-	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat, _food_frenzy, _water_splash, _swing_chaos, _sprinkler_burst, _exposed_sting]:
+	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat, _food_frenzy, _water_splash, _swing_chaos, _sprinkler_burst, _exposed_sting, _food_snatch]:
 		add_child(p)
 		p.bus = "SFX"
 
@@ -97,6 +99,7 @@ func play_water_splash() -> void: _water_splash.play()
 func play_swing_chaos() -> void: _swing_chaos.play()
 func play_sprinkler_burst() -> void: _sprinkler_burst.play()
 func play_exposed_sting() -> void: _exposed_sting.play()
+func play_food_snatch() -> void: _food_snatch.play()
 
 func set_tension(amount: float) -> void:
 	var tension := clampf(amount, 0.0, 1.0)

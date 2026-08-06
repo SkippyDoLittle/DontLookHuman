@@ -3,6 +3,9 @@
 
 extends CharacterBody3D
 
+signal food_snatch_started
+signal food_snatch_completed
+
 const SETTINGS_PATH: String = "user://settings.cfg"
 
 @export var settings_path: String = SETTINGS_PATH
@@ -61,6 +64,9 @@ var _camera_shake_duration: float = 0.0
 var _camera_shake_intensity: float = 0.0
 var _camera_shake_time: float = 0.0
 var camera_shake_count: int = 0
+var _snatch_reaction_timer: float = 0.0
+var _snatch_reaction_duration: float = 0.44
+var food_snatch_count: int = 0
 
 # Camera orbit angles — driven by mouse input in _input(), applied to spring_arm each frame.
 var camera_yaw:   float = 0.0
@@ -72,17 +78,28 @@ var _zoom_target: float = 4.0
 @onready var spring_arm:    SpringArm3D   = $SpringArm3D
 @onready var gameplay_camera: Camera3D     = $SpringArm3D/Camera3D
 @onready var pigeon_visual: Node3D        = $PigeonVisual
+@onready var body:          MeshInstance3D = $PigeonVisual/Body
 @onready var head:          MeshInstance3D = $PigeonVisual/Head
 @onready var beak:          MeshInstance3D = $PigeonVisual/Beak
+@onready var left_wing:     MeshInstance3D = get_node_or_null("PigeonVisual/LeftWing") as MeshInstance3D
+@onready var right_wing:    MeshInstance3D = get_node_or_null("PigeonVisual/RightWing") as MeshInstance3D
 @onready var _stamina_bar:  ProgressBar   = get_node("../HUD/StaminaBar")
+
+var _body_rest_scale: Vector3
+var _left_wing_rest_rotation: Vector3
+var _right_wing_rest_rotation: Vector3
 
 func _ready() -> void:
 	_load_camera_settings()
+	_ensure_food_snatch_wings()
 	# Record rest positions so peck and bob animations know where to return to.
 	head_y_rest = head.position.y
 	beak_y_rest = beak.position.y
 	head_z_rest = head.position.z
 	beak_z_rest = beak.position.z
+	_body_rest_scale = body.scale
+	_left_wing_rest_rotation = left_wing.rotation
+	_right_wing_rest_rotation = right_wing.rotation
 
 	# Initialise camera angles from whatever the scene has set on the spring arm,
 	# so there's no snap on the first frame of mouse input.
@@ -90,6 +107,30 @@ func _ready() -> void:
 	camera_pitch = spring_arm.rotation.x
 	# Seed the zoom target from the scene's spring_length so Inspector edits take effect.
 	_zoom_target = spring_arm.spring_length
+
+func _ensure_food_snatch_wings() -> void:
+	if left_wing == null:
+		left_wing = _create_food_snatch_wing("LeftWing", -0.21, 0.12)
+	if right_wing == null:
+		right_wing = _create_food_snatch_wing("RightWing", 0.21, -0.12)
+
+func _create_food_snatch_wing(
+	wing_name: String,
+	x_position: float,
+	z_rotation: float
+) -> MeshInstance3D:
+	var wing := MeshInstance3D.new()
+	wing.name = wing_name
+	wing.position = Vector3(x_position, 0.0, -0.01)
+	wing.rotation.z = z_rotation
+	var wing_mesh := BoxMesh.new()
+	wing_mesh.size = Vector3(0.16, 0.045, 0.32)
+	wing.mesh = wing_mesh
+	var wing_material := StandardMaterial3D.new()
+	wing_material.albedo_color = Color(0.4, 0.46667, 0.53333, 1.0)
+	wing.set_surface_override_material(0, wing_material)
+	pigeon_visual.add_child(wing)
+	return wing
 
 func _input(event: InputEvent) -> void:
 	if is_captured:
@@ -176,6 +217,7 @@ func _update_camera_shake(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	_update_controller_camera(delta)
 	_update_camera_shake(delta)
+	_update_food_snatch_reaction(delta)
 
 	# ── CAMERA ZOOM ──────────────────────────────────────────────────────────────
 	# Smoothly ease spring_length toward wherever the scroll wheel last set it.
@@ -325,6 +367,37 @@ func _physics_process(delta: float) -> void:
 
 # Lets one nearby food item claim the current peck. Keeping this state on the
 # player prevents overlapping collectibles from all responding to the same input.
+func play_food_snatch_reaction() -> void:
+	if is_captured:
+		return
+	_snatch_reaction_timer = _snatch_reaction_duration
+	food_snatch_count += 1
+	food_snatch_started.emit()
+
+func _update_food_snatch_reaction(delta: float) -> void:
+	if _snatch_reaction_timer <= 0.0 or is_captured:
+		return
+	_snatch_reaction_timer = maxf(_snatch_reaction_timer - delta, 0.0)
+	var progress := 1.0 - _snatch_reaction_timer / _snatch_reaction_duration
+	var pop := sin(progress * PI)
+	var flutter := sin(progress * PI * 4.0) * (1.0 - progress)
+	body.scale = Vector3(
+		_body_rest_scale.x * (1.0 + pop * 0.16),
+		_body_rest_scale.y * (1.0 - pop * 0.12),
+		_body_rest_scale.z * (1.0 + pop * 0.08)
+	)
+	left_wing.rotation.z = _left_wing_rest_rotation.z + pop * 0.95 + flutter * 0.14
+	right_wing.rotation.z = _right_wing_rest_rotation.z - pop * 0.95 - flutter * 0.14
+	if _snatch_reaction_timer <= 0.0:
+		_reset_food_snatch_pose()
+		food_snatch_completed.emit()
+
+func _reset_food_snatch_pose() -> void:
+	_snatch_reaction_timer = 0.0
+	body.scale = _body_rest_scale
+	left_wing.rotation = _left_wing_rest_rotation
+	right_wing.rotation = _right_wing_rest_rotation
+
 func try_consume_peck() -> bool:
 	if is_captured or not is_pecking or _peck_consumed:
 		return false
@@ -336,6 +409,7 @@ func start_capture_reaction(ranger_position: Vector3) -> void:
 		return
 	is_captured = true
 	is_pecking = false
+	_reset_food_snatch_pose()
 	_capture_reaction_time = 0.0
 	velocity.x = 0.0
 	velocity.z = 0.0
