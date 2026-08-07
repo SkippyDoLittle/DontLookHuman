@@ -34,6 +34,7 @@ var _food_snatch: AudioStreamPlayer
 var _close_call: AudioStreamPlayer
 var _flock_sync: AudioStreamPlayer
 var _wrong_pigeon: AudioStreamPlayer
+var _bird_flyby: AudioStreamPlayer
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
@@ -73,8 +74,9 @@ func _ready() -> void:
 	_close_call = _player(_chime([1568.0, 2093.0], [0.07, 0.22]), -2.0)
 	_flock_sync = _player(_chime([880.0, 1174.7, 1568.0], [0.05, 0.06, 0.14]), -7.0)
 	_wrong_pigeon = _player(_chime([988.0, 698.5, 392.0], [0.07, 0.08, 0.2]), -3.0)
+	_bird_flyby = _player(_noise(0.2, 7.5, 0.055), -4.0)
 
-	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat, _food_frenzy, _water_splash, _swing_chaos, _sprinkler_burst, _exposed_sting, _food_snatch, _close_call, _flock_sync, _wrong_pigeon]:
+	for p in [_peck, _npc_peck, _collect, _alert, _caught, _escape, _tick, _ambient, _step_walk, _step_run, _portal, _exhaust, _wall_bump, _ranger_whistle, _grab_whoosh, _grab_miss, _capture_impact, _capture_flap, _flock_panic, _heartbeat, _food_frenzy, _water_splash, _swing_chaos, _sprinkler_burst, _exposed_sting, _food_snatch, _close_call, _flock_sync, _wrong_pigeon, _bird_flyby]:
 		add_child(p)
 		p.bus = "SFX"
 
@@ -109,6 +111,7 @@ func play_food_snatch() -> void: _food_snatch.play()
 func play_close_call() -> void: _close_call.play()
 func play_flock_sync() -> void: _flock_sync.play()
 func play_wrong_pigeon() -> void: _wrong_pigeon.play()
+func play_bird_flyby() -> void: _bird_flyby.play()
 
 func set_tension(amount: float) -> void:
 	var tension := clampf(amount, 0.0, 1.0)

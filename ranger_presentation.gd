@@ -166,6 +166,24 @@ func teammate_wrong_pigeon_reaction(personality: String = "Steady") -> String:
 	_host.get_tree().create_timer(0.62).timeout.connect(_clear_alert_if_matches.bind(callout))
 	return callout
 
+func panic_pigeon_near_miss(personality: String = "Steady") -> String:
+	var callout := {
+		"Rookie": "BIRD!",
+		"Hothead": "MOVE!",
+		"Veteran": "DUCK.",
+	}.get(personality, "WHOA!") as String
+	_show_alert(callout, Color(0.75, 0.95, 1.0, 1.0), 1.45, 0.04, 0.09)
+	_kill_action_tween()
+	_action_tween = _host.create_tween().set_parallel(true)
+	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.22, 0.1)
+	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", -0.35, 0.1)
+	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -1.15, 0.1)
+	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 1.15, 0.1)
+	_host.get_tree().create_timer(0.28).timeout.connect(reset_grab_pose.bind(0.18))
+	_host.get_tree().create_timer(0.46).timeout.connect(_clear_alert_if_matches.bind(callout))
+	return callout
+
 func _miss_callout(personality: String, miss_streak: int) -> String:
 	var callouts: Dictionary = {
 		"Rookie": ["OOPS!", "SORRY!", "NOT AGAIN!"],

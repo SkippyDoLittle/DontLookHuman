@@ -9,6 +9,7 @@ const PARK_REACTIONS = preload("res://park_reaction_director.gd")
 signal mimic_peck_started(origin: Vector3)
 signal mistaken_capture_started(carrier: Node3D)
 signal mistaken_capture_released(origin: Vector3)
+signal panic_ranger_near_miss(ranger: Node3D)
 
 @export var speed:          float = 1.2    # normal wander speed (matches player walk speed)
 @export var flee_speed:     float = 2.2    # speed when running from the ranger
@@ -21,6 +22,9 @@ const PECK_DROP:        float = 0.13
 const PECK_DURATION:    float = 0.55
 const PECK_STRIKE_FRAC: float = 0.40
 const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for subtle distinction
+const PANIC_RANGER_NEAR_MISS_RADIUS: float = 0.72
+const PANIC_SCATTER_DURATION: float = 0.72
+const PANIC_MAX_SCATTER_DISTANCE: float = 4.25
 
 @onready var head:   MeshInstance3D = $PigeonVisual/Head
 @onready var beak:   MeshInstance3D = $PigeonVisual/Beak
@@ -56,7 +60,9 @@ var _reaction_origin: Vector3 = Vector3.ZERO
 var _reaction_delay: float = 0.0
 var _reaction_timer: float = 0.0
 var _reaction_time: float = 0.0
+var _reaction_active_time: float = 0.0
 var _reaction_target: Vector3 = Vector3.ZERO
+var _panic_rally_target: Vector3 = Vector3.ZERO
 var reaction_count: int = 0
 var _body_rest_rotation: Vector3
 var _body_rest_scale: Vector3
@@ -75,6 +81,10 @@ var _mistaken_visual_rest_rotation: Vector3
 var _mistaken_left_wing: MeshInstance3D
 var _mistaken_right_wing: MeshInstance3D
 var mistaken_capture_count: int = 0
+var panic_ranger_near_miss_count: int = 0
+var _panic_ranger_near_miss_consumed: bool = false
+var _panic_regroup_started: bool = false
+var panic_regroup_count: int = 0
 
 func _ready() -> void:
 	add_to_group("pigeons")
@@ -190,10 +200,19 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	_reaction_delay = distance * 0.035 if next_mode in [ReactionMode.PANIC, ReactionMode.SWARM] else 0.0
 	_reaction_timer = duration
 	_reaction_time = 0.0
+	_reaction_active_time = 0.0
 	var ring_angle := float(get_instance_id() % 19) / 19.0 * TAU
 	var ring_radius := 0.55 + float(get_instance_id() % 5) * 0.16
 	_reaction_target = origin + Vector3(sin(ring_angle), 0.0, cos(ring_angle)) * ring_radius
+	var panic_rally_radius := 2.35 + float(get_instance_id() % 5) * 0.32
+	_panic_rally_target = origin + Vector3(sin(ring_angle), 0.0, cos(ring_angle)) * panic_rally_radius
+	var rally_limit := maxf(wander_radius - 0.8, 1.0)
+	_panic_rally_target.x = clampf(_panic_rally_target.x, -rally_limit, rally_limit)
+	_panic_rally_target.z = clampf(_panic_rally_target.z, -rally_limit, rally_limit)
 	reaction_count += 1
+	if next_mode == ReactionMode.PANIC:
+		_panic_ranger_near_miss_consumed = false
+		_panic_regroup_started = false
 	is_pecking = false
 	return true
 
@@ -392,6 +411,7 @@ func _update_park_reaction(delta: float) -> bool:
 		_watch_reaction()
 		return true
 
+	_reaction_active_time += delta
 	_reaction_timer = maxf(_reaction_timer - delta, 0.0)
 	if _reaction_timer <= 0.0:
 		_finish_park_reaction()
@@ -421,16 +441,58 @@ func _watch_reaction() -> void:
 func _panic_reaction() -> void:
 	is_pausing = false
 	is_fleeing = true
-	var away := global_position - _reaction_origin
-	away.y = 0.0
-	if away.length_squared() < 0.001:
-		away = direction
-	away = away.normalized()
-	direction = away
-	_desired_move = away * flee_speed * 1.35
-	look_at(global_position - away, Vector3.UP)
+	var from_event := global_position - _reaction_origin
+	from_event.y = 0.0
+	var event_distance := from_event.length()
+	var should_scatter := (
+		_reaction_active_time < PANIC_SCATTER_DURATION
+		and event_distance < PANIC_MAX_SCATTER_DISTANCE
+	)
+	if should_scatter:
+		if from_event.length_squared() < 0.001:
+			from_event = direction
+		direction = from_event.normalized()
+		_desired_move = direction * flee_speed * 1.35
+	else:
+		if not _panic_regroup_started:
+			_panic_regroup_started = true
+			panic_regroup_count += 1
+		var toward_rally := _panic_rally_target - global_position
+		toward_rally.y = 0.0
+		if toward_rally.length() > 0.5:
+			direction = toward_rally.normalized()
+			_desired_move = direction * flee_speed * 1.05
+		else:
+			var around_event := global_position - _reaction_origin
+			around_event.y = 0.0
+			if around_event.length_squared() < 0.001:
+				around_event = Vector3.FORWARD
+			var orbit_direction := Vector3(-around_event.z, 0.0, around_event.x).normalized()
+			if get_instance_id() % 2 == 0:
+				orbit_direction = -orbit_direction
+			direction = orbit_direction
+			_desired_move = direction * flee_speed * 0.45
+	look_at(global_position - direction, Vector3.UP)
 	body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 26.0) * 0.13
 	body.scale = _body_rest_scale * (1.0 + absf(sin(_reaction_time * 20.0)) * 0.08)
+	_try_panic_ranger_near_miss()
+
+func _try_panic_ranger_near_miss() -> void:
+	if _panic_ranger_near_miss_consumed or not is_instance_valid(ranger):
+		return
+	var flat_offset := ranger.global_position - global_position
+	flat_offset.y = 0.0
+	if flat_offset.length() > PANIC_RANGER_NEAR_MISS_RADIUS:
+		return
+	# One proximity attempt per panic keeps rejected flybys from polling the
+	# ranger every frame while it is grabbing or inside its reaction cooldown.
+	_panic_ranger_near_miss_consumed = true
+	if not ranger.has_method("react_to_panic_pigeon"):
+		return
+	if not bool(ranger.call("react_to_panic_pigeon", self)):
+		return
+	panic_ranger_near_miss_count += 1
+	panic_ranger_near_miss.emit(ranger)
 
 func _swarm_reaction() -> void:
 	is_fleeing = false
@@ -454,6 +516,7 @@ func _finish_park_reaction() -> void:
 	_reaction_mode = ReactionMode.NONE
 	_reaction_delay = 0.0
 	_reaction_timer = 0.0
+	_reaction_active_time = 0.0
 	body.rotation = _body_rest_rotation
 	body.scale = _body_rest_scale
 	head.position.y = head_y_rest

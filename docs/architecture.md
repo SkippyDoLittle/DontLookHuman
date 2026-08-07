@@ -39,6 +39,8 @@ Calm NPC pigeons now answer a nearby player peck with a capped, distance-delayed
 
 An earned lunge dodge can now produce mistaken identity when a calm or wind-up-watching NPC pigeon is within 0.9 units of the ranger's miss endpoint. Wind-up watchers remain still through the slowest campaign grab and its full lunge, so they do not resume fleeing just before the eligibility check. The nearest eligible decoy struggles between the ranger's arms, sheds feathers, draws personality and teammate callouts, and panics after release. The tableau ends inside the existing miss recovery, has a six-second per-ranger lockout, suppresses overlapping close-call presentation, and never changes suspicion or successful-capture state.
 
+Panicking pigeons use a bounded two-stage path: a 0.72-second outward burst followed by a curved return to a deterministic loose ring near the event, clamped inside their normal roaming area. This prevents the flock from emptying to map boundaries and keeps birds available for later ranger interactions. A narrow 0.72-unit ranger flyby can occur along that path; each bird gets one proximity attempt per panic and each ranger has a 5.5-second presentation cooldown. An accepted flyby adds a personality flinch, short world callout, flutter sound, and small feather burst while deliberately preserving the ranger's movement, state, suspicion, grab phase, and capture timing.
+
 Each campaign map also has one deterministic environmental story: Park feeding frenzy, Playground swing surprise, Lakeside splash alarm, Festival popcorn panic, and the Botanical Gardens sprinkler finale. Separately, the first Chase in each danger cycle scatters the flock, alerts visitors, flashes the HUD, adds a short camera punch, and plays an exposure sting. That feedback rearms only after suspicion falls below 55 and does not alter detection or capture difficulty.
 
 ## Level configuration and persistence
@@ -70,6 +72,8 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 `tools/capture_flock_sync.gd` stages the player pecking in formation with six pigeons while a ranger observes, making the distance wave and blend feedback reproducible for visual QA.
 
 `tools/capture_mistaken_identity.gd` stages a ranger holding the wrong pigeon while the real player escapes and a teammate reacts, covering the held anchor, struggle wings, feathers, callouts, and HUD priority.
+
+`tools/capture_panic_flyby.gd` stages a panicking pigeon crossing a Rookie ranger's face for repeatable flinch, feather, callout, and composition QA.
 
 Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
 

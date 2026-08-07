@@ -18,6 +18,7 @@ signal teammate_reaction_started(callout: String)
 signal close_call(distance: float)
 signal wrong_pigeon_grabbed(pigeon: Node)
 signal wrong_pigeon_released(pigeon: Node)
+signal panic_pigeon_near_miss(pigeon: Node)
 
 enum RangerState { PATROL, INVESTIGATE, CHASE }
 enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
@@ -81,6 +82,7 @@ var last_personality_callout: String = ""
 var last_lunge_closest_distance: float = INF
 var close_call_count: int = 0
 var wrong_pigeon_grab_count: int = 0
+var panic_pigeon_reaction_count: int = 0
 
 var _suspicion_model := RangerSuspicion.new()
 var _state_machine := RangerStateMachine.new()
@@ -97,6 +99,7 @@ var chaos_reaction_count: int = 0
 var _teammate_reaction_cooldown: float = 0.0
 var _wrong_pigeon_cooldown: float = 0.0
 var _wrong_pigeon_target: Node
+var _panic_pigeon_reaction_cooldown: float = 0.0
 
 func _ready() -> void:
 	add_to_group("rangers")
@@ -107,6 +110,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_teammate_reaction_cooldown = maxf(_teammate_reaction_cooldown - delta, 0.0)
 	_wrong_pigeon_cooldown = maxf(_wrong_pigeon_cooldown - delta, 0.0)
+	_panic_pigeon_reaction_cooldown = maxf(_panic_pigeon_reaction_cooldown - delta, 0.0)
 	if caught or _session_capture_in_progress:
 		_movement.stop()
 		return
@@ -240,6 +244,23 @@ func react_to_teammate_wrong_pigeon(origin: Vector3) -> bool:
 	teammate_reaction_count += 1
 	var callout := _presentation.teammate_wrong_pigeon_reaction(capture_personality)
 	teammate_reaction_started.emit(callout)
+	return true
+
+func react_to_panic_pigeon(pigeon: Node3D) -> bool:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or _panic_pigeon_reaction_cooldown > 0.0
+		or not is_instance_valid(pigeon)
+	):
+		return false
+	_panic_pigeon_reaction_cooldown = 5.5
+	panic_pigeon_reaction_count += 1
+	_presentation.panic_pigeon_near_miss(capture_personality)
+	_sound_manager.call("play_bird_flyby")
+	_spawn_panic_flyby_feathers(pigeon.global_position)
+	panic_pigeon_near_miss.emit(pigeon)
 	return true
 
 func _update_exposed_state() -> void:
@@ -454,6 +475,34 @@ func _spawn_stumble_dust() -> void:
 	dust.global_position = global_position + Vector3.UP * 0.05
 	dust.emitting = true
 	get_tree().create_timer(0.85).timeout.connect(dust.queue_free)
+
+func _spawn_panic_flyby_feathers(pigeon_position: Vector3) -> void:
+	var feathers := CPUParticles3D.new()
+	feathers.name = "PanicFlybyFeathers"
+	feathers.amount = 11
+	feathers.lifetime = 0.55
+	feathers.one_shot = true
+	feathers.explosiveness = 1.0
+	feathers.direction = Vector3.UP
+	feathers.spread = 135.0
+	feathers.gravity = Vector3(0.0, -2.6, 0.0)
+	feathers.initial_velocity_min = 1.0
+	feathers.initial_velocity_max = 2.2
+	feathers.scale_amount_min = 0.65
+	feathers.scale_amount_max = 1.15
+	var feather_mesh := QuadMesh.new()
+	feather_mesh.size = Vector2(0.1, 0.035)
+	var feather_material := StandardMaterial3D.new()
+	feather_material.albedo_color = Color(0.82, 0.92, 1.0, 0.95)
+	feather_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	feather_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	feather_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	feather_mesh.material = feather_material
+	feathers.mesh = feather_mesh
+	get_parent().add_child(feathers)
+	feathers.global_position = pigeon_position + Vector3.UP * 0.15
+	feathers.emitting = true
+	get_tree().create_timer(0.8).timeout.connect(feathers.queue_free)
 
 func _complete_physical_capture() -> void:
 	if caught:
