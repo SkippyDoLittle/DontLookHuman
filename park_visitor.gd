@@ -33,6 +33,7 @@ var _body_rest_rotation: Vector3
 var _head_rest_position: Vector3
 var _startle_cooldown: float = 0.0
 var startle_count: int = 0
+var _capture_reaction_variant: int = 0
 
 func _ready() -> void:
 	add_to_group("visitors")
@@ -92,6 +93,7 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 		PARK_REACTIONS.EVENT_PLAYER_CAUGHT:
 			max_distance = 13.0
 			duration = 1.7
+			_capture_reaction_variant = get_instance_id() % 3
 		PARK_REACTIONS.EVENT_FOOD_FRENZY:
 			max_distance = 14.0
 			duration = 1.8
@@ -142,6 +144,10 @@ func _update_park_reaction(delta: float) -> bool:
 		_pick_new_target()
 		return false
 
+	if _reaction_event == PARK_REACTIONS.EVENT_PLAYER_CAUGHT:
+		_update_captured_reaction()
+		return true
+
 	var to_event := _reaction_origin - global_position
 	to_event.y = 0.0
 	if to_event.length_squared() > 0.001:
@@ -157,6 +163,28 @@ func _update_park_reaction(delta: float) -> bool:
 	if is_startled:
 		$VisitorBody.rotation.x = _body_rest_rotation.x - bounce * 0.22
 	return true
+
+func _update_captured_reaction() -> void:
+	var to_event := _reaction_origin - global_position
+	to_event.y = 0.0
+	if to_event.length_squared() > 0.001:
+		look_at(Vector3(_reaction_origin.x, global_position.y, _reaction_origin.z), Vector3.UP)
+	match _capture_reaction_variant:
+		0:  # cheer
+			var bounce := absf(sin(_reaction_time * 24.0))
+			$VisitorHead.position.y = _head_rest_position.y + bounce * 0.11
+			$VisitorBody.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 24.0) * 0.12
+			$VisitorBody.rotation.x = _body_rest_rotation.x - bounce * 0.10
+		1:  # gasp
+			var lean := minf(_reaction_time / 0.18, 1.0) * 0.16
+			var t := maxf(_reaction_time - 0.18, 0.0)
+			$VisitorBody.rotation.x = _body_rest_rotation.x + lean
+			$VisitorHead.position.y = _head_rest_position.y - absf(sin(t * 11.0)) * 0.04
+			$VisitorBody.rotation.z = _body_rest_rotation.z + sin(t * 11.0) * 0.07
+		2:  # confused
+			var sway := sin(_reaction_time * 7.0) * 0.06
+			$VisitorBody.rotation.z = _body_rest_rotation.z + sway
+			$VisitorHead.position.y = _head_rest_position.y + absf(sway) * 0.04
 
 func receive_pigeon_flyby(pigeon: Node) -> bool:
 	if _startle_cooldown > 0.0 or not _reaction_event.is_empty():

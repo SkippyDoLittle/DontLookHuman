@@ -205,6 +205,8 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	_reaction_mode = next_mode
 	_reaction_origin = origin
 	_reaction_delay = distance * 0.035 if next_mode in [ReactionMode.PANIC, ReactionMode.SWARM] else 0.0
+	if event_name == PARK_REACTIONS.EVENT_PLAYER_CAUGHT:
+		_reaction_delay = maxf(_reaction_delay, 0.45)
 	_reaction_timer = duration
 	_reaction_time = 0.0
 	_reaction_active_time = 0.0

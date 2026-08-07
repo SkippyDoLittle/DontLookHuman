@@ -5,6 +5,7 @@
 extends CharacterBody3D
 
 const PARK_REACTIONS = preload("res://park_reaction_director.gd")
+const NEAR_EXIT_RADIUS: float = 4.5
 
 signal suspicion_changed(value: float)
 signal state_changed(new_state: int)
@@ -20,6 +21,7 @@ signal wrong_pigeon_grabbed(pigeon: Node)
 signal wrong_pigeon_released(pigeon: Node)
 signal panic_pigeon_near_miss(pigeon: Node)
 signal collision_stumble_started(collider_type: StringName, origin: Vector3)
+signal capture_variant_started(personality: String, near_exit: bool)
 
 enum RangerState { PATROL, INVESTIGATE, CHASE }
 enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
@@ -85,6 +87,7 @@ var close_call_count: int = 0
 var wrong_pigeon_grab_count: int = 0
 var panic_pigeon_reaction_count: int = 0
 var collision_stumble_count: int = 0
+var capture_near_exit_count: int = 0
 var _collision_stumble_cooldown: float = 0.0
 var commotion_reaction_count: int = 0
 var _commotion_react_cooldown: float = 0.0
@@ -531,7 +534,10 @@ func _complete_physical_capture() -> void:
 			other_ranger.call("halt_for_capture")
 	if player.has_method("start_capture_reaction"):
 		player.call("start_capture_reaction", global_position)
-	_presentation.player_captured(capture_personality)
+	var near_exit := _is_near_exit()
+	if near_exit:
+		capture_near_exit_count += 1
+	_presentation.player_captured(capture_personality, near_exit)
 	_spawn_feather_burst()
 	_sound_manager.call("play_capture_impact")
 	_sound_manager.call("play_flock_panic")
@@ -541,6 +547,8 @@ func _complete_physical_capture() -> void:
 		global_position,
 		self
 	)
+	capture_variant_started.emit(capture_personality, near_exit)
+	_notify_teammates_of_capture()
 	capture_started.emit()
 	get_tree().create_timer(capture_hold_duration).timeout.connect(_emit_capture_result)
 
@@ -685,6 +693,41 @@ func react_to_teammate_collision(origin: Vector3) -> void:
 	teammate_reaction_count += 1
 	var callout := _presentation.teammate_collision_reaction(capture_personality)
 	teammate_reaction_started.emit(callout)
+
+func _is_near_exit() -> bool:
+	if not is_inside_tree():
+		return false
+	for zone in get_tree().get_nodes_in_group("escape_zones"):
+		if zone is Node3D and global_position.distance_to((zone as Node3D).global_position) <= NEAR_EXIT_RADIUS:
+			return true
+	return false
+
+func _notify_teammates_of_capture() -> void:
+	for candidate in get_tree().get_nodes_in_group("rangers"):
+		if candidate == self or not candidate is Node3D:
+			continue
+		var teammate := candidate as Node3D
+		if teammate.global_position.distance_to(global_position) > 10.5:
+			continue
+		if teammate.has_method("react_to_teammate_capture"):
+			teammate.call("react_to_teammate_capture", global_position)
+
+func react_to_teammate_capture(origin: Vector3) -> bool:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or _teammate_reaction_cooldown > 0.0
+	):
+		return false
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	_teammate_reaction_cooldown = 3.5
+	teammate_reaction_count += 1
+	var callout := _presentation.teammate_capture_reaction(capture_personality)
+	teammate_reaction_started.emit(callout)
+	return true
 
 func _notify_teammates_of_collision(origin: Vector3) -> void:
 	for candidate in get_tree().get_nodes_in_group("rangers"):

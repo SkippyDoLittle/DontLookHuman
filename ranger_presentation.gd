@@ -221,6 +221,16 @@ func teammate_collision_reaction(personality: String = "Steady") -> String:
 	_host.get_tree().create_timer(0.6).timeout.connect(_clear_alert_if_matches.bind(callout))
 	return callout
 
+func teammate_capture_reaction(personality: String = "Steady") -> String:
+	var callout := {
+		"Rookie": "FINALLY!!",
+		"Hothead": "NICE!",
+		"Veteran": "Hm.",
+	}.get(personality, "GOOD CATCH.") as String
+	_show_alert(callout, Color(0.55, 1.0, 0.65, 1.0), 1.4, 0.05, 0.10)
+	_host.get_tree().create_timer(0.65).timeout.connect(_clear_alert_if_matches.bind(callout))
+	return callout
+
 func _collision_callout(personality: String, contact_type: StringName) -> String:
 	if contact_type == &"ranger":
 		return {
@@ -266,19 +276,72 @@ func chaos_reaction(callout: String, duration: float) -> void:
 	var reset_delay := maxf(duration - 0.28, 0.18)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.22))
 
-func player_captured(personality: String = "Steady") -> void:
+func player_captured(personality: String = "Steady", near_exit: bool = false) -> void:
 	var callout := {
 		"Rookie": "I GOT ONE!",
 		"Hothead": "YES!",
-		"Veteran": "SECURED!",
+		"Veteran": "SECURED.",
 	}.get(personality, "GOTCHA!") as String
-	_show_alert(callout, Color(1.0, 0.85, 0.18, 1.0), 1.8, 0.05, 0.12)
+	var alert_scale := 2.1 if near_exit else 1.8
+	var alert_color := Color(1.0, 0.58, 0.0, 1.0) if near_exit else Color(1.0, 0.85, 0.18, 1.0)
+	_show_alert(callout, alert_color, alert_scale, 0.05, 0.12)
 	_kill_action_tween()
-	_action_tween = _host.create_tween().set_parallel(true)
-	_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.9, 0.22)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.9, 0.22)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "scale", Vector3(1.12, 0.9, 1.12), 0.22)
+	match personality:
+		"Rookie":
+			# Premature celebration: arms overshoot high, then correct to hold position
+			_action_tween = _host.create_tween().set_parallel(true)
+			_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -2.3, 0.18)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -2.3, 0.18)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.82, 0.18)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.38, 0.18)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.38, 0.18)
+			_host.get_tree().create_timer(0.32).timeout.connect(func() -> void:
+				if not is_instance_valid(_host):
+					return
+				_kill_action_tween()
+				_action_tween = _host.create_tween().set_parallel(true)
+				_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+				_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.75, 0.22)
+				_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.75, 0.22)
+				_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.0, 0.22)
+				_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.0, 0.22)
+			)
+		"Hothead":
+			# Overcommit: hard forward lunge then snap back to aggressive triumph pose
+			_action_tween = _host.create_tween().set_parallel(true)
+			_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.28, 0.12)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.15, 0.12)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.14, 0.12)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -2.05, 0.12)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -2.05, 0.12)
+			_host.get_tree().create_timer(0.2).timeout.connect(func() -> void:
+				if not is_instance_valid(_host):
+					return
+				_kill_action_tween()
+				_action_tween = _host.create_tween().set_parallel(true)
+				_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+				_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.0, 0.18)
+				_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.0, 0.18)
+				_action_tween.tween_property(_host.get_node("RangerBody"), "scale:x", 1.12, 0.18)
+				_action_tween.tween_property(_host.get_node("RangerBody"), "scale:z", 1.12, 0.18)
+			)
+		"Veteran":
+			# Calm, controlled: smooth single-arm hold, body barely moves
+			_action_tween = _host.create_tween().set_parallel(true)
+			_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.75, 0.3)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.45, 0.3)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale", Vector3(1.04, 0.97, 1.04), 0.3)
+			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.1, 0.3)
+		_:
+			# Steady: original elastic arms-up with body squish
+			_action_tween = _host.create_tween().set_parallel(true)
+			_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.9, 0.22)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.9, 0.22)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale", Vector3(1.12, 0.9, 1.12), 0.22)
 
 func reset_grab_pose(duration: float = 0.2) -> void:
 	if not is_instance_valid(_host) or _rest_transforms.is_empty():

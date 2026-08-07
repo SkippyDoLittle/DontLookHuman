@@ -13,6 +13,7 @@ var escaped:          bool = false
 var _portal_revealed: bool = false   # guard so the reveal chime fires only once
 
 func _ready() -> void:
+	add_to_group("escape_zones")
 	exit_area.body_entered.connect(_on_body_entered)
 
 func _process(_delta: float) -> void:

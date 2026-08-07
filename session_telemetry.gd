@@ -13,6 +13,7 @@ var dead_zone_count: int = 0
 var overlap_count: int = 0
 var collision_stumble_total: int = 0
 var visitor_startle_total: int = 0
+var capture_near_exit_total: int = 0
 
 var _active: bool = false
 var _level_root: Node
@@ -88,6 +89,12 @@ func _connect_ranger(ranger: Node) -> void:
 				collision_stumble_total += 1
 				_on_notable_event()
 		)
+	if ranger.has_signal("capture_variant_started"):
+		ranger.capture_variant_started.connect(
+			func(_p: String, near_exit: bool) -> void:
+				if near_exit:
+					capture_near_exit_total += 1
+		)
 
 func _process(delta: float) -> void:
 	if not _session_active:
@@ -136,6 +143,7 @@ func _print_summary() -> void:
 	print("Panic flybys accepted:     %d" % panic_flyby)
 	print("Chase collision stumbles:  %d" % collision_stumble_total)
 	print("Visitor startles:          %d" % visitor_startle_total)
+	print("Near-exit captures:        %d" % capture_near_exit_total)
 	print("Exposure cascades:         %d" % (int(chaos.get("exposure_event_count")) if chaos else 0))
 	print("Flock-sync waves:          %d" % (int(chaos.get("flock_sync_event_count")) if chaos else 0))
 	print("Signature events:          %d" % (int(chaos.get("signature_event_count")) if chaos else 0))
@@ -169,4 +177,5 @@ func get_overlay_lines() -> Array[String]:
 			int(chaos.get("signature_event_count")) if chaos else 0,
 		],
 		"Dead zones: %d  Overlaps: %d" % [dead_zone_count, overlap_count],
+		"Near-exit: %d" % [capture_near_exit_total],
 	]
