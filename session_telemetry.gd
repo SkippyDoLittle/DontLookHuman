@@ -14,6 +14,8 @@ var overlap_count: int = 0
 var collision_stumble_total: int = 0
 var visitor_startle_total: int = 0
 var capture_near_exit_total: int = 0
+var blend_bonus_total: int = 0
+var chaos_bonus_total: int = 0
 
 var _active: bool = false
 var _level_root: Node
@@ -35,6 +37,15 @@ func _connect_signals() -> void:
 	var session := _level_root.get_node_or_null("GameTimer")
 	if session != null and session.has_signal("session_state_changed"):
 		session.session_state_changed.connect(_on_session_state_changed)
+	if session != null:
+		if session.has_signal("blend_pickup_earned"):
+			session.blend_pickup_earned.connect(
+				func(_o: Vector3, _s: float) -> void: blend_bonus_total += 1
+			)
+		if session.has_signal("chaos_pickup_earned"):
+			session.chaos_pickup_earned.connect(
+				func(_o: Vector3, _s: float) -> void: chaos_bonus_total += 1
+			)
 
 	var chaos := _level_root.get_node_or_null("ParkChaosController")
 	if chaos != null:
@@ -144,6 +155,8 @@ func _print_summary() -> void:
 	print("Chase collision stumbles:  %d" % collision_stumble_total)
 	print("Visitor startles:          %d" % visitor_startle_total)
 	print("Near-exit captures:        %d" % capture_near_exit_total)
+	print("Blend bonus pickups:       %d" % blend_bonus_total)
+	print("Chaos window pickups:      %d" % chaos_bonus_total)
 	print("Exposure cascades:         %d" % (int(chaos.get("exposure_event_count")) if chaos else 0))
 	print("Flock-sync waves:          %d" % (int(chaos.get("flock_sync_event_count")) if chaos else 0))
 	print("Signature events:          %d" % (int(chaos.get("signature_event_count")) if chaos else 0))
@@ -177,5 +190,5 @@ func get_overlay_lines() -> Array[String]:
 			int(chaos.get("signature_event_count")) if chaos else 0,
 		],
 		"Dead zones: %d  Overlaps: %d" % [dead_zone_count, overlap_count],
-		"Near-exit: %d" % [capture_near_exit_total],
+		"Near-exit: %d  Blend: %d  Chaos: %d" % [capture_near_exit_total, blend_bonus_total, chaos_bonus_total],
 	]

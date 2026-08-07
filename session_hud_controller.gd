@@ -177,6 +177,25 @@ func show_result(
 	var focus_target := _primary_button if _primary_button.visible else _retry_button
 	focus_target.call_deferred("grab_focus")
 
+func show_pickup_bonus(text: String, color: Color = Color.WHITE) -> void:
+	if not is_instance_valid(_hud):
+		return
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_color_override("font_color", color)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	label.offset_left = -200.0
+	label.offset_right = -8.0
+	label.offset_top = 46.0
+	label.offset_bottom = 76.0
+	_hud.add_child(label)
+	var tween := label.create_tween().set_parallel(true)
+	tween.tween_property(label, "offset_top", 14.0, 1.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate:a", 0.0, 1.4)
+	tween.finished.connect(label.queue_free)
+
 func disable_result_actions() -> void:
 	_primary_button.disabled = true
 	_retry_button.disabled = true

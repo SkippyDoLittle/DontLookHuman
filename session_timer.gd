@@ -61,5 +61,11 @@ func advance(delta: float) -> void:
 		_expired_emitted = true
 		expired.emit()
 
+func add_time(seconds: float) -> void:
+	if _expired_emitted or seconds <= 0.0:
+		return
+	time_remaining += seconds
+	time_changed.emit(time_remaining)
+
 func elapsed_time() -> float:
 	return time_limit - time_remaining

@@ -8,9 +8,17 @@ extends Node
 const MENU_SCENE: String = "res://MainMenu.tscn"
 const FIRST_LEVEL_SCENE: String = "res://scenes/levels/Level01_Park.tscn"
 
+const BLEND_THRESHOLD: float = 40.0
+const BLEND_RADIUS: float = 3.5
+const BLEND_BONUS_SECONDS: float = 5.0
+const CHAOS_WINDOW_DURATION: float = 6.0
+const CHAOS_BONUS_SECONDS: float = 4.0
+
 signal session_state_changed(new_state: SessionState)
 signal collectible_count_changed(remaining: int)
 signal level_finished(success: bool)
+signal blend_pickup_earned(origin: Vector3, bonus_seconds: float)
+signal chaos_pickup_earned(origin: Vector3, bonus_seconds: float)
 
 enum SessionState { TITLE, COUNTDOWN, ACTIVE, PAUSED, FINISHED }
 
@@ -42,6 +50,10 @@ var _grade_thresholds: Array[float] = ScoreManager.default_thresholds()
 var _result_transition_started: bool = false
 var _controls_closed_frame: int = -1
 var _capture_sequence_active: bool = false
+var _chaos_window_timer: float = 0.0
+var _food_connected: Dictionary = {}
+var blend_bonus_count: int = 0
+var chaos_bonus_count: int = 0
 
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
@@ -121,6 +133,7 @@ func _connect_components() -> void:
 
 func _initialize_world_connections() -> void:
 	_connect_new_rangers()
+	_connect_food()
 	items_total = get_tree().get_nodes_in_group("collectibles").size()
 	_last_collectible_count = -1
 	_refresh_collectible_count()
@@ -154,6 +167,7 @@ func _process_active_session(delta: float) -> void:
 
 	_connect_new_rangers()
 	_refresh_collectible_count()
+	_chaos_window_timer = maxf(_chaos_window_timer - delta, 0.0)
 
 	_timer.advance(delta)
 	_update_exit_marker()
@@ -239,6 +253,63 @@ func _connect_new_rangers() -> void:
 			ranger_node.connect("capture_started", _on_capture_started)
 		if ranger_node.has_signal("grab_missed"):
 			ranger_node.connect("grab_missed", _on_ranger_grab_missed)
+		if ranger_node.has_signal("collision_stumble_started"):
+			ranger_node.connect("collision_stumble_started",
+				func(_t: StringName, _o: Vector3) -> void:
+					_chaos_window_timer = CHAOS_WINDOW_DURATION
+			)
+
+func _connect_food() -> void:
+	for food in get_tree().get_nodes_in_group("collectibles"):
+		var id := food.get_instance_id()
+		if _food_connected.has(id):
+			continue
+		_food_connected[id] = true
+		if food.has_signal("food_collected"):
+			food.food_collected.connect(_on_food_collected_bonus)
+
+func _on_food_collected_bonus(food: Node3D, origin: Vector3) -> void:
+	if state != SessionState.ACTIVE:
+		return
+	var is_blend := _check_blend_condition()
+	var is_chaos := _chaos_window_timer > 0.0
+	if not is_blend and not is_chaos:
+		return
+	var total_bonus := 0.0
+	if is_blend:
+		total_bonus += BLEND_BONUS_SECONDS
+		blend_bonus_count += 1
+		blend_pickup_earned.emit(origin, BLEND_BONUS_SECONDS)
+	if is_chaos:
+		total_bonus += CHAOS_BONUS_SECONDS
+		chaos_bonus_count += 1
+		chaos_pickup_earned.emit(origin, CHAOS_BONUS_SECONDS)
+	_timer.add_time(total_bonus)
+	var bonus_text: String
+	var bonus_color: Color
+	if is_blend and is_chaos:
+		bonus_text = "PERFECT TIMING!  +%.0fs" % total_bonus
+		bonus_color = Color(1.0, 0.95, 0.35)
+	elif is_blend:
+		bonus_text = "BLENDED!  +%.0fs" % BLEND_BONUS_SECONDS
+		bonus_color = Color(0.4, 1.0, 0.55)
+	else:
+		bonus_text = "CHAOS WINDOW!  +%.0fs" % CHAOS_BONUS_SECONDS
+		bonus_color = Color(1.0, 0.72, 0.2)
+	_hud.show_pickup_bonus(bonus_text, bonus_color)
+
+func _check_blend_condition() -> bool:
+	var player_node := get_node_or_null("../Player")
+	if not is_instance_valid(player_node) or not player_node is Node3D:
+		return false
+	for ranger in get_tree().get_nodes_in_group("rangers"):
+		if float(ranger.get("suspicion")) >= BLEND_THRESHOLD:
+			return false
+	var player_pos := (player_node as Node3D).global_position
+	for pigeon in get_tree().get_nodes_in_group("pigeons"):
+		if pigeon is Node3D and (pigeon as Node3D).global_position.distance_to(player_pos) <= BLEND_RADIUS:
+			return true
+	return false
 
 func _on_ranger_suspicion_changed(value: float) -> void:
 	peak_suspicion = maxf(peak_suspicion, value)
@@ -248,6 +319,7 @@ func _on_capture_started() -> void:
 	_transition.start_shake(0.8)
 
 func _on_ranger_grab_missed() -> void:
+	_chaos_window_timer = CHAOS_WINDOW_DURATION
 	_transition.start_shake(0.45)
 
 func _on_ranger_caught(ranger_node: Node) -> void:
