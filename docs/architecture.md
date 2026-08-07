@@ -31,7 +31,11 @@ Collectibles and the escape zone emit gameplay events. They do not manipulate th
 
 Rangers and pigeons use groups rather than exact numbered node names. This allows later levels to add rangers or procedurally scattered pigeons without changing detection code.
 
-The approved controlled-chaos capture system now runs across the campaign. A full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Levels tune wind-up, lunge speed, and recovery independently. Ranger personality labels provide visible Rookie, Steady, Hothead, and Veteran variations without changing the core controls.
+The approved controlled-chaos capture system now runs across the campaign. A full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Levels tune wind-up, lunge speed, and recovery independently. Rookie, Steady, Hothead, and Veteran rangers now use distinct miss poses, escalating failure callouts, and teammate responses. The first miss preserves its approved timing; later misses add a capped player-favoring recovery bonus so comedy also prevents frustration.
+
+Rangers track the actual closest distance reached during each lunge. A miss within the configured close-call margin triggers a 0.14-second real-time-safe cinematic beat after recovery has already begun: brief slow motion, feathers, camera/audio feedback, and a dedicated HUD punchline. Comfortable dodges remain ordinary misses. The controller restores the previous global time scale both on its safety timer and if the level exits mid-effect.
+
+Calm NPC pigeons now answer a nearby player peck with a capped, distance-delayed mimic wave. Each pigeon decides independently whether it is eligible, so ranger proximity, fleeing, and every park reaction retain priority. The park controller only coordinates the six-bird cap, short presentation cooldown, chime, and low-priority HUD acknowledgment; flock sync never changes suspicion, objectives, or capture timing.
 
 Each campaign map also has one deterministic environmental story: Park feeding frenzy, Playground swing surprise, Lakeside splash alarm, Festival popcorn panic, and the Botanical Gardens sprinkler finale. Separately, the first Chase in each danger cycle scatters the flock, alerts visitors, flashes the HUD, adds a short camera punch, and plays an exposure sting. That feedback rearms only after suspicion falls below 55 and does not alter detection or capture difficulty.
 
@@ -56,6 +60,12 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 `tools/capture_signature_chaos.gd` and `tools/capture_suspicion_escalation.gd` stage the environmental set pieces and park-wide exposure cascade for repeatable visual QA.
 
 `tools/capture_food_snatch.gd` stages a close successful pickup for repeatable animation, trail, and composition QA.
+
+`tools/capture_ranger_personality_miss.gd` stages a repeated Hothead failure and Veteran teammate response for social-reaction and pose QA.
+
+`tools/capture_close_call.gd` stages a qualifying narrow dodge for slow-motion, feather, miss-pose, and HUD composition QA.
+
+`tools/capture_flock_sync.gd` stages the player pecking in formation with six pigeons while a ranger observes, making the distance wave and blend feedback reproducible for visual QA.
 
 Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
 

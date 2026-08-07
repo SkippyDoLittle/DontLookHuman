@@ -5,6 +5,7 @@ extends CharacterBody3D
 
 signal food_snatch_started
 signal food_snatch_completed
+signal peck_started(origin: Vector3)
 
 const SETTINGS_PATH: String = "user://settings.cfg"
 
@@ -316,11 +317,8 @@ func _physics_process(delta: float) -> void:
 		peck_cooldown_timer -= delta
 
 	# ── PECK INPUT ───────────────────────────────────────────────────────────────
-	if Input.is_action_just_pressed("peck") and not is_pecking and peck_cooldown_timer <= 0.0 and not sprinting:
-		is_pecking = true
-		peck_time  = 0.0
-		_peck_consumed = false
-		SoundManager.play_peck()
+	if Input.is_action_just_pressed("peck") and not sprinting:
+		start_player_peck()
 
 	# ── PECK ANIMATION ───────────────────────────────────────────────────────────
 	if is_pecking:
@@ -367,6 +365,16 @@ func _physics_process(delta: float) -> void:
 
 # Lets one nearby food item claim the current peck. Keeping this state on the
 # player prevents overlapping collectibles from all responding to the same input.
+func start_player_peck() -> bool:
+	if is_captured or is_pecking or peck_cooldown_timer > 0.0:
+		return false
+	is_pecking = true
+	peck_time = 0.0
+	_peck_consumed = false
+	SoundManager.play_peck()
+	peck_started.emit(global_position)
+	return true
+
 func play_food_snatch_reaction() -> void:
 	if is_captured:
 		return

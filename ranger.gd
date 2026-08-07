@@ -13,6 +13,9 @@ signal observation_changed(reason: String, is_nearby: bool, active_gain: float)
 signal grab_started
 signal grab_missed
 signal capture_started
+signal personality_reaction_started(kind: StringName, callout: String)
+signal teammate_reaction_started(callout: String)
+signal close_call(distance: float)
 
 enum RangerState { PATROL, INVESTIGATE, CHASE }
 enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
@@ -54,6 +57,7 @@ enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
 @export var grab_lunge_speed: float = 7.2
 @export var grab_recovery_duration: float = 1.05
 @export var capture_hold_duration: float = 0.85
+@export_range(0.1, 1.5, 0.05) var close_call_margin: float = 0.55
 
 @onready var player: CharacterBody3D = get_node("../Player")
 @onready var pigeon_visual: Node3D = get_node("../Player/PigeonVisual")
@@ -67,6 +71,11 @@ var last_suspicion_reason: String = ""
 var grab_phase: GrabPhase = GrabPhase.IDLE
 var successful_grabs: int = 0
 var missed_grabs: int = 0
+var failed_grab_streak: int = 0
+var teammate_reaction_count: int = 0
+var last_personality_callout: String = ""
+var last_lunge_closest_distance: float = INF
+var close_call_count: int = 0
 
 var _suspicion_model := RangerSuspicion.new()
 var _state_machine := RangerStateMachine.new()
@@ -80,6 +89,7 @@ var _capture_signal_emitted: bool = false
 var _session_capture_in_progress: bool = false
 var _chaos_distraction_timer: float = 0.0
 var chaos_reaction_count: int = 0
+var _teammate_reaction_cooldown: float = 0.0
 
 func _ready() -> void:
 	add_to_group("rangers")
@@ -88,6 +98,7 @@ func _ready() -> void:
 	_presentation.configure(self, _alert_label, _sound_manager)
 
 func _process(delta: float) -> void:
+	_teammate_reaction_cooldown = maxf(_teammate_reaction_cooldown - delta, 0.0)
 	if caught or _session_capture_in_progress:
 		_movement.stop()
 		return
@@ -183,9 +194,27 @@ func stumble_from_environment(origin: Vector3, callout: String = "WHOA!") -> boo
 	_grab_timer = maxf(grab_recovery_duration, 1.15)
 	chaos_reaction_count += 1
 	_movement.stop()
-	_presentation.grab_missed(_grab_timer, capture_personality)
+	_presentation.grab_missed(_grab_timer, capture_personality, 1)
 	_alert_label.text = callout
 	_sound_manager.call("play_grab_miss")
+	_spawn_stumble_dust()
+	return true
+
+func react_to_teammate_miss(origin: Vector3) -> bool:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or _teammate_reaction_cooldown > 0.0
+	):
+		return false
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	_teammate_reaction_cooldown = 2.4
+	teammate_reaction_count += 1
+	var callout := _presentation.teammate_miss_reaction(capture_personality)
+	teammate_reaction_started.emit(callout)
 	return true
 
 func _update_exposed_state() -> void:
@@ -226,7 +255,12 @@ func _update_grab(delta: float) -> void:
 				_begin_lunge()
 		GrabPhase.LUNGE:
 			_movement.move_in_direction(_grab_direction, grab_lunge_speed)
-			if _distance_to_player_flat() <= grab_contact_distance:
+			var contact_distance := _distance_to_player_flat()
+			last_lunge_closest_distance = minf(
+				last_lunge_closest_distance,
+				contact_distance
+			)
+			if contact_distance <= grab_contact_distance:
 				_complete_physical_capture()
 			elif _grab_timer <= 0.0:
 				_begin_miss_recovery()
@@ -237,6 +271,7 @@ func _update_grab(delta: float) -> void:
 				_presentation.reset_grab_pose()
 
 func _begin_lunge() -> void:
+	last_lunge_closest_distance = _distance_to_player_flat()
 	_grab_direction = player.global_position - global_position
 	_grab_direction.y = 0.0
 	if _grab_direction.length_squared() < 0.001:
@@ -249,19 +284,84 @@ func _begin_lunge() -> void:
 
 func _begin_miss_recovery() -> void:
 	grab_phase = GrabPhase.RECOVERY
-	_grab_timer = grab_recovery_duration
 	missed_grabs += 1
+	failed_grab_streak += 1
+	_grab_timer = grab_recovery_duration + _repeated_miss_recovery_bonus()
 	_movement.stop()
-	_presentation.grab_missed(grab_recovery_duration, capture_personality)
+	last_personality_callout = _presentation.grab_missed(
+		_grab_timer,
+		capture_personality,
+		failed_grab_streak
+	)
 	_sound_manager.call("play_grab_miss")
 	_sound_manager.call("play_flock_panic")
+	_spawn_stumble_dust()
+	_notify_teammates_of_miss()
 	_reaction_director.broadcast(
 		get_tree(),
 		PARK_REACTIONS.EVENT_GRAB_MISSED,
 		global_position,
 		self
 	)
+	personality_reaction_started.emit(&"grab_missed", last_personality_callout)
 	grab_missed.emit()
+	_emit_close_call_if_needed()
+
+func _emit_close_call_if_needed() -> void:
+	if last_lunge_closest_distance > grab_contact_distance + close_call_margin:
+		return
+	close_call_count += 1
+	close_call.emit(last_lunge_closest_distance)
+
+func _repeated_miss_recovery_bonus() -> float:
+	var repeated_misses := maxi(failed_grab_streak - 1, 0)
+	var bonus_per_miss := float({
+		"Rookie": 0.16,
+		"Hothead": 0.14,
+		"Veteran": 0.06,
+	}.get(capture_personality, 0.1))
+	return minf(float(repeated_misses) * bonus_per_miss, 0.4)
+
+func _notify_teammates_of_miss() -> void:
+	for candidate in get_tree().get_nodes_in_group("rangers"):
+		if candidate == self or not candidate is Node3D:
+			continue
+		var teammate := candidate as Node3D
+		if teammate.global_position.distance_to(global_position) > 9.5:
+			continue
+		if teammate.has_method("react_to_teammate_miss"):
+			teammate.call("react_to_teammate_miss", global_position)
+
+func _spawn_stumble_dust() -> void:
+	var dust := CPUParticles3D.new()
+	dust.name = "RangerStumbleDust"
+	dust.amount = 14
+	dust.lifetime = 0.6
+	dust.one_shot = true
+	dust.explosiveness = 1.0
+	dust.direction = Vector3.UP
+	dust.spread = 145.0
+	dust.gravity = Vector3(0.0, -3.2, 0.0)
+	dust.initial_velocity_min = 0.7
+	dust.initial_velocity_max = 1.6
+	dust.scale_amount_min = 0.6
+	dust.scale_amount_max = 1.25
+	dust.color = Color(0.72, 0.62, 0.45, 0.78)
+	var dust_mesh := SphereMesh.new()
+	dust_mesh.radius = 0.055
+	dust_mesh.height = 0.11
+	dust_mesh.radial_segments = 4
+	dust_mesh.rings = 2
+	var dust_material := StandardMaterial3D.new()
+	dust_material.vertex_color_use_as_albedo = true
+	dust_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dust_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dust_mesh.material = dust_material
+	dust.mesh = dust_mesh
+	get_parent().add_child(dust)
+	dust.global_position = global_position + Vector3.UP * 0.05
+	dust.emitting = true
+	get_tree().create_timer(0.85).timeout.connect(dust.queue_free)
 
 func _complete_physical_capture() -> void:
 	if caught:

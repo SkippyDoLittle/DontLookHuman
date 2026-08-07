@@ -18,6 +18,9 @@ var _pulse_time: float = 0.0
 var _warning_timer: float = 0.0
 var _danger_flash_tween: Tween
 var exposure_feedback_count: int = 0
+var close_call_feedback_count: int = 0
+var _close_call_feedback_cooldown: float = 0.0
+var flock_sync_feedback_count: int = 0
 
 func _ready() -> void:
 	_ensure_danger_flash()
@@ -35,6 +38,7 @@ func _ensure_danger_flash() -> void:
 	move_child(_danger_flash, 0)
 
 func _process(delta: float) -> void:
+	_close_call_feedback_cooldown = maxf(_close_call_feedback_cooldown - delta, 0.0)
 	_connect_new_rangers()
 	_update_bar_pulse(delta)
 	_update_warning(delta)
@@ -57,6 +61,8 @@ func _connect_new_rangers() -> void:
 			ranger.connect("grab_missed", _on_grab_missed.bind(ranger))
 		if ranger.has_signal("capture_started"):
 			ranger.connect("capture_started", _on_capture_started.bind(ranger))
+		if ranger.has_signal("close_call"):
+			ranger.connect("close_call", _on_close_call.bind(ranger))
 		if bool(ranger.get("is_primary")):
 			_primary_ranger = ranger
 			_primary_state = int(ranger.get("state"))
@@ -93,6 +99,14 @@ func _on_grab_missed(_ranger: Node) -> void:
 	_status_label.text = "Ranger: Stumbled!"
 	_show_warning("CLOSE CALL!", Color(1.0, 0.82, 0.15, 1.0), 1.15)
 
+func _on_close_call(_distance: float, _ranger: Node) -> void:
+	if _close_call_feedback_cooldown > 0.0:
+		return
+	_close_call_feedback_cooldown = 0.75
+	close_call_feedback_count += 1
+	_status_label.text = "Rangers: Barely missed!"
+	_show_warning("FEATHER'S WIDTH!", Color(1.0, 1.0, 0.62, 1.0), 1.25)
+
 func _on_capture_started(_ranger: Node) -> void:
 	_status_label.text = "CAUGHT!"
 	# The ranger's world-space personality callout owns the capture punchline.
@@ -112,6 +126,14 @@ func trigger_exposure_feedback() -> void:
 	_danger_flash_tween.tween_property(_danger_flash, "color:a", 0.24, 0.08)
 	_danger_flash_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_danger_flash_tween.tween_property(_danger_flash, "color:a", 0.0, 0.48)
+
+func trigger_flock_sync_feedback(joiner_count: int) -> bool:
+	# Blending feedback yields to every danger banner and never changes suspicion.
+	if _warning_timer > 0.0 or _highest_state != RangerStateMachine.State.PATROL:
+		return false
+	flock_sync_feedback_count += 1
+	_show_warning("FLOCK SYNC x%d" % joiner_count, Color(0.52, 1.0, 0.84, 1.0), 0.8)
+	return true
 
 func _on_observation_changed(reason: String, is_nearby: bool, active_gain: float, ranger: Node) -> void:
 	if ranger != _primary_ranger:

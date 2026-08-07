@@ -8,6 +8,8 @@ const PARK_REACTIONS = preload("res://park_reaction_director.gd")
 
 signal signature_event_started(event_name: StringName, origin: Vector3)
 signal exposure_cascade_started(origin: Vector3)
+signal close_call_cinematic_started(distance: float, origin: Vector3)
+signal flock_sync_started(joiner_count: int, origin: Vector3)
 
 var signature_event_count: int = 0
 var last_event_name: StringName = &""
@@ -15,6 +17,8 @@ var last_reaction_counts: Dictionary = {}
 var affected_rangers: int = 0
 var exposure_event_count: int = 0
 var exposure_reaction_counts: Dictionary = {}
+var close_call_event_count: int = 0
+var flock_sync_event_count: int = 0
 
 var _level: BaseLevel
 var _level_id: StringName = &""
@@ -28,6 +32,10 @@ var _sprinkler_lifetime: float = 0.0
 var _sprinkler_pulse_timer: float = 0.0
 var _exposure_latched: bool = false
 var _exposure_cooldown: float = 0.0
+var _close_call_cooldown: float = 0.0
+var _close_call_active: bool = false
+var _previous_time_scale: float = 1.0
+var _flock_sync_cooldown: float = 0.0
 
 func _ready() -> void:
 	add_to_group("chaos_controllers")
@@ -38,6 +46,12 @@ func _initialize() -> void:
 	if _level == null or _level.level_config == null:
 		return
 	_level_id = _level.level_config.level_id
+	var player := _level.get_node_or_null("Player")
+	if player != null and player.has_signal("peck_started") and not player.is_connected(
+		"peck_started",
+		_on_player_peck_started
+	):
+		player.connect("peck_started", _on_player_peck_started)
 	var collectibles := get_tree().get_nodes_in_group("collectibles")
 	_initial_collectible_count = collectibles.size()
 	for food in collectibles:
@@ -61,10 +75,16 @@ func _initialize() -> void:
 			var suspicion_callback := _on_ranger_suspicion_changed.bind(ranger)
 			if not ranger.is_connected("suspicion_changed", suspicion_callback):
 				ranger.connect("suspicion_changed", suspicion_callback)
+		if ranger.has_signal("close_call"):
+			var close_call_callback := _on_ranger_close_call.bind(ranger)
+			if not ranger.is_connected("close_call", close_call_callback):
+				ranger.connect("close_call", close_call_callback)
 	_create_banner()
 
 func _process(delta: float) -> void:
 	_exposure_cooldown = maxf(_exposure_cooldown - delta, 0.0)
+	_close_call_cooldown = maxf(_close_call_cooldown - delta, 0.0)
+	_flock_sync_cooldown = maxf(_flock_sync_cooldown - delta, 0.0)
 	if _sprinkler_lifetime <= 0.0 or not is_instance_valid(_sprinkler_rig):
 		return
 	_sprinkler_lifetime = maxf(_sprinkler_lifetime - delta, 0.0)
@@ -85,6 +105,11 @@ func _process(delta: float) -> void:
 		fade.tween_property(_sprinkler_rig, "scale", Vector3.ZERO, 0.3)
 		fade.tween_callback(_sprinkler_rig.queue_free)
 
+func _exit_tree() -> void:
+	if _close_call_active:
+		Engine.time_scale = _previous_time_scale
+		_close_call_active = false
+
 func _on_ranger_state_changed(new_state: int, _ranger: Node) -> void:
 	if new_state != RangerStateMachine.State.CHASE:
 		return
@@ -100,6 +125,38 @@ func _on_ranger_suspicion_changed(_value: float, _ranger: Node) -> void:
 		maximum = maxf(maximum, float(ranger.get("suspicion")))
 	if maximum < 55.0:
 		_exposure_latched = false
+
+func _on_player_peck_started(origin: Vector3) -> void:
+	if _flock_sync_cooldown > 0.0:
+		return
+	var candidates: Array[Node3D] = []
+	for pigeon in get_tree().get_nodes_in_group("pigeons"):
+		if pigeon is Node3D and pigeon.has_method("can_mimic_player_peck"):
+			if bool(pigeon.call("can_mimic_player_peck", origin)):
+				candidates.append(pigeon as Node3D)
+	candidates.sort_custom(func(a: Node3D, b: Node3D) -> bool:
+		return a.global_position.distance_squared_to(origin) < b.global_position.distance_squared_to(origin)
+	)
+	if candidates.size() < 2:
+		return
+
+	var joiner_count := 0
+	for pigeon_value in candidates.slice(0, mini(candidates.size(), 6)):
+		var pigeon := pigeon_value as Node3D
+		var distance: float = pigeon.global_position.distance_to(origin)
+		var delay: float = 0.035 + distance * 0.045 + float(joiner_count) * 0.035
+		if bool(pigeon.call("request_mimic_peck", origin, delay)):
+			joiner_count += 1
+	if joiner_count < 2:
+		return
+
+	_flock_sync_cooldown = 0.9
+	flock_sync_event_count += 1
+	_play_sound("play_flock_sync")
+	var hud := _level.get_node_or_null("HUD")
+	if hud != null and hud.has_method("trigger_flock_sync_feedback"):
+		hud.call("trigger_flock_sync_feedback", joiner_count)
+	flock_sync_started.emit(joiner_count, origin)
 
 func _trigger_exposure_cascade() -> void:
 	var player := _level.get_node_or_null("Player") as Node3D
@@ -124,6 +181,61 @@ func _trigger_exposure_cascade() -> void:
 		hud.call("trigger_exposure_feedback")
 	_spawn_world_burst(origin + Vector3.UP * 0.15, Color(1.0, 0.12, 0.04, 0.9), 24, 5.0)
 	exposure_cascade_started.emit(origin)
+
+func _on_ranger_close_call(distance: float, _ranger: Node) -> void:
+	if _close_call_cooldown > 0.0 or _close_call_active:
+		return
+	var player := _level.get_node_or_null("Player") as Node3D
+	if player == null:
+		return
+	_close_call_cooldown = 2.8
+	_close_call_active = true
+	_previous_time_scale = Engine.time_scale
+	Engine.time_scale = minf(_previous_time_scale, 0.38)
+	close_call_event_count += 1
+	var origin := player.global_position
+	_play_sound("play_close_call")
+	if player.has_method("add_camera_trauma"):
+		player.call("add_camera_trauma", 0.11, 0.28)
+	_spawn_close_call_feathers(origin + Vector3.UP * 0.12)
+	close_call_cinematic_started.emit(distance, origin)
+	get_tree().create_timer(0.14, true, false, true).timeout.connect(
+		_end_close_call_slowmo
+	)
+
+func _end_close_call_slowmo() -> void:
+	if not _close_call_active:
+		return
+	Engine.time_scale = _previous_time_scale
+	_close_call_active = false
+
+func _spawn_close_call_feathers(origin: Vector3) -> void:
+	var feathers := CPUParticles3D.new()
+	feathers.name = "CloseCallFeathers"
+	feathers.amount = 24
+	feathers.lifetime = 0.75
+	feathers.one_shot = true
+	feathers.explosiveness = 1.0
+	feathers.direction = Vector3.UP
+	feathers.spread = 165.0
+	feathers.gravity = Vector3(0.0, -2.8, 0.0)
+	feathers.initial_velocity_min = 1.3
+	feathers.initial_velocity_max = 3.3
+	feathers.scale_amount_min = 0.75
+	feathers.scale_amount_max = 1.35
+	var feather_mesh := QuadMesh.new()
+	feather_mesh.size = Vector2(0.13, 0.045)
+	var feather_material := StandardMaterial3D.new()
+	feather_material.albedo_color = Color(0.88, 0.94, 1.0, 0.92)
+	feather_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	feather_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	feather_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	feather_mesh.material = feather_material
+	feathers.mesh = feather_mesh
+	_level.add_child(feathers)
+	feathers.global_position = origin
+	feathers.emitting = true
+	get_tree().create_timer(1.0).timeout.connect(feathers.queue_free)
 
 func _on_food_collected(food: Node3D, origin: Vector3) -> void:
 	_collected_count += 1

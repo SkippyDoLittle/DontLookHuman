@@ -84,24 +84,66 @@ func grab_lunge() -> void:
 	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.32, 0.08)
 	_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.12, 0.08)
 
-func grab_missed(recovery_duration: float, personality: String = "Steady") -> void:
-	var callout := {
-		"Rookie": "OOPS!",
-		"Hothead": "NO FAIR!",
-		"Veteran": "MISSED.",
-	}.get(personality, "WHIFF!") as String
+func grab_missed(
+	recovery_duration: float,
+	personality: String = "Steady",
+	miss_streak: int = 1
+) -> String:
+	var callout := _miss_callout(personality, miss_streak)
 	_show_alert(callout, Color(1.0, 0.72, 0.15, 1.0), 1.55, 0.05, 0.10)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -1.0, 0.14)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.28, 0.14)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -1.0, 0.14)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 1.0, 0.14)
-	_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.65, 0.14)
-	_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.65, 0.14)
+	match personality:
+		"Rookie":
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -1.18, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.34, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -1.25, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 1.25, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.92, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.92, 0.14)
+		"Hothead":
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.3, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.84, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -2.15, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -2.15, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.42, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.42, 0.14)
+		"Veteran":
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.42, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.1, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:y", 0.58, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.42, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.42, 0.14)
+		_:
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.95, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.26, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.9, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.9, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.58, 0.14)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.58, 0.14)
 	var reset_delay := maxf(recovery_duration - 0.42, 0.12)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.28))
+	return callout
+
+func teammate_miss_reaction(personality: String = "Steady") -> String:
+	var callout := {
+		"Rookie": "YOU OK?!",
+		"Hothead": "MY TURN!",
+		"Veteran": "FOCUS.",
+	}.get(personality, "NICE ONE.") as String
+	_show_alert(callout, Color(0.55, 0.9, 1.0, 1.0), 1.35, 0.05, 0.1)
+	return callout
+
+func _miss_callout(personality: String, miss_streak: int) -> String:
+	var callouts: Dictionary = {
+		"Rookie": ["OOPS!", "SORRY!", "NOT AGAIN!"],
+		"Hothead": ["NO FAIR!", "HOLD STILL!", "I'M TRYING!"],
+		"Veteran": ["MISSED.", "ADJUSTING.", "CALCULATED."],
+		"Steady": ["WHIFF!", "CLOSE!", "OKAY..."],
+	}
+	var choices := callouts.get(personality, callouts["Steady"]) as Array
+	return String(choices[mini(maxi(miss_streak - 1, 0), choices.size() - 1)])
 
 func chaos_reaction(callout: String, duration: float) -> void:
 	_show_alert(callout, Color(0.35, 0.9, 1.0, 1.0), 1.45, 0.06, 0.12)
@@ -148,6 +190,8 @@ func _show_alert(
 	grow_duration: float,
 	settle_duration: float
 ) -> void:
+	if _alert_tween and _alert_tween.is_valid():
+		_alert_tween.kill()
 	_alert_label.text = text
 	_alert_label.modulate = color
 	_alert_label.scale = Vector3.ZERO

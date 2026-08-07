@@ -6,6 +6,8 @@ extends CharacterBody3D
 
 const PARK_REACTIONS = preload("res://park_reaction_director.gd")
 
+signal mimic_peck_started(origin: Vector3)
+
 @export var speed:          float = 1.2    # normal wander speed (matches player walk speed)
 @export var flee_speed:     float = 2.2    # speed when running from the ranger
 @export var wander_radius:  float = 8.0   # max distance from park centre
@@ -55,6 +57,11 @@ var _reaction_target: Vector3 = Vector3.ZERO
 var reaction_count: int = 0
 var _body_rest_rotation: Vector3
 var _body_rest_scale: Vector3
+var _mimic_pending: bool = false
+var _mimic_active: bool = false
+var _mimic_delay: float = 0.0
+var _mimic_origin: Vector3 = Vector3.ZERO
+var mimic_peck_count: int = 0
 
 func _ready() -> void:
 	add_to_group("pigeons")
@@ -101,7 +108,10 @@ func _process(delta: float) -> void:
 		is_fleeing = false
 
 	if is_fleeing:
+		_cancel_mimic_peck()
 		_do_flee(delta)
+	elif _update_mimic_peck(delta):
+		pass
 	else:
 		_do_wander(delta)
 
@@ -154,6 +164,7 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	if distance > max_distance:
 		return false
 
+	_cancel_mimic_peck()
 	_reaction_mode = next_mode
 	_reaction_origin = origin
 	_reaction_delay = distance * 0.035 if next_mode in [ReactionMode.PANIC, ReactionMode.SWARM] else 0.0
@@ -165,6 +176,68 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	reaction_count += 1
 	is_pecking = false
 	return true
+
+func can_mimic_player_peck(origin: Vector3) -> bool:
+	if _reaction_mode != ReactionMode.NONE or _mimic_pending or _mimic_active or is_pecking:
+		return false
+	if global_position.distance_to(origin) > 5.5:
+		return false
+	var nearest_ranger := _find_nearest_ranger()
+	return (
+		not is_instance_valid(nearest_ranger)
+		or global_position.distance_to(nearest_ranger.global_position) >= flee_distance
+	)
+
+func request_mimic_peck(origin: Vector3, delay: float) -> bool:
+	if not can_mimic_player_peck(origin):
+		return false
+	_mimic_pending = true
+	_mimic_delay = maxf(delay, 0.0)
+	_mimic_origin = origin
+	is_pausing = true
+	return true
+
+func _update_mimic_peck(delta: float) -> bool:
+	if _mimic_active:
+		if is_pecking:
+			is_pausing = true
+			return true
+		_mimic_active = false
+		choose_new_behavior()
+		return false
+	if not _mimic_pending:
+		return false
+
+	is_pausing = true
+	_desired_move = Vector3.ZERO
+	var toward_player := _mimic_origin - global_position
+	toward_player.y = 0.0
+	if toward_player.length_squared() > 0.001:
+		look_at(global_position - toward_player.normalized(), Vector3.UP)
+	_mimic_delay = maxf(_mimic_delay - delta, 0.0)
+	if _mimic_delay > 0.0:
+		return true
+
+	_mimic_pending = false
+	_mimic_active = true
+	is_pecking = true
+	peck_time = 0.0
+	mimic_peck_count += 1
+	_peck_sfx.play()
+	mimic_peck_started.emit(_mimic_origin)
+	return true
+
+func _cancel_mimic_peck() -> void:
+	if not _mimic_pending and not _mimic_active:
+		return
+	_mimic_pending = false
+	_mimic_delay = 0.0
+	if _mimic_active:
+		is_pecking = false
+		peck_time = 0.0
+		head.position = Vector3(head.position.x, head_y_rest, head_z_rest)
+		beak.position = Vector3(beak.position.x, beak_y_rest, beak_z_rest)
+	_mimic_active = false
 
 func _update_park_reaction(delta: float) -> bool:
 	if _reaction_mode == ReactionMode.NONE:
