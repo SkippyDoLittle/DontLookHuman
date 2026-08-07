@@ -11,6 +11,7 @@ const OVERLAP_WINDOW: float = 0.5
 var grab_attempts: int = 0
 var dead_zone_count: int = 0
 var overlap_count: int = 0
+var collision_stumble_total: int = 0
 
 var _active: bool = false
 var _level_root: Node
@@ -70,6 +71,12 @@ func _connect_ranger(ranger: Node) -> void:
 		ranger.wrong_pigeon_grabbed.connect(func(_p: Node) -> void: _on_notable_event())
 	if ranger.has_signal("panic_pigeon_near_miss"):
 		ranger.panic_pigeon_near_miss.connect(func(_p: Node) -> void: _on_notable_event())
+	if ranger.has_signal("collision_stumble_started"):
+		ranger.collision_stumble_started.connect(
+			func(_t: StringName, _o: Vector3) -> void:
+				collision_stumble_total += 1
+				_on_notable_event()
+		)
 
 func _process(delta: float) -> void:
 	if not _session_active:
@@ -116,11 +123,12 @@ func _print_summary() -> void:
 	print("  Wrong-pigeon grabs:      %d" % wrong_pigeon)
 	print("Cinematic close calls:     %d" % (int(chaos.get("close_call_event_count")) if chaos else 0))
 	print("Panic flybys accepted:     %d" % panic_flyby)
+	print("Chase collision stumbles:  %d" % collision_stumble_total)
 	print("Exposure cascades:         %d" % (int(chaos.get("exposure_event_count")) if chaos else 0))
 	print("Flock-sync waves:          %d" % (int(chaos.get("flock_sync_event_count")) if chaos else 0))
 	print("Signature events:          %d" % (int(chaos.get("signature_event_count")) if chaos else 0))
 	print("Dead zones (>30s quiet):   %d" % dead_zone_count)
-	print("Effect overlaps (2s win):  %d" % overlap_count)
+	print("Effect overlaps (0.5s):    %d" % overlap_count)
 	print("==================================")
 
 func get_overlay_lines() -> Array[String]:
@@ -139,7 +147,7 @@ func get_overlay_lines() -> Array[String]:
 	return [
 		"— Telemetry —",
 		"Grabs: %d att / %d miss / %d catch" % [grab_attempts, grabs_missed, grabs_caught],
-		"Wrong bird: %d  Flyby: %d" % [wrong_pigeon, panic_flyby],
+		"Wrong bird: %d  Flyby: %d  Stumble: %d" % [wrong_pigeon, panic_flyby, collision_stumble_total],
 		"Close calls: %d  Flock sync: %d" % [
 			int(chaos.get("close_call_event_count")) if chaos else 0,
 			int(chaos.get("flock_sync_event_count")) if chaos else 0,

@@ -194,6 +194,53 @@ func _miss_callout(personality: String, miss_streak: int) -> String:
 	var choices := callouts.get(personality, callouts["Steady"]) as Array
 	return String(choices[mini(maxi(miss_streak - 1, 0), choices.size() - 1)])
 
+func collision_stumble(recovery_duration: float, personality: String = "Steady", contact_type: StringName = &"obstacle") -> void:
+	var callout := _collision_callout(personality, contact_type)
+	_show_alert(callout, Color(1.0, 0.65, 0.15, 1.0), 1.55, 0.05, 0.09)
+	_kill_action_tween()
+	_action_tween = _host.create_tween().set_parallel(true)
+	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", 0.45, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.18, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", 1.05, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.65, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", 1.05, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.65, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:x", 0.35, 0.11)
+	_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:x", 0.35, 0.11)
+	var reset_delay := maxf(recovery_duration - 0.45, 0.18)
+	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.28))
+
+func teammate_collision_reaction(personality: String = "Steady") -> String:
+	var callout := {
+		"Rookie": "WATCH OUT!",
+		"Hothead": "WATCH IT!",
+		"Veteran": "STAY SHARP.",
+	}.get(personality, "HEADS UP!") as String
+	_show_alert(callout, Color(0.85, 0.78, 1.0, 1.0), 1.35, 0.05, 0.1)
+	_host.get_tree().create_timer(0.6).timeout.connect(_clear_alert_if_matches.bind(callout))
+	return callout
+
+func _collision_callout(personality: String, contact_type: StringName) -> String:
+	if contact_type == &"ranger":
+		return {
+			"Rookie": "OW!",
+			"Hothead": "WATCH IT!",
+			"Veteran": "...FOCUS.",
+		}.get(personality, "HEY!") as String
+	elif contact_type == &"bumper":
+		return {
+			"Rookie": "WHOA!",
+			"Hothead": "BACK OFF!",
+			"Veteran": "HMPH.",
+		}.get(personality, "WHOA!") as String
+	else:
+		return {
+			"Rookie": "OOF!",
+			"Hothead": "MOVE!",
+			"Veteran": "OBSTACLE.",
+		}.get(personality, "UGH!") as String
+
 func chaos_reaction(callout: String, duration: float) -> void:
 	_show_alert(callout, Color(0.35, 0.9, 1.0, 1.0), 1.45, 0.06, 0.12)
 	_kill_action_tween()

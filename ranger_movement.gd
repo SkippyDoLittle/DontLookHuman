@@ -17,6 +17,7 @@ var _blocked_time: float = 0.0
 var _avoidance_time: float = 0.0
 var _avoidance_direction: Vector3 = Vector3.ZERO
 var obstacle_recoveries: int = 0
+var chase_collision_collider: Node = null
 
 func configure(ranger: CharacterBody3D, player: CharacterBody3D, config: Dictionary) -> void:
 	_ranger = ranger
@@ -65,6 +66,15 @@ func physics_step(delta: float) -> void:
 	else:
 		_ranger.velocity.y = 0.0
 	_ranger.move_and_slide()
+
+	chase_collision_collider = null
+	if _current_state == RangerStateMachine.State.CHASE:
+		for i in _ranger.get_slide_collision_count():
+			var col := _ranger.get_slide_collision(i)
+			var collider := col.get_collider()
+			if collider != null and collider != _player:
+				chase_collision_collider = collider
+				break
 
 	var moved_distance := Vector2(
 		_ranger.global_position.x - position_before.x,

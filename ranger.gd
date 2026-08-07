@@ -19,6 +19,7 @@ signal close_call(distance: float)
 signal wrong_pigeon_grabbed(pigeon: Node)
 signal wrong_pigeon_released(pigeon: Node)
 signal panic_pigeon_near_miss(pigeon: Node)
+signal collision_stumble_started(collider_type: StringName, origin: Vector3)
 
 enum RangerState { PATROL, INVESTIGATE, CHASE }
 enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
@@ -83,6 +84,8 @@ var last_lunge_closest_distance: float = INF
 var close_call_count: int = 0
 var wrong_pigeon_grab_count: int = 0
 var panic_pigeon_reaction_count: int = 0
+var collision_stumble_count: int = 0
+var _collision_stumble_cooldown: float = 0.0
 
 var _suspicion_model := RangerSuspicion.new()
 var _state_machine := RangerStateMachine.new()
@@ -111,6 +114,7 @@ func _process(delta: float) -> void:
 	_teammate_reaction_cooldown = maxf(_teammate_reaction_cooldown - delta, 0.0)
 	_wrong_pigeon_cooldown = maxf(_wrong_pigeon_cooldown - delta, 0.0)
 	_panic_pigeon_reaction_cooldown = maxf(_panic_pigeon_reaction_cooldown - delta, 0.0)
+	_collision_stumble_cooldown = maxf(_collision_stumble_cooldown - delta, 0.0)
 	if caught or _session_capture_in_progress:
 		_movement.stop()
 		return
@@ -158,6 +162,7 @@ func _process(delta: float) -> void:
 
 	_movement.update(delta, state)
 	_presentation.update(delta, state)
+	_check_chase_collision()
 	observation_changed.emit(
 		reason,
 		bool(observation.is_nearby),
@@ -576,6 +581,79 @@ func _spawn_feather_burst() -> void:
 	add_child(burst)
 	burst.emitting = true
 	get_tree().create_timer(1.1).timeout.connect(burst.queue_free)
+
+func _check_chase_collision() -> void:
+	var collider := _movement.chase_collision_collider
+	if collider == null or _collision_stumble_cooldown > 0.0:
+		return
+	_begin_chase_stumble(collider)
+
+func _begin_chase_stumble(collider: Node) -> void:
+	var collider_type: StringName
+	if collider.is_in_group("rangers"):
+		collider_type = &"ranger"
+		if collider.has_method("receive_ranger_bump"):
+			collider.call("receive_ranger_bump", global_position)
+	elif collider.is_in_group("visitors"):
+		collider_type = &"visitor"
+	else:
+		collider_type = &"obstacle"
+	_collision_stumble_cooldown = 12.0
+	collision_stumble_count += 1
+	grab_phase = GrabPhase.RECOVERY
+	_grab_timer = grab_recovery_duration + 0.35
+	_movement.stop()
+	_presentation.collision_stumble(_grab_timer, capture_personality, collider_type)
+	_sound_manager.call("play_grab_miss")
+	_spawn_stumble_dust()
+	collision_stumble_started.emit(collider_type, global_position)
+	_notify_teammates_of_collision(global_position)
+
+func receive_ranger_bump(bumper_position: Vector3) -> void:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or _collision_stumble_cooldown > 0.0
+	):
+		return
+	_collision_stumble_cooldown = 8.0
+	collision_stumble_count += 1
+	var look_target := Vector3(bumper_position.x, global_position.y, bumper_position.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	grab_phase = GrabPhase.RECOVERY
+	_grab_timer = grab_recovery_duration
+	_movement.stop()
+	_presentation.collision_stumble(_grab_timer, capture_personality, &"bumper")
+	_sound_manager.call("play_grab_miss")
+	_spawn_stumble_dust()
+
+func react_to_teammate_collision(origin: Vector3) -> void:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or _teammate_reaction_cooldown > 0.0
+	):
+		return
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	_teammate_reaction_cooldown = 2.4
+	teammate_reaction_count += 1
+	var callout := _presentation.teammate_collision_reaction(capture_personality)
+	teammate_reaction_started.emit(callout)
+
+func _notify_teammates_of_collision(origin: Vector3) -> void:
+	for candidate in get_tree().get_nodes_in_group("rangers"):
+		if candidate == self or not candidate is Node3D:
+			continue
+		var teammate := candidate as Node3D
+		if teammate.global_position.distance_to(global_position) > 9.5:
+			continue
+		if teammate.has_method("react_to_teammate_collision"):
+			teammate.call("react_to_teammate_collision", origin)
 
 func _suspicion_config() -> Dictionary:
 	return {
