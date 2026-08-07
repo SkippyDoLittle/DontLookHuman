@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://pause_menu.gd" id="5_pause"]
 [ext_resource type="Script" path="res://how_to_play.gd" id="6_howto"]
 [ext_resource type="Script" path="res://park_chaos_controller.gd" id="7_chaos"]
+[ext_resource type="Script" path="res://session_telemetry.gd" id="8_telemetry"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
 content_margin_left = 12.0
@@ -69,6 +70,9 @@ script = ExtResource("4_timer")
 
 [node name="ParkChaosController" type="Node" parent="."]
 script = ExtResource("7_chaos")
+
+[node name="SessionTelemetry" type="Node" parent="."]
+script = ExtResource("8_telemetry")
 
 [node name="TitleScreen" type="CanvasLayer" parent="."]
 layer = 10

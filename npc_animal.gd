@@ -22,7 +22,7 @@ const PECK_DROP:        float = 0.13
 const PECK_DURATION:    float = 0.55
 const PECK_STRIKE_FRAC: float = 0.40
 const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for subtle distinction
-const PANIC_RANGER_NEAR_MISS_RADIUS: float = 0.72
+const PANIC_RANGER_NEAR_MISS_RADIUS: float = 1.0
 const PANIC_SCATTER_DURATION: float = 0.72
 const PANIC_MAX_SCATTER_DISTANCE: float = 4.25
 

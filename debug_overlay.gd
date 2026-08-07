@@ -86,6 +86,12 @@ func refresh_now() -> void:
 					float(ranger.get("suspicion")),
 				]
 			)
+	var telemetry := get_tree().get_first_node_in_group("session_telemetry")
+	if telemetry != null and telemetry.has_method("get_overlay_lines"):
+		var tlines: Array = telemetry.call("get_overlay_lines")
+		for tl: String in tlines:
+			lines.append(tl)
+
 	_label.text = "\n".join(lines)
 
 func _nodes_in_level_group(group_name: StringName) -> Array[Node]:
