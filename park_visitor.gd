@@ -5,6 +5,10 @@ extends CharacterBody3D
 
 const PARK_REACTIONS = preload("res://park_reaction_director.gd")
 
+signal visitor_startled(origin: Vector3)
+
+const PIGEON_STARTLE_RADIUS: float = 1.5
+
 @export var walk_speed:    float = 0.9    # slightly slower than the pigeon so you can weave around them
 @export var wander_radius: float = 7.5   # max distance from park centre
 
@@ -27,6 +31,8 @@ var _reaction_timer: float = 0.0
 var _reaction_time: float = 0.0
 var _body_rest_rotation: Vector3
 var _head_rest_position: Vector3
+var _startle_cooldown: float = 0.0
+var startle_count: int = 0
 
 func _ready() -> void:
 	add_to_group("visitors")
@@ -46,6 +52,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_desired_move = Vector3.ZERO
+	_startle_cooldown = maxf(_startle_cooldown - delta, 0.0)
 	if _update_park_reaction(delta):
 		return
 
@@ -103,6 +110,9 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 		PARK_REACTIONS.EVENT_PLAYER_EXPOSED:
 			max_distance = 32.0
 			duration = 2.4
+		PARK_REACTIONS.EVENT_VISITOR_STARTLED:
+			max_distance = 2.0
+			duration = 1.2
 		_:
 			return false
 	if distance > max_distance:
@@ -136,10 +146,30 @@ func _update_park_reaction(delta: float) -> bool:
 	to_event.y = 0.0
 	if to_event.length_squared() > 0.001:
 		look_at(Vector3(_reaction_origin.x, global_position.y, _reaction_origin.z), Vector3.UP)
-	var bounce_speed := 14.0 if _reaction_event == PARK_REACTIONS.EVENT_GRAB_WINDUP else 20.0
+	var is_startled := _reaction_event == PARK_REACTIONS.EVENT_VISITOR_STARTLED
+	var bounce_speed := (
+		14.0 if _reaction_event == PARK_REACTIONS.EVENT_GRAB_WINDUP
+		else (26.0 if is_startled else 20.0)
+	)
 	var bounce := absf(sin(_reaction_time * bounce_speed))
-	$VisitorHead.position.y = _head_rest_position.y + bounce * 0.07
-	$VisitorBody.rotation.z = _body_rest_rotation.z + sin(_reaction_time * bounce_speed) * 0.08
+	$VisitorHead.position.y = _head_rest_position.y + bounce * (0.12 if is_startled else 0.07)
+	$VisitorBody.rotation.z = _body_rest_rotation.z + sin(_reaction_time * bounce_speed) * (0.14 if is_startled else 0.08)
+	if is_startled:
+		$VisitorBody.rotation.x = _body_rest_rotation.x - bounce * 0.22
+	return true
+
+func receive_pigeon_flyby(pigeon: Node) -> bool:
+	if _startle_cooldown > 0.0 or not _reaction_event.is_empty():
+		return false
+	var origin := (pigeon as Node3D).global_position if pigeon is Node3D else global_position
+	if not react_to_park_event(PARK_REACTIONS.EVENT_VISITOR_STARTLED, origin):
+		return false
+	_startle_cooldown = 15.0
+	startle_count += 1
+	PARK_REACTIONS.new().broadcast_chain(
+		get_tree(), PARK_REACTIONS.EVENT_VISITOR_STARTLED, global_position, 1, 1, self
+	)
+	visitor_startled.emit(global_position)
 	return true
 
 func _physics_process(delta: float) -> void:

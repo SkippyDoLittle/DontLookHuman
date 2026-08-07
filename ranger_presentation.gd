@@ -241,6 +241,21 @@ func _collision_callout(personality: String, contact_type: StringName) -> String
 			"Veteran": "OBSTACLE.",
 		}.get(personality, "UGH!") as String
 
+func commotion_lookover(personality: String = "Steady") -> void:
+	var callout := {
+		"Rookie": "HM?",
+		"Hothead": "HEY!",
+		"Veteran": "?",
+	}.get(personality, "HM?") as String
+	_show_alert(callout, Color(0.92, 0.92, 0.92, 1.0), 1.2, 0.06, 0.10)
+	_kill_action_tween()
+	_action_tween = _host.create_tween().set_parallel(true)
+	_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:y", 0.28, 0.12)
+	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.06, 0.12)
+	_host.get_tree().create_timer(0.5).timeout.connect(reset_grab_pose.bind(0.22))
+	_host.get_tree().create_timer(0.65).timeout.connect(_clear_alert_if_matches.bind(callout))
+
 func chaos_reaction(callout: String, duration: float) -> void:
 	_show_alert(callout, Color(0.35, 0.9, 1.0, 1.0), 1.45, 0.06, 0.12)
 	_kill_action_tween()

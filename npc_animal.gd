@@ -23,6 +23,7 @@ const PECK_DURATION:    float = 0.55
 const PECK_STRIKE_FRAC: float = 0.40
 const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for subtle distinction
 const PANIC_RANGER_NEAR_MISS_RADIUS: float = 1.0
+const VISITOR_STARTLE_RADIUS: float = 1.5
 const PANIC_SCATTER_DURATION: float = 0.72
 const PANIC_MAX_SCATTER_DISTANCE: float = 4.25
 
@@ -83,6 +84,8 @@ var _mistaken_right_wing: MeshInstance3D
 var mistaken_capture_count: int = 0
 var panic_ranger_near_miss_count: int = 0
 var _panic_ranger_near_miss_consumed: bool = false
+var visitor_startle_count: int = 0
+var _panic_visitor_startle_consumed: bool = false
 var _panic_regroup_started: bool = false
 var panic_regroup_count: int = 0
 
@@ -189,6 +192,10 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 			next_mode = ReactionMode.PANIC
 			duration = 2.35
 			max_distance = 36.0
+		PARK_REACTIONS.EVENT_LOCAL_COMMOTION:
+			next_mode = ReactionMode.WATCH
+			duration = 0.8
+			max_distance = 6.0
 		_:
 			return false
 	if distance > max_distance:
@@ -212,6 +219,7 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	reaction_count += 1
 	if next_mode == ReactionMode.PANIC:
 		_panic_ranger_near_miss_consumed = false
+		_panic_visitor_startle_consumed = false
 		_panic_regroup_started = false
 	is_pecking = false
 	return true
@@ -476,6 +484,27 @@ func _panic_reaction() -> void:
 	body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 26.0) * 0.13
 	body.scale = _body_rest_scale * (1.0 + absf(sin(_reaction_time * 20.0)) * 0.08)
 	_try_panic_ranger_near_miss()
+	_try_visitor_startle()
+
+func _try_visitor_startle() -> void:
+	if _panic_visitor_startle_consumed:
+		return
+	for candidate in get_tree().get_nodes_in_group("visitors"):
+		if not candidate is Node3D:
+			continue
+		var visitor := candidate as Node3D
+		var flat_offset := visitor.global_position - global_position
+		flat_offset.y = 0.0
+		if flat_offset.length() > VISITOR_STARTLE_RADIUS:
+			continue
+		_panic_visitor_startle_consumed = true
+		if visitor.has_method("receive_pigeon_flyby"):
+			if bool(visitor.call("receive_pigeon_flyby", self)):
+				visitor_startle_count += 1
+		return
+
+func react_to_chain_event(event_name: StringName, origin: Vector3, _depth: int, _actors: int) -> bool:
+	return react_to_park_event(event_name, origin)
 
 func _try_panic_ranger_near_miss() -> void:
 	if _panic_ranger_near_miss_consumed or not is_instance_valid(ranger):

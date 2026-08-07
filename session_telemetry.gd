@@ -12,6 +12,7 @@ var grab_attempts: int = 0
 var dead_zone_count: int = 0
 var overlap_count: int = 0
 var collision_stumble_total: int = 0
+var visitor_startle_total: int = 0
 
 var _active: bool = false
 var _level_root: Node
@@ -55,6 +56,16 @@ func _connect_signals() -> void:
 
 	for ranger in get_tree().get_nodes_in_group("rangers"):
 		_connect_ranger(ranger)
+	for visitor in get_tree().get_nodes_in_group("visitors"):
+		_connect_visitor(visitor)
+
+func _connect_visitor(visitor: Node) -> void:
+	if visitor.has_signal("visitor_startled"):
+		visitor.visitor_startled.connect(
+			func(_o: Vector3) -> void:
+				visitor_startle_total += 1
+				_on_notable_event()
+		)
 
 func _connect_ranger(ranger: Node) -> void:
 	var id := ranger.get_instance_id()
@@ -124,6 +135,7 @@ func _print_summary() -> void:
 	print("Cinematic close calls:     %d" % (int(chaos.get("close_call_event_count")) if chaos else 0))
 	print("Panic flybys accepted:     %d" % panic_flyby)
 	print("Chase collision stumbles:  %d" % collision_stumble_total)
+	print("Visitor startles:          %d" % visitor_startle_total)
 	print("Exposure cascades:         %d" % (int(chaos.get("exposure_event_count")) if chaos else 0))
 	print("Flock-sync waves:          %d" % (int(chaos.get("flock_sync_event_count")) if chaos else 0))
 	print("Signature events:          %d" % (int(chaos.get("signature_event_count")) if chaos else 0))
@@ -147,7 +159,7 @@ func get_overlay_lines() -> Array[String]:
 	return [
 		"— Telemetry —",
 		"Grabs: %d att / %d miss / %d catch" % [grab_attempts, grabs_missed, grabs_caught],
-		"Wrong bird: %d  Flyby: %d  Stumble: %d" % [wrong_pigeon, panic_flyby, collision_stumble_total],
+		"Wrong bird: %d  Flyby: %d  Stumble: %d  Startle: %d" % [wrong_pigeon, panic_flyby, collision_stumble_total, visitor_startle_total],
 		"Close calls: %d  Flock sync: %d" % [
 			int(chaos.get("close_call_event_count")) if chaos else 0,
 			int(chaos.get("flock_sync_event_count")) if chaos else 0,

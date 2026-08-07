@@ -86,6 +86,9 @@ var wrong_pigeon_grab_count: int = 0
 var panic_pigeon_reaction_count: int = 0
 var collision_stumble_count: int = 0
 var _collision_stumble_cooldown: float = 0.0
+var commotion_reaction_count: int = 0
+var _commotion_react_cooldown: float = 0.0
+var _commotion_lookover_timer: float = 0.0
 
 var _suspicion_model := RangerSuspicion.new()
 var _state_machine := RangerStateMachine.new()
@@ -115,6 +118,7 @@ func _process(delta: float) -> void:
 	_wrong_pigeon_cooldown = maxf(_wrong_pigeon_cooldown - delta, 0.0)
 	_panic_pigeon_reaction_cooldown = maxf(_panic_pigeon_reaction_cooldown - delta, 0.0)
 	_collision_stumble_cooldown = maxf(_collision_stumble_cooldown - delta, 0.0)
+	_commotion_react_cooldown = maxf(_commotion_react_cooldown - delta, 0.0)
 	if caught or _session_capture_in_progress:
 		_movement.stop()
 		return
@@ -124,6 +128,12 @@ func _process(delta: float) -> void:
 		return
 	if _chaos_distraction_timer > 0.0:
 		_chaos_distraction_timer = maxf(_chaos_distraction_timer - delta, 0.0)
+		_movement.stop()
+		_presentation.update(delta, state)
+		return
+
+	if _commotion_lookover_timer > 0.0:
+		_commotion_lookover_timer = maxf(_commotion_lookover_timer - delta, 0.0)
 		_movement.stop()
 		_presentation.update(delta, state)
 		return
@@ -581,6 +591,37 @@ func _spawn_feather_burst() -> void:
 	add_child(burst)
 	burst.emitting = true
 	get_tree().create_timer(1.1).timeout.connect(burst.queue_free)
+
+func react_to_chain_event(event_name: StringName, origin: Vector3, chain_depth: int, chain_actor_count: int) -> bool:
+	if event_name == PARK_REACTIONS.EVENT_VISITOR_STARTLED:
+		return react_to_commotion(origin, chain_depth, chain_actor_count)
+	return false
+
+func react_to_commotion(origin: Vector3, chain_depth: int, chain_actor_count: int) -> bool:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or state != RangerState.PATROL
+		or _commotion_react_cooldown > 0.0
+	):
+		return false
+	_commotion_react_cooldown = 10.0
+	_commotion_lookover_timer = 0.8
+	commotion_reaction_count += 1
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	_presentation.commotion_lookover(capture_personality)
+	_reaction_director.broadcast_chain(
+		get_tree(),
+		PARK_REACTIONS.EVENT_LOCAL_COMMOTION,
+		global_position,
+		chain_depth + 1,
+		chain_actor_count + 1,
+		self
+	)
+	return true
 
 func _check_chase_collision() -> void:
 	var collider := _movement.chase_collision_collider
