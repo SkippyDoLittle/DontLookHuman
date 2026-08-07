@@ -82,6 +82,7 @@ Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/pha
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase15_ranger_personality_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase16_close_call_validation.gd
 Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase17_flock_sync_validation.gd
+Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase18_mistaken_identity_validation.gd
 ```
 
 In debug builds, the `F3` overlay shows the current level ID, session state, remaining collectibles, player water state, FPS, and every ranger's state and suspicion. Release exports disable the overlay.

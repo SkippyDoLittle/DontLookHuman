@@ -21,6 +21,7 @@ var exposure_feedback_count: int = 0
 var close_call_feedback_count: int = 0
 var _close_call_feedback_cooldown: float = 0.0
 var flock_sync_feedback_count: int = 0
+var wrong_pigeon_feedback_count: int = 0
 
 func _ready() -> void:
 	_ensure_danger_flash()
@@ -63,6 +64,8 @@ func _connect_new_rangers() -> void:
 			ranger.connect("capture_started", _on_capture_started.bind(ranger))
 		if ranger.has_signal("close_call"):
 			ranger.connect("close_call", _on_close_call.bind(ranger))
+		if ranger.has_signal("wrong_pigeon_grabbed"):
+			ranger.connect("wrong_pigeon_grabbed", _on_wrong_pigeon_grabbed.bind(ranger))
 		if bool(ranger.get("is_primary")):
 			_primary_ranger = ranger
 			_primary_state = int(ranger.get("state"))
@@ -106,6 +109,11 @@ func _on_close_call(_distance: float, _ranger: Node) -> void:
 	close_call_feedback_count += 1
 	_status_label.text = "Rangers: Barely missed!"
 	_show_warning("FEATHER'S WIDTH!", Color(1.0, 1.0, 0.62, 1.0), 1.25)
+
+func _on_wrong_pigeon_grabbed(_pigeon: Node, _ranger: Node) -> void:
+	wrong_pigeon_feedback_count += 1
+	_status_label.text = "Ranger: Grabbed the wrong bird!"
+	_show_warning("WRONG BIRD!", Color(0.5, 1.0, 0.92, 1.0), 1.25)
 
 func _on_capture_started(_ranger: Node) -> void:
 	_status_label.text = "CAUGHT!"

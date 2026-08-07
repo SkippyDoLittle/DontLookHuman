@@ -135,6 +135,37 @@ func teammate_miss_reaction(personality: String = "Steady") -> String:
 	_show_alert(callout, Color(0.55, 0.9, 1.0, 1.0), 1.35, 0.05, 0.1)
 	return callout
 
+func wrong_pigeon_grabbed(recovery_duration: float, personality: String = "Steady") -> String:
+	var callout := {
+		"Rookie": "I GOT—OH.",
+		"Hothead": "NOT YOU?!",
+		"Veteran": "...DECOY.",
+	}.get(personality, "WAIT...") as String
+	_show_alert(callout, Color(0.45, 1.0, 0.92, 1.0), 1.65, 0.05, 0.11)
+	_kill_action_tween()
+	_action_tween = _host.create_tween().set_parallel(true)
+	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.86, 0.13)
+	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.42, 0.13)
+	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.72, 0.13)
+	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.5, 0.13)
+	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.72, 0.13)
+	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.5, 0.13)
+	var reset_delay := maxf(recovery_duration - 0.3, 0.35)
+	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.24))
+	_host.get_tree().create_timer(0.42).timeout.connect(_clear_alert_if_matches.bind(callout))
+	return callout
+
+func teammate_wrong_pigeon_reaction(personality: String = "Steady") -> String:
+	var callout := {
+		"Rookie": "GARY?!",
+		"Hothead": "WRONG ONE!",
+		"Veteran": "FALSE TARGET.",
+	}.get(personality, "NOT THEM!") as String
+	_show_alert(callout, Color(0.62, 0.95, 1.0, 1.0), 1.4, 0.05, 0.1)
+	_host.get_tree().create_timer(0.62).timeout.connect(_clear_alert_if_matches.bind(callout))
+	return callout
+
 func _miss_callout(personality: String, miss_streak: int) -> String:
 	var callouts: Dictionary = {
 		"Rookie": ["OOPS!", "SORRY!", "NOT AGAIN!"],
@@ -182,6 +213,12 @@ func reset_grab_pose(duration: float = 0.2) -> void:
 func _kill_action_tween() -> void:
 	if _action_tween and _action_tween.is_valid():
 		_action_tween.kill()
+
+func _clear_alert_if_matches(callout: String) -> void:
+	if not is_instance_valid(_alert_label) or _alert_label.text != callout:
+		return
+	_alert_label.text = ""
+	_alert_label.visible = false
 
 func _show_alert(
 	text: String,

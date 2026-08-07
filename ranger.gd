@@ -16,6 +16,8 @@ signal capture_started
 signal personality_reaction_started(kind: StringName, callout: String)
 signal teammate_reaction_started(callout: String)
 signal close_call(distance: float)
+signal wrong_pigeon_grabbed(pigeon: Node)
+signal wrong_pigeon_released(pigeon: Node)
 
 enum RangerState { PATROL, INVESTIGATE, CHASE }
 enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
@@ -58,6 +60,8 @@ enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
 @export var grab_recovery_duration: float = 1.05
 @export var capture_hold_duration: float = 0.85
 @export_range(0.1, 1.5, 0.05) var close_call_margin: float = 0.55
+@export_range(0.4, 1.25, 0.05) var wrong_pigeon_grab_radius: float = 0.9
+@export var wrong_pigeon_grab_cooldown: float = 6.0
 
 @onready var player: CharacterBody3D = get_node("../Player")
 @onready var pigeon_visual: Node3D = get_node("../Player/PigeonVisual")
@@ -76,6 +80,7 @@ var teammate_reaction_count: int = 0
 var last_personality_callout: String = ""
 var last_lunge_closest_distance: float = INF
 var close_call_count: int = 0
+var wrong_pigeon_grab_count: int = 0
 
 var _suspicion_model := RangerSuspicion.new()
 var _state_machine := RangerStateMachine.new()
@@ -90,6 +95,8 @@ var _session_capture_in_progress: bool = false
 var _chaos_distraction_timer: float = 0.0
 var chaos_reaction_count: int = 0
 var _teammate_reaction_cooldown: float = 0.0
+var _wrong_pigeon_cooldown: float = 0.0
+var _wrong_pigeon_target: Node
 
 func _ready() -> void:
 	add_to_group("rangers")
@@ -99,6 +106,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_teammate_reaction_cooldown = maxf(_teammate_reaction_cooldown - delta, 0.0)
+	_wrong_pigeon_cooldown = maxf(_wrong_pigeon_cooldown - delta, 0.0)
 	if caught or _session_capture_in_progress:
 		_movement.stop()
 		return
@@ -217,6 +225,23 @@ func react_to_teammate_miss(origin: Vector3) -> bool:
 	teammate_reaction_started.emit(callout)
 	return true
 
+func react_to_teammate_wrong_pigeon(origin: Vector3) -> bool:
+	if (
+		caught
+		or _session_capture_in_progress
+		or grab_phase != GrabPhase.IDLE
+		or _teammate_reaction_cooldown > 0.0
+	):
+		return false
+	var look_target := Vector3(origin.x, global_position.y, origin.z)
+	if global_position.distance_squared_to(look_target) > 0.001:
+		look_at(look_target, Vector3.UP)
+	_teammate_reaction_cooldown = 2.4
+	teammate_reaction_count += 1
+	var callout := _presentation.teammate_wrong_pigeon_reaction(capture_personality)
+	teammate_reaction_started.emit(callout)
+	return true
+
 func _update_exposed_state() -> void:
 	if suspicion >= 99.5:
 		_player_exposed = true
@@ -288,24 +313,81 @@ func _begin_miss_recovery() -> void:
 	failed_grab_streak += 1
 	_grab_timer = grab_recovery_duration + _repeated_miss_recovery_bonus()
 	_movement.stop()
-	last_personality_callout = _presentation.grab_missed(
-		_grab_timer,
-		capture_personality,
-		failed_grab_streak
-	)
-	_sound_manager.call("play_grab_miss")
+	var mistaken_target := _try_grab_wrong_pigeon()
+	if mistaken_target != null:
+		last_personality_callout = _presentation.wrong_pigeon_grabbed(
+			_grab_timer,
+			capture_personality
+		)
+		_sound_manager.call("play_capture_flap")
+		_sound_manager.call("play_wrong_pigeon")
+		_spawn_feather_burst()
+		get_tree().create_timer(0.48).timeout.connect(
+			_notify_teammates_of_wrong_pigeon
+		)
+	else:
+		last_personality_callout = _presentation.grab_missed(
+			_grab_timer,
+			capture_personality,
+			failed_grab_streak
+		)
+		_sound_manager.call("play_grab_miss")
+		_spawn_stumble_dust()
+		_notify_teammates_of_miss()
 	_sound_manager.call("play_flock_panic")
-	_spawn_stumble_dust()
-	_notify_teammates_of_miss()
 	_reaction_director.broadcast(
 		get_tree(),
 		PARK_REACTIONS.EVENT_GRAB_MISSED,
 		global_position,
 		self
 	)
-	personality_reaction_started.emit(&"grab_missed", last_personality_callout)
+	personality_reaction_started.emit(
+		&"wrong_pigeon" if mistaken_target != null else &"grab_missed",
+		last_personality_callout
+	)
 	grab_missed.emit()
-	_emit_close_call_if_needed()
+	if mistaken_target != null:
+		wrong_pigeon_grabbed.emit(mistaken_target)
+	else:
+		_emit_close_call_if_needed()
+
+func _try_grab_wrong_pigeon() -> Node:
+	if _wrong_pigeon_cooldown > 0.0:
+		return null
+	var candidates: Array[Node3D] = []
+	for pigeon in get_tree().get_nodes_in_group("pigeons"):
+		if not pigeon is Node3D or not pigeon.has_method("can_be_mistaken_target"):
+			continue
+		if bool(pigeon.call("can_be_mistaken_target", global_position, wrong_pigeon_grab_radius)):
+			candidates.append(pigeon as Node3D)
+	candidates.sort_custom(func(a: Node3D, b: Node3D) -> bool:
+		var a_distance := a.global_position.distance_squared_to(global_position)
+		var b_distance := b.global_position.distance_squared_to(global_position)
+		if is_equal_approx(a_distance, b_distance):
+			return a.get_instance_id() < b.get_instance_id()
+		return a_distance < b_distance
+	)
+	if candidates.is_empty():
+		return null
+	var target := candidates[0]
+	var hold_duration := minf(maxf(_grab_timer - 0.12, 0.55), 0.9)
+	if not bool(target.call("start_mistaken_capture", self, hold_duration)):
+		return null
+	_wrong_pigeon_cooldown = wrong_pigeon_grab_cooldown
+	_wrong_pigeon_target = target
+	wrong_pigeon_grab_count += 1
+	if target.has_signal("mistaken_capture_released"):
+		target.connect(
+			"mistaken_capture_released",
+			_on_wrong_pigeon_released.bind(target),
+			CONNECT_ONE_SHOT
+		)
+	return target
+
+func _on_wrong_pigeon_released(_origin: Vector3, pigeon: Node) -> void:
+	if _wrong_pigeon_target == pigeon:
+		_wrong_pigeon_target = null
+	wrong_pigeon_released.emit(pigeon)
 
 func _emit_close_call_if_needed() -> void:
 	if last_lunge_closest_distance > grab_contact_distance + close_call_margin:
@@ -331,6 +413,16 @@ func _notify_teammates_of_miss() -> void:
 			continue
 		if teammate.has_method("react_to_teammate_miss"):
 			teammate.call("react_to_teammate_miss", global_position)
+
+func _notify_teammates_of_wrong_pigeon() -> void:
+	for candidate in get_tree().get_nodes_in_group("rangers"):
+		if candidate == self or not candidate is Node3D:
+			continue
+		var teammate := candidate as Node3D
+		if teammate.global_position.distance_to(global_position) > 9.5:
+			continue
+		if teammate.has_method("react_to_teammate_wrong_pigeon"):
+			teammate.call("react_to_teammate_wrong_pigeon", global_position)
 
 func _spawn_stumble_dust() -> void:
 	var dust := CPUParticles3D.new()

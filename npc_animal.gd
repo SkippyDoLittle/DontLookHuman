@@ -7,6 +7,8 @@ extends CharacterBody3D
 const PARK_REACTIONS = preload("res://park_reaction_director.gd")
 
 signal mimic_peck_started(origin: Vector3)
+signal mistaken_capture_started(carrier: Node3D)
+signal mistaken_capture_released(origin: Vector3)
 
 @export var speed:          float = 1.2    # normal wander speed (matches player walk speed)
 @export var flee_speed:     float = 2.2    # speed when running from the ranger
@@ -23,6 +25,7 @@ const HEAD_BOB_Z:       float = 0.05   # slightly less than player (0.06) for su
 @onready var head:   MeshInstance3D = $PigeonVisual/Head
 @onready var beak:   MeshInstance3D = $PigeonVisual/Beak
 @onready var body:   MeshInstance3D = $PigeonVisual/Body
+@onready var pigeon_visual: Node3D = $PigeonVisual
 
 enum ReactionMode { NONE, WATCH, PANIC, SWARM }
 
@@ -62,6 +65,16 @@ var _mimic_active: bool = false
 var _mimic_delay: float = 0.0
 var _mimic_origin: Vector3 = Vector3.ZERO
 var mimic_peck_count: int = 0
+var _mistaken_capture_active: bool = false
+var _mistaken_capture_timer: float = 0.0
+var _mistaken_capture_time: float = 0.0
+var _mistaken_carrier: Node3D
+var _mistaken_collision_layer: int = 0
+var _mistaken_collision_mask: int = 0
+var _mistaken_visual_rest_rotation: Vector3
+var _mistaken_left_wing: MeshInstance3D
+var _mistaken_right_wing: MeshInstance3D
+var mistaken_capture_count: int = 0
 
 func _ready() -> void:
 	add_to_group("pigeons")
@@ -72,6 +85,7 @@ func _ready() -> void:
 	beak_z_rest = beak.position.z
 	_body_rest_rotation = body.rotation
 	_body_rest_scale = body.scale
+	_mistaken_visual_rest_rotation = pigeon_visual.rotation
 
 	next_peck_timer = randf_range(0.5, 1.5)
 	choose_new_behavior()
@@ -96,6 +110,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_desired_move = Vector3.ZERO
+	if _update_mistaken_capture(delta):
+		return
 	_update_peck(delta)
 	ranger = _find_nearest_ranger()
 	if _update_park_reaction(delta):
@@ -118,6 +134,8 @@ func _process(delta: float) -> void:
 	_update_walk_bob(delta)
 
 func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
+	if _mistaken_capture_active:
+		return false
 	var distance := global_position.distance_to(origin)
 	var next_mode := ReactionMode.NONE
 	var duration := 0.0
@@ -125,7 +143,9 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	match event_name:
 		PARK_REACTIONS.EVENT_GRAB_WINDUP:
 			next_mode = ReactionMode.WATCH
-			duration = 0.65
+			# Covers the slowest campaign wind-up plus the full lunge. Without this
+			# buffer the pigeon resumes flee behavior just before a possible miss.
+			duration = 1.1
 			max_distance = 7.0
 		PARK_REACTIONS.EVENT_GRAB_MISSED:
 			next_mode = ReactionMode.PANIC
@@ -178,7 +198,13 @@ func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
 	return true
 
 func can_mimic_player_peck(origin: Vector3) -> bool:
-	if _reaction_mode != ReactionMode.NONE or _mimic_pending or _mimic_active or is_pecking:
+	if (
+		_mistaken_capture_active
+		or _reaction_mode != ReactionMode.NONE
+		or _mimic_pending
+		or _mimic_active
+		or is_pecking
+	):
 		return false
 	if global_position.distance_to(origin) > 5.5:
 		return false
@@ -238,6 +264,124 @@ func _cancel_mimic_peck() -> void:
 		head.position = Vector3(head.position.x, head_y_rest, head_z_rest)
 		beak.position = Vector3(beak.position.x, beak_y_rest, beak_z_rest)
 	_mimic_active = false
+
+func can_be_mistaken_target(origin: Vector3, radius: float) -> bool:
+	if _mistaken_capture_active or _mimic_pending or _mimic_active or is_pecking:
+		return false
+	if _reaction_mode not in [ReactionMode.NONE, ReactionMode.WATCH]:
+		return false
+	return global_position.distance_to(origin) <= radius
+
+func start_mistaken_capture(carrier: Node3D, duration: float) -> bool:
+	if not is_instance_valid(carrier) or _mistaken_capture_active:
+		return false
+	if _reaction_mode not in [ReactionMode.NONE, ReactionMode.WATCH]:
+		return false
+	_cancel_mimic_peck()
+	_reaction_mode = ReactionMode.NONE
+	_reaction_delay = 0.0
+	_reaction_timer = 0.0
+	is_pecking = false
+	peck_time = 0.0
+	is_pausing = true
+	is_fleeing = false
+	_desired_move = Vector3.ZERO
+	head.position = Vector3(head.position.x, head_y_rest, head_z_rest)
+	beak.position = Vector3(beak.position.x, beak_y_rest, beak_z_rest)
+	_ensure_mistaken_capture_wings()
+	_mistaken_capture_active = true
+	_mistaken_capture_timer = maxf(duration, 0.25)
+	_mistaken_capture_time = 0.0
+	_mistaken_carrier = carrier
+	_mistaken_collision_layer = collision_layer
+	_mistaken_collision_mask = collision_mask
+	collision_layer = 0
+	collision_mask = 0
+	mistaken_capture_count += 1
+	_mistaken_left_wing.visible = true
+	_mistaken_right_wing.visible = true
+	mistaken_capture_started.emit(carrier)
+	return true
+
+func _update_mistaken_capture(delta: float) -> bool:
+	if not _mistaken_capture_active:
+		return false
+	if not is_instance_valid(_mistaken_carrier):
+		_finish_mistaken_capture(Vector3.ZERO, false)
+		return false
+
+	_mistaken_capture_timer = maxf(_mistaken_capture_timer - delta, 0.0)
+	_mistaken_capture_time += delta
+	velocity = Vector3.ZERO
+	global_position = (
+		_mistaken_carrier.global_position
+		+ Vector3.UP * 0.92
+		- _mistaken_carrier.global_transform.basis.z * 0.22
+	)
+	global_rotation.y = _mistaken_carrier.global_rotation.y
+	var flutter := sin(_mistaken_capture_time * 32.0)
+	var kick := sin(_mistaken_capture_time * 21.0 + 0.8)
+	pigeon_visual.rotation.z = _mistaken_visual_rest_rotation.z + flutter * 0.32
+	pigeon_visual.rotation.x = _mistaken_visual_rest_rotation.x + kick * 0.11
+	body.scale = _body_rest_scale * (1.0 + absf(flutter) * 0.1)
+	_mistaken_left_wing.rotation.z = 0.18 + absf(flutter) * 1.18
+	_mistaken_right_wing.rotation.z = -0.18 - absf(flutter) * 1.18
+	if _mistaken_capture_timer <= 0.0:
+		_finish_mistaken_capture(_mistaken_carrier.global_position, true)
+		return false
+	return true
+
+func _finish_mistaken_capture(origin: Vector3, panic_after_release: bool) -> void:
+	var carrier := _mistaken_carrier
+	_mistaken_capture_active = false
+	_mistaken_capture_timer = 0.0
+	_mistaken_capture_time = 0.0
+	_mistaken_carrier = null
+	collision_layer = _mistaken_collision_layer
+	collision_mask = _mistaken_collision_mask
+	pigeon_visual.rotation = _mistaken_visual_rest_rotation
+	body.rotation = _body_rest_rotation
+	body.scale = _body_rest_scale
+	_mistaken_left_wing.visible = false
+	_mistaken_right_wing.visible = false
+	if is_instance_valid(carrier):
+		var release_side := -1.0 if get_instance_id() % 2 == 0 else 1.0
+		global_position = (
+			carrier.global_position
+			+ carrier.global_transform.basis.x * release_side * 0.65
+			- carrier.global_transform.basis.z * 0.2
+			+ Vector3.UP * 0.475
+		)
+	if panic_after_release:
+		react_to_park_event(PARK_REACTIONS.EVENT_GRAB_MISSED, origin)
+	else:
+		choose_new_behavior()
+	mistaken_capture_released.emit(origin)
+
+func _ensure_mistaken_capture_wings() -> void:
+	if _mistaken_left_wing != null and _mistaken_right_wing != null:
+		return
+	_mistaken_left_wing = _create_mistaken_capture_wing("MistakenLeftWing", -0.2, 0.18)
+	_mistaken_right_wing = _create_mistaken_capture_wing("MistakenRightWing", 0.2, -0.18)
+
+func _create_mistaken_capture_wing(
+	wing_name: String,
+	x_position: float,
+	z_rotation: float
+) -> MeshInstance3D:
+	var wing := MeshInstance3D.new()
+	wing.name = wing_name
+	wing.position = Vector3(x_position, 0.0, -0.01)
+	wing.rotation.z = z_rotation
+	wing.visible = false
+	var wing_mesh := BoxMesh.new()
+	wing_mesh.size = Vector3(0.15, 0.04, 0.3)
+	wing.mesh = wing_mesh
+	var wing_material := StandardMaterial3D.new()
+	wing_material.albedo_color = Color(0.4, 0.46667, 0.53333, 1.0)
+	wing.set_surface_override_material(0, wing_material)
+	pigeon_visual.add_child(wing)
+	return wing
 
 func _update_park_reaction(delta: float) -> bool:
 	if _reaction_mode == ReactionMode.NONE:
@@ -332,6 +476,9 @@ func _find_nearest_ranger() -> Node3D:
 	return nearest
 
 func _physics_process(delta: float) -> void:
+	if _mistaken_capture_active:
+		velocity = Vector3.ZERO
+		return
 	velocity.x = _desired_move.x
 	velocity.z = _desired_move.z
 	if not is_on_floor():
