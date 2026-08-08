@@ -88,6 +88,8 @@ var visitor_startle_count: int = 0
 var _panic_visitor_startle_consumed: bool = false
 var _panic_regroup_started: bool = false
 var panic_regroup_count: int = 0
+var _panic_prev_direction: Vector3 = Vector3.ZERO
+var _panic_turn_lean: float = 0.0
 
 func _ready() -> void:
 	add_to_group("pigeons")
@@ -444,9 +446,12 @@ func _watch_reaction() -> void:
 	to_event.y = 0.0
 	if to_event.length_squared() > 0.001:
 		look_at(global_position - to_event.normalized(), Vector3.UP)
-	head.position.y = head_y_rest + 0.045
-	beak.position.y = beak_y_rest + 0.045
-	body.scale = _body_rest_scale * (1.0 + sin(_reaction_time * 18.0) * 0.035)
+	# Crouched alert pose: body squats and widens, head raises alertly.
+	body.scale = Vector3(_body_rest_scale.x * 1.05, _body_rest_scale.y * 0.86, _body_rest_scale.z * 1.05)
+	body.rotation.x = _body_rest_rotation.x - 0.09
+	var alert_bob := sin(_reaction_time * 22.0) * 0.010
+	head.position.y = head_y_rest + 0.065 + alert_bob
+	beak.position.y = beak_y_rest + 0.065 + alert_bob
 
 func _panic_reaction() -> void:
 	is_pausing = false
@@ -483,7 +488,14 @@ func _panic_reaction() -> void:
 			direction = orbit_direction
 			_desired_move = direction * flee_speed * 0.45
 	look_at(global_position - direction, Vector3.UP)
-	body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 26.0) * 0.13
+	# Turn lean: pigeon banks into direction changes like a flock bird.
+	if _panic_prev_direction.length_squared() > 0.001 and direction.length_squared() > 0.001:
+		var turn_y := _panic_prev_direction.cross(direction).y
+		_panic_turn_lean = lerpf(_panic_turn_lean, turn_y * 0.32, 0.25)
+	else:
+		_panic_turn_lean = lerpf(_panic_turn_lean, 0.0, 0.18)
+	_panic_prev_direction = direction
+	body.rotation.z = _body_rest_rotation.z + sin(_reaction_time * 26.0) * 0.13 + clampf(_panic_turn_lean, -0.22, 0.22)
 	body.scale = _body_rest_scale * (1.0 + absf(sin(_reaction_time * 20.0)) * 0.08)
 	_try_panic_ranger_near_miss()
 	_try_visitor_startle()
@@ -548,6 +560,8 @@ func _finish_park_reaction() -> void:
 	_reaction_delay = 0.0
 	_reaction_timer = 0.0
 	_reaction_active_time = 0.0
+	_panic_prev_direction = Vector3.ZERO
+	_panic_turn_lean = 0.0
 	body.rotation = _body_rest_rotation
 	body.scale = _body_rest_scale
 	head.position.y = head_y_rest
@@ -679,6 +693,9 @@ func _update_walk_bob(delta: float) -> void:
 
 		# Zero-crossing detection — same pattern as player.gd.
 		if _prev_sin <= 0.0 and bob_sin > 0.0:
+			_step_sfx.pitch_scale = randf_range(0.88, 1.12)
+			if _reaction_mode == ReactionMode.PANIC:
+				_step_sfx.pitch_scale *= randf_range(1.18, 1.42)
 			_step_sfx.play()
 		_prev_sin = bob_sin
 	else:

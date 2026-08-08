@@ -48,7 +48,7 @@ func _ready() -> void:
 	_peck      = _player(_noise(0.05,  60.0,  0.06), -6.0)
 	_npc_peck  = _player(_noise(0.05,  60.0,  0.06), -28.0)  # 22 dB quieter — 5 NPCs peck constantly; they'd overwhelm at normal volume
 	_collect   = _player(_chime([1046.5, 1318.5, 1568.0],        [0.12, 0.14, 0.20]), -2.0)  # C6 E6 G6
-	_alert     = _player(_sweep(350.0, 700.0, 0.18), -5.0)    # rising = alarm
+	_alert     = _player(_sweep(350.0, 700.0, 0.18), -3.0)    # rising = alarm
 	_caught    = _player(_sweep(440.0,  90.0, 0.65), -2.0)    # falling = defeated
 	_escape    = _player(_chime([523.25, 659.25, 783.99, 1046.5], [0.10, 0.10, 0.12, 0.28]), -2.0)  # C5 E5 G5 C6
 	_tick      = _player(_tone(1200.0, 0.035, 25.0), -10.0)
@@ -58,7 +58,7 @@ func _ready() -> void:
 	_portal    = _player(_chime([523.25, 783.99, 1046.5, 1318.5, 1568.0], [0.08, 0.08, 0.10, 0.12, 0.30]), -2.0)  # C5 G5 C6 E6 G6
 	_exhaust   = _player(_noise(0.08,   40.0,  0.12), -14.0)
 	_wall_bump = _player(_noise(0.06,   35.0,  0.18), -10.0)  # low thud for hitting park boundary
-	_ranger_whistle = _player(_sweep(1350.0, 2550.0, 0.24), -3.0)
+	_ranger_whistle = _player(_sweep(1350.0, 2550.0, 0.24), -1.0)
 	_grab_whoosh = _player(_noise(0.16, 13.0, 0.12), -5.0)
 	_grab_miss = _player(_noise(0.22, 9.0, 0.07), -2.0)
 	_capture_impact = _player(_noise(0.15, 11.0, 0.22), 0.0)
@@ -115,6 +115,8 @@ func play_bird_flyby() -> void: _bird_flyby.play()
 
 func set_tension(amount: float) -> void:
 	var tension := clampf(amount, 0.0, 1.0)
+	# Quiet the ambient park sounds as tension rises — silence before danger reads louder than noise.
+	_ambient.volume_db = lerpf(-20.0, -30.0, tension * tension)
 	if tension < 0.52:
 		_heartbeat.stop()
 		return
@@ -132,8 +134,12 @@ func stop_ambient() -> void:
 	_ambient.stop()
 
 func play_step(sprint: bool) -> void:
-	if sprint: _step_run.play()
-	else:      _step_walk.play()
+	if sprint:
+		_step_run.pitch_scale = randf_range(0.88, 1.12)
+		_step_run.play()
+	else:
+		_step_walk.pitch_scale = randf_range(0.90, 1.10)
+		_step_walk.play()
 
 # Returns the stream so each NPC can attach its own AudioStreamPlayer3D for distance falloff.
 func npc_peck_stream()  -> AudioStreamWAV: return _npc_peck.stream as AudioStreamWAV

@@ -68,12 +68,42 @@ func grab_windup(duration: float, personality: String = "Steady") -> void:
 	_show_alert(callout, Color(1.0, 0.15, 0.08, 1.0), 1.85, 0.06, 0.10)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
-	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.1, duration)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.1, duration)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.78, duration)
-	_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.12, duration)
-	_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.12, duration)
+	match personality:
+		"Rookie":
+			# Over-eager: arms shoot very high, deep nervous crouch, hat askew
+			_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.38, duration)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.38, duration)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.70, duration)
+			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.16, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.20, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.20, duration)
+		"Hothead":
+			# Aggressive forward lean: body tips toward target, arms reach hard and fast
+			_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.22, duration * 0.65)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.22, duration * 0.65)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.74, duration)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.11, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.20, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.20, duration)
+		"Veteran":
+			# Deliberate patient stance: asymmetric arms, minimal body movement, head dips
+			_action_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -0.82, duration)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.18, duration)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.82, duration)
+			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.11, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.08, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.08, duration)
+		_:
+			# Steady: original balanced wind-up
+			_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.1, duration)
+			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.1, duration)
+			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.78, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.12, duration)
+			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.12, duration)
 
 func grab_lunge() -> void:
 	_kill_action_tween()
