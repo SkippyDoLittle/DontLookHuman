@@ -53,12 +53,18 @@
 - [x] Versioned Windows ZIP packaging with included controls and SHA-256 checksum
 - [x] Automated trailer-container and release-workflow validation
 
+## Completed in Phase 26
+
+- [x] Rebuilt release trailer tool to showcase Phases 21–25 moments: Festival hook, Lakeside blend gag, Playground ranger collision comedy, Botanical Gardens gauntlet escape
+- [x] Updated architecture documentation to reflect Phases 23–25 systems (near-exit alert, chaos window bonuses, procedural body animation)
+- [x] Updated known-issues assessment to reflect Phase 25 visual communication improvements
+
 ## Final trailer structure
 
 1. Open immediately on a Festival theft beside a ranger.
 2. Turn the first pickup into an alert and chase within the opening second.
 3. Use the Lakeside flock for the "ACT NATURAL." visual gag.
-4. Cut three Playground pickups to the rising beat and suspicion level.
+4. Cut to a Playground ranger collision — player sidesteps a charging ranger, who stumbles while the player escapes.
 5. Escalate into a four-ranger Botanical Gardens gauntlet and glowing exit.
 6. Hard cut from the escape flash to "JUST A PIGEON.", then reveal the logo and wishlist call to action.
 

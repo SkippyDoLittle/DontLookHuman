@@ -29,7 +29,7 @@ const SHOT_SPECS: Array[Dictionary] = [
 	},
 	{
 		"path": "res://scenes/levels/Level02_Playground.tscn",
-		"kind": &"montage",
+		"kind": &"collision",
 		"duration": 5.0,
 	},
 	{
@@ -61,7 +61,7 @@ func _record_trailer() -> void:
 	level = _load_level(String(SHOT_SPECS[1].path))
 	await _capture_blend(level, float(SHOT_SPECS[1].duration))
 	level = _load_level(String(SHOT_SPECS[2].path))
-	await _capture_pickup_montage(level, float(SHOT_SPECS[2].duration))
+	await _capture_collision_comedy(level, float(SHOT_SPECS[2].duration))
 	level = _load_level(String(SHOT_SPECS[3].path))
 	await _capture_gauntlet(level, float(SHOT_SPECS[3].duration))
 	await _show_final_hook(0.8)
@@ -282,80 +282,129 @@ func _capture_blend(level: Node, duration: float) -> void:
 		_set_actions(actions)
 		await process_frame
 
-func _capture_pickup_montage(level: Node, duration: float) -> void:
+func _capture_collision_comedy(level: Node, duration: float) -> void:
 	if level == null:
 		return
 	var player := level.get_node("Player") as CharacterBody3D
-	var foods: Array[Node3D] = [
-		level.get_node("PicnicFood") as Node3D,
-		level.get_node("PicnicFood2") as Node3D,
-		level.get_node("PicnicFood3") as Node3D,
-	]
 	var rangers := _rangers(level)
-	var stages: Array[Vector3] = [
-		Vector3(-3.5, 1.0, 4.0),
-		Vector3(2.2, 1.0, 1.8),
-		Vector3(-1.0, 1.0, -3.8),
-	]
-	_stage_pickup(player, foods[0], stages[0], 0.0)
-	_stage_rangers_around(rangers, stages[0], 3.2)
+	var food := level.get_node("PicnicFood") as Node3D
+	var stage := Vector3(0.0, 1.0, -2.0)
+	_stage_pickup(player, food, stage, 0.0)
+
+	var ranger_a: CharacterBody3D = null
+	var ranger_b: CharacterBody3D = null
 	if not rangers.is_empty():
-		_script_ranger(rangers[0], "!")
+		ranger_a = rangers[0]
+		ranger_a.process_mode = Node.PROCESS_MODE_DISABLED
+		ranger_a.global_position = Vector3(stage.x, 0.525, stage.z - 3.4)
+		ranger_a.look_at(player.global_position, Vector3.UP)
+		_set_suspicion(ranger_a, 90.0)
+		_script_ranger(ranger_a, "!!")
+	if rangers.size() >= 2:
+		ranger_b = rangers[1]
+		ranger_b.process_mode = Node.PROCESS_MODE_DISABLED
+		ranger_b.global_position = Vector3(stage.x + 2.6, 0.525, stage.z - 1.8)
+		ranger_b.look_at(player.global_position, Vector3.UP)
+		_set_suspicion(ranger_b, 82.0)
+		_script_ranger(ranger_b, "!")
+	_arrange_pigeons(level, stage, [
+		Vector3(-0.95, 0.0, 0.70),
+		Vector3(1.10, 0.0, 0.80),
+	])
+	_set_hud_detail(level, true)
+
+	var stumble_done := false
+	var body_a: Node3D = null
+	if ranger_a != null:
+		body_a = ranger_a.get_node_or_null("RangerBody")
 
 	var total_frames := ceili(duration * FPS)
 	for frame in total_frames:
 		var elapsed := float(frame) / float(FPS)
 		_reset_frame_overlay()
-		if frame == 49:
-			_stage_pickup(player, foods[1], stages[1], -0.35)
-			_stage_rangers_around(rangers, stages[1], 2.8)
-			for ranger in rangers:
-				_script_ranger(ranger, "!")
-		if frame == 99:
-			_stage_pickup(player, foods[2], stages[2], 0.45)
-			_stage_rangers_around(rangers, stages[2], 2.4)
-			for ranger in rangers:
-				_script_ranger(ranger, "!!")
 
 		var actions: Array[StringName] = []
-		if frame in [5, 55, 105]:
+		if frame == 5:
 			actions = [&"peck"]
-		elif elapsed >= 3.75:
-			actions = [&"move_forward", &"move_left", &"run"]
+		elif elapsed >= 0.48 and elapsed < 1.05:
+			actions = [&"move_right", &"run"]
+		elif elapsed >= 1.05:
+			actions = [&"move_forward", &"run"]
 
-		var stage_index := mini(frame / 50, 2)
-		var stage := stages[stage_index]
 		if frame == 8:
-			_force_collect(foods[0])
-		elif frame == 58:
-			_force_collect(foods[1])
-		elif frame == 108:
-			_force_collect(foods[2])
-		for ranger in rangers:
-			_set_suspicion(ranger, clampf(42.0 + float(stage_index) * 22.0, 42.0, 91.0))
-			_hold_suspicion([ranger], 42.0 + float(stage_index) * 22.0, 94.0)
+			_force_collect(food)
+
+		if ranger_a != null:
+			if frame < 42:
+				_drive_scripted_rangers([ranger_a], player, 2.8)
+				_hold_suspicion([ranger_a], 90.0, 94.0)
+			elif frame == 42 and not stumble_done:
+				stumble_done = true
+				_script_ranger(ranger_a, "??")
+				if body_a != null:
+					body_a.rotation.x = 0.52
+					body_a.rotation.z = 0.28
+			elif frame > 42 and frame <= 90:
+				var recover_t := float(frame - 42) / 48.0
+				if body_a != null:
+					body_a.rotation.x = lerpf(0.52, 0.0, recover_t)
+					body_a.rotation.z = lerpf(0.28, 0.0, recover_t)
+				_set_suspicion(ranger_a, lerpf(94.0, 78.0, recover_t))
+			else:
+				if body_a != null:
+					body_a.rotation.x = 0.0
+					body_a.rotation.z = 0.0
+				_script_ranger(ranger_a, "!")
+				_set_suspicion(ranger_a, 84.0)
+				_drive_scripted_rangers([ranger_a], player, 2.0)
+
+		if ranger_b != null:
+			_drive_scripted_rangers([ranger_b], player, 1.8 if frame < 90 else 2.2)
+			_hold_suspicion([ranger_b], 82.0, 94.0)
+
+		var suspicion_val: float
+		if frame < 42:
+			suspicion_val = 90.0
+		elif frame <= 90:
+			suspicion_val = lerpf(94.0, 78.0, float(frame - 42) / 48.0)
+		else:
+			suspicion_val = 84.0
 		_sync_hud(
 			level,
-			45.0 + float(stage_index) * 23.0,
-			"Ranger: Suspicious" if stage_index < 2 else "Ranger: ALERT!"
+			suspicion_val,
+			"Rangers: CHASING!" if (frame < 42 or frame > 90) else "Ranger: Confused"
 		)
-		_drive_scripted_rangers(rangers, player, 0.7 + float(stage_index) * 0.95)
 
-		if stage_index == 0:
-			_set_camera(stage + Vector3(1.55, 0.52, 1.65), stage + Vector3(0.0, -0.58, -0.25), 43.0)
-		elif stage_index == 1:
-			_set_camera(stage + Vector3(-2.35, 2.55, 2.10), stage + Vector3(0.0, -0.35, 0.0), 57.0)
+		if frame < 15:
+			_set_camera(
+				stage + Vector3(3.2, 1.8, 3.5),
+				stage + Vector3(0.0, -0.50, -0.20),
+				46.0
+			)
+		elif frame < 48:
+			_set_camera(
+				stage + Vector3(-0.40, 1.0, 2.5),
+				stage + Vector3(0.0, -0.50, -0.20),
+				52.0,
+				0.08
+			)
+		elif frame < 90 and ranger_a != null:
+			_set_camera(
+				ranger_a.global_position + Vector3(0.70, 1.10, 1.55),
+				ranger_a.global_position + Vector3(0.0, -0.20, 0.0),
+				50.0
+			)
 		else:
 			_set_camera(
-				player.global_position + Vector3(2.20, 0.75, 1.60),
-				player.global_position + Vector3(0.0, -0.50, -0.35),
-				61.0,
+				player.global_position + Vector3(-2.20, 1.05, 2.40),
+				player.global_position + Vector3(0.0, -0.32, -0.30),
+				66.0,
 				0.12
 			)
 
-		_apply_micro_cuts(frame, [49, 99])
-		for impact_frame in [8, 58, 108]:
-			_apply_white_impact(frame, impact_frame, 4)
+		_apply_micro_cuts(frame, [42, 90])
+		_apply_white_impact(frame, 8, 4)
+		_apply_white_impact(frame, 42, 7)
 		_set_actions(actions)
 		await process_frame
 

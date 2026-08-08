@@ -1,10 +1,15 @@
 [CmdletBinding()]
 param(
-    [string]$Path = "docs/gameplay_preview.avi"
+    [string]$Path = "docs/gameplay_preview.avi",
+    [Alias("ExpectedFrames")]
+    [int]$FrameCount = 0
 )
 
 $ErrorActionPreference = "Stop"
 $expectedFrames = 990
+if ($FrameCount -gt 0) {
+    $expectedFrames = $FrameCount
+}
 $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
 $data = [System.IO.File]::ReadAllBytes($resolvedPath)
 
