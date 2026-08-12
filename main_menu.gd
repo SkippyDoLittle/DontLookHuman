@@ -4,6 +4,7 @@
 extends Node
 
 const SETTINGS_PATH: String = "user://settings.cfg"
+const AMBIENCE_DIRECTOR = preload("res://park_ambience_director.gd")
 const LEVEL_SCENES: Array[String] = [
 	"res://scenes/levels/Level01_Park.tscn",
 	"res://scenes/levels/Level02_Playground.tscn",
@@ -32,6 +33,7 @@ const LEVEL_NAMES: Array[String] = [
 @onready var _levelselect_panel: Control       = $CanvasLayer/LevelSelectPanel
 @onready var _quality_settings: VisualQualitySettings = get_node("/root/QualitySettings")
 @onready var _music_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider
+@onready var _ambient_slider:   HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/AmbientSlider
 @onready var _sfx_slider:       HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider
 @onready var _mouse_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MouseSensitivitySlider
 @onready var _controller_slider: HSlider      = $CanvasLayer/SettingsPanel/VBoxContainer/ControllerSensitivitySlider
@@ -146,6 +148,12 @@ func _on_music_slider_changed(value: float) -> void:
 	SoundManager.set_music_volume(value)
 	_save_settings()
 
+func _on_ambient_slider_changed(value: float) -> void:
+	if _loading_settings:
+		return
+	_apply_ambient_volume(value)
+	_save_settings()
+
 func _on_sfx_slider_changed(value: float) -> void:
 	if _loading_settings:
 		return
@@ -195,6 +203,7 @@ func _save_settings() -> void:
 	var config := ConfigFile.new()
 	config.load(settings_path)
 	config.set_value("audio",   "music",      _music_slider.value)
+	config.set_value("audio",   "ambient",    _ambient_slider.value)
 	config.set_value("audio",   "sfx",        _sfx_slider.value)
 	config.set_value("camera",  "mouse_sensitivity", _mouse_slider.value)
 	config.set_value("camera",  "controller_sensitivity", _controller_slider.value)
@@ -217,6 +226,7 @@ func _load_settings_into_ui() -> void:
 		return   # first run — UI defaults are fine
 	_loading_settings = true
 	_music_slider.value              = config.get_value("audio",   "music",      1.0)
+	_ambient_slider.value            = config.get_value("audio",   "ambient",    1.0)
 	_sfx_slider.value                = config.get_value("audio",   "sfx",        1.0)
 	_mouse_slider.value              = config.get_value("camera",  "mouse_sensitivity", 0.003)
 	_controller_slider.value         = config.get_value("camera",  "controller_sensitivity", 2.4)
@@ -225,4 +235,14 @@ func _load_settings_into_ui() -> void:
 	var quality_preset := String(config.get_value("display", "quality_preset", _quality_settings.current_preset))
 	_quality_option.select(_quality_settings.preset_index(quality_preset))
 	_loading_settings = false
+	_apply_ambient_volume(_ambient_slider.value)
 	_quality_settings.apply_preset_index(_quality_option.selected, false)
+
+func _apply_ambient_volume(value: float) -> void:
+	# SoundManager owns this API once its audio pass is integrated.  The helper
+	# fallback keeps this isolated UI slice bootable while that file is edited
+	# concurrently, and applies the exact same Ambience-bus semantics.
+	if SoundManager.has_method("set_ambient_volume"):
+		SoundManager.call("set_ambient_volume", value)
+	else:
+		AMBIENCE_DIRECTOR.set_ambient_volume(value)

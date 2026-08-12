@@ -3,6 +3,7 @@
 
 extends Node
 
+const ADAPTIVE_MUSIC_DIRECTOR_SCRIPT = preload("res://adaptive_music_director.gd")
 const SAMPLE_RATE: int = 22050   # half CD quality — sufficient for SFX, saves memory
 const NPC_PECK_VOLUME_DB: float = -28.0
 const NPC_STEP_VOLUME_DB: float = -16.0
@@ -39,6 +40,7 @@ var _close_call: AudioStreamPlayer
 var _flock_sync: AudioStreamPlayer
 var _wrong_pigeon: AudioStreamPlayer
 var _bird_flyby: AudioStreamPlayer
+var _music_director: AdaptiveMusicDirector
 var _npc_peck_voice_deadlines: Dictionary = {}
 var _npc_step_voice_deadlines: Dictionary = {}
 
@@ -47,6 +49,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	_ensure_bus("Music")
+	_ensure_bus("Ambience")
 	_ensure_bus("SFX")
 	_load_saved_volumes()
 
@@ -86,9 +89,12 @@ func _ready() -> void:
 		add_child(p)
 		p.bus = "SFX"
 
-	# Ambient audio is controlled independently by the Music slider. SoundManager is
-	# an autoload, so level scenes explicitly restart it through start_ambient().
-	_ambient.bus = "Music"
+	# The legacy loop remains as a menu/fallback bed. Levels register a profile-based
+	# ParkAmbienceDirector, which start_ambient()/stop_ambient() delegate to instead.
+	_ambient.bus = "Ambience"
+	_music_director = ADAPTIVE_MUSIC_DIRECTOR_SCRIPT.new()
+	_music_director.name = "AdaptiveMusicDirector"
+	add_child(_music_director)
 	start_ambient()
 
 # ── PUBLIC API ───────────────────────────────────────────────────────────────────
@@ -119,10 +125,46 @@ func play_flock_sync() -> void: _flock_sync.play()
 func play_wrong_pigeon() -> void: _wrong_pigeon.play()
 func play_bird_flyby() -> void: _bird_flyby.play()
 
+# Adaptive score lifecycle. The begin/end aliases let session code describe intent
+# without coupling itself to the director implementation.
+func start_music(level_id: StringName = &"") -> void:
+	if is_instance_valid(_music_director):
+		_music_director.start_music(level_id)
+
+func stop_music() -> void:
+	if is_instance_valid(_music_director):
+		_music_director.stop_music()
+
+func begin_level_score(level_id: StringName) -> void:
+	start_music(level_id)
+
+func end_level_score() -> void:
+	stop_music()
+
+func set_music_session_state(session_state: StringName) -> void:
+	if is_instance_valid(_music_director):
+		_music_director.set_session_state(session_state)
+
+func finish_level_score(success: bool) -> void:
+	if not is_instance_valid(_music_director):
+		return
+	if success:
+		_music_director.play_success()
+	else:
+		_music_director.play_caught()
+
+func adaptive_music_director() -> AdaptiveMusicDirector:
+	return _music_director
+
 func set_tension(amount: float) -> void:
 	var tension := clampf(amount, 0.0, 1.0)
+	if is_instance_valid(_music_director):
+		_music_director.set_tension(tension)
 	# Quiet the ambient park sounds as tension rises — silence before danger reads louder than noise.
 	_ambient.volume_db = lerpf(-20.0, -30.0, tension * tension)
+	var ambience_director := _first_park_ambience_director()
+	if is_instance_valid(ambience_director):
+		ambience_director.set_tension(tension)
 	if tension < 0.52:
 		_heartbeat.stop()
 		return
@@ -133,11 +175,27 @@ func set_tension(amount: float) -> void:
 	_heartbeat.pitch_scale = lerpf(0.82, 1.38, intensity)
 
 func start_ambient() -> void:
+	var ambience_director := _first_park_ambience_director()
+	if is_instance_valid(ambience_director):
+		_ambient.stop()
+		ambience_director.start_ambient()
+		return
 	if not _ambient.playing:
 		_ambient.play()
 
 func stop_ambient() -> void:
+	var ambience_director := _first_park_ambience_director()
+	if is_instance_valid(ambience_director):
+		ambience_director.stop_ambient()
 	_ambient.stop()
+
+func _first_park_ambience_director() -> ParkAmbienceDirector:
+	if not is_inside_tree():
+		return null
+	for candidate in get_tree().get_nodes_in_group(&"park_ambience_directors"):
+		if candidate is ParkAmbienceDirector and is_instance_valid(candidate):
+			return candidate as ParkAmbienceDirector
+	return null
 
 func play_step(sprint: bool) -> void:
 	if sprint:
@@ -187,6 +245,15 @@ func set_music_volume(linear: float) -> void:
 	var idx := AudioServer.get_bus_index("Music")
 	if idx >= 0:
 		AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(linear, 0.001)))
+
+func set_ambient_volume(linear: float) -> void:
+	_ensure_bus("Ambience")
+	var idx := AudioServer.get_bus_index("Ambience")
+	if idx < 0:
+		return
+	var clamped := clampf(linear, 0.0, 1.0)
+	AudioServer.set_bus_mute(idx, clamped <= 0.0001)
+	AudioServer.set_bus_volume_db(idx, linear_to_db(maxf(clamped, 0.001)))
 
 func set_sfx_volume(linear: float) -> void:
 	var idx := AudioServer.get_bus_index("SFX")
@@ -367,4 +434,5 @@ func _load_saved_volumes() -> void:
 	if config.load("user://settings.cfg") != OK:
 		return
 	set_music_volume(config.get_value("audio", "music", 1.0))
+	set_ambient_volume(config.get_value("audio", "ambient", 1.0))
 	set_sfx_volume(  config.get_value("audio", "sfx",   1.0))

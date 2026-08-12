@@ -253,7 +253,7 @@ offset_right = 220.0
 offset_bottom = 340.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
 [node name="Header" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000033]
 theme_override_font_sizes/font_size = 28
@@ -278,6 +278,21 @@ min_value = 0.0
 max_value = 1.0
 step = 0.01
 value = 1.0
+focus_neighbor_bottom = NodePath("../AmbientSlider")
+
+[node name="AmbientLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
+text = "Park Ambience Volume"
+
+[node name="AmbientSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+min_value = 0.0
+max_value = 1.0
+step = 0.01
+value = 1.0
+focus_neighbor_top = NodePath("../MusicSlider")
+focus_neighbor_bottom = NodePath("../SFXSlider")
 
 [node name="SFXLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000037]
 theme_override_font_sizes/font_size = 17
@@ -290,6 +305,7 @@ min_value = 0.0
 max_value = 1.0
 step = 0.01
 value = 1.0
+focus_neighbor_top = NodePath("../AmbientSlider")
 
 [node name="MouseSensitivityLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
 theme_override_font_sizes/font_size = 17
@@ -491,6 +507,7 @@ text = "BACK"
 [connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/Level5Button" to="." method="_on_level_pressed" binds=[4]]
 [connection signal="pressed" from="CanvasLayer/LevelSelectPanel/VBoxContainer/BackButton" to="." method="_on_back_pressed"]
 [connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider" to="." method="_on_music_slider_changed"]
+[connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/AmbientSlider" to="." method="_on_ambient_slider_changed"]
 [connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider" to="." method="_on_sfx_slider_changed"]
 [connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/MouseSensitivitySlider" to="." method="_on_camera_setting_changed"]
 [connection signal="value_changed" from="CanvasLayer/SettingsPanel/VBoxContainer/ControllerSensitivitySlider" to="." method="_on_camera_setting_changed"]

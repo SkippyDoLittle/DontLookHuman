@@ -7,8 +7,10 @@ signal resumed
 
 const SETTINGS_PATH: String = "user://settings.cfg"
 const MENU_SCENE:    String = "res://MainMenu.tscn"
+const AMBIENCE_DIRECTOR = preload("res://park_ambience_director.gd")
 
 @onready var _music_slider: HSlider       = $VBoxContainer/AudioPanel/MusicSlider
+@onready var _ambient_slider: HSlider     = get_node_or_null("VBoxContainer/AudioPanel/AmbientSlider") as HSlider
 @onready var _sfx_slider:   HSlider       = $VBoxContainer/AudioPanel/SFXSlider
 @onready var _resume_btn:    Button        = $VBoxContainer/ResumeButton
 @onready var _menu_btn:      Button        = $VBoxContainer/MainMenuButton
@@ -16,6 +18,8 @@ const MENU_SCENE:    String = "res://MainMenu.tscn"
 @onready var _audio_btn:     Button        = $VBoxContainer/AudioButton
 @onready var _audio_panel:   VBoxContainer = $VBoxContainer/AudioPanel
 @onready var _controls_btn:  Button        = $VBoxContainer/ControlsButton
+
+var settings_path: String = SETTINGS_PATH
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so buttons stay clickable while get_tree().paused == true.
@@ -28,14 +32,22 @@ func _ready() -> void:
 	_audio_btn.pressed.connect(_on_audio_pressed)
 	_controls_btn.pressed.connect(_on_controls_pressed)
 	_music_slider.value_changed.connect(_on_music_slider_changed)
+	if is_instance_valid(_ambient_slider):
+		_ambient_slider.value_changed.connect(_on_ambient_slider_changed)
 	_sfx_slider.value_changed.connect(_on_sfx_slider_changed)
 
 	# Initialise sliders from the live bus volumes (not from the save file)
 	# so they reflect any changes already applied this session.
 	var music_idx: int = AudioServer.get_bus_index("Music")
+	var ambient_idx: int = AMBIENCE_DIRECTOR.ensure_ambience_bus()
 	var sfx_idx:   int = AudioServer.get_bus_index("SFX")
 	if music_idx >= 0:
 		_music_slider.value = db_to_linear(AudioServer.get_bus_volume_db(music_idx))
+	if ambient_idx >= 0 and is_instance_valid(_ambient_slider):
+		_ambient_slider.value = (
+			0.0 if AudioServer.is_bus_mute(ambient_idx)
+			else db_to_linear(AudioServer.get_bus_volume_db(ambient_idx))
+		)
 	if sfx_idx >= 0:
 		_sfx_slider.value = db_to_linear(AudioServer.get_bus_volume_db(sfx_idx))
 
@@ -74,6 +86,10 @@ func _on_music_slider_changed(value: float) -> void:
 	SoundManager.set_music_volume(value)
 	_save_settings()
 
+func _on_ambient_slider_changed(value: float) -> void:
+	_apply_ambient_volume(value)
+	_save_settings()
+
 func _on_sfx_slider_changed(value: float) -> void:
 	SoundManager.set_sfx_volume(value)
 	_save_settings()
@@ -81,7 +97,15 @@ func _on_sfx_slider_changed(value: float) -> void:
 func _save_settings() -> void:
 	# Load first so we don't overwrite the fullscreen key we don't control here.
 	var config := ConfigFile.new()
-	config.load(SETTINGS_PATH)
+	config.load(settings_path)
 	config.set_value("audio", "music", _music_slider.value)
+	if is_instance_valid(_ambient_slider):
+		config.set_value("audio", "ambient", _ambient_slider.value)
 	config.set_value("audio", "sfx",   _sfx_slider.value)
-	config.save(SETTINGS_PATH)
+	config.save(settings_path)
+
+func _apply_ambient_volume(value: float) -> void:
+	if SoundManager.has_method("set_ambient_volume"):
+		SoundManager.call("set_ambient_volume", value)
+	else:
+		AMBIENCE_DIRECTOR.set_ambient_volume(value)

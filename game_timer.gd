@@ -71,6 +71,8 @@ func _ready() -> void:
 	_connect_components()
 
 	_sound_manager.call("start_ambient")
+	_sound_manager.call("begin_level_score", level_id)
+	_sound_manager.call("set_music_session_state", &"title")
 	escape_zone.connect("player_escaped", _on_player_escaped)
 	if escape_zone.has_signal("escape_blocked"):
 		escape_zone.connect("escape_blocked", _on_escape_blocked)
@@ -234,6 +236,7 @@ func _on_result_action_requested(action: StringName) -> void:
 func _transition_from_result(completion: Callable) -> void:
 	_result_transition_started = true
 	_hud.disable_result_actions()
+	_sound_manager.call("end_level_score")
 	_transition.fade_to_black(0.4, completion)
 
 func _change_scene_unpaused(scene_path: String) -> void:
@@ -367,6 +370,7 @@ func _finish(success: bool, headline: String) -> void:
 	else:
 		_sound_manager.call("play_caught")
 		_transition.start_shake()
+	_sound_manager.call("finish_level_score", success)
 
 	var remaining := _refresh_collectible_count()
 	var summary := _score_manager.calculate(
@@ -405,4 +409,19 @@ func _set_state(new_state: SessionState) -> void:
 	state = new_state
 	game_started = state in [SessionState.ACTIVE, SessionState.PAUSED, SessionState.FINISHED]
 	game_over = state == SessionState.FINISHED
+	_sound_manager.call("set_music_session_state", _music_state_name(state))
 	session_state_changed.emit(state)
+
+func _music_state_name(session_state: SessionState) -> StringName:
+	match session_state:
+		SessionState.TITLE:
+			return &"title"
+		SessionState.COUNTDOWN:
+			return &"countdown"
+		SessionState.ACTIVE:
+			return &"active"
+		SessionState.PAUSED:
+			return &"paused"
+		SessionState.FINISHED:
+			return &"finished"
+	return &"active"

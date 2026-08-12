@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://how_to_play.gd" id="6_howto"]
 [ext_resource type="Script" path="res://park_chaos_controller.gd" id="7_chaos"]
 [ext_resource type="Script" path="res://session_telemetry.gd" id="8_telemetry"]
+[ext_resource type="Script" path="res://park_ambience_director.gd" id="9_ambience"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
 content_margin_left = 12.0
@@ -62,6 +63,9 @@ script = ExtResource("1_base")
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector3(0, 1, 0)
+
+[node name="ParkAmbienceDirector" type="Node" parent="."]
+script = ExtResource("9_ambience")
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 
@@ -184,6 +188,19 @@ theme_override_font_sizes/font_size = 16
 text = "Music Volume"
 
 [node name="MusicSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="AmbientLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_font_sizes/font_size = 16
+text = "Park Ambience Volume"
+
+[node name="AmbientSlider" type="HSlider" parent="PauseMenu/VBoxContainer/AudioPanel"]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
 max_value = 1.0
