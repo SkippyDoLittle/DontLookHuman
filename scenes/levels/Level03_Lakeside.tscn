@@ -23,6 +23,7 @@
 [ext_resource type="Script" path="res://water_zone.gd" id="26_water"]
 [ext_resource type="PackedScene" path="res://scenes/game/BaseLevel.tscn" id="27_base"]
 [ext_resource type="Script" path="res://level_config.gd" id="28_level_config"]
+[ext_resource type="Script" path="res://world_detail_scatter.gd" id="29_world_detail"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
 shader = ExtResource("17_sky")
@@ -190,6 +191,11 @@ rng_seed = 71
 script = ExtResource("23_visitor_sct")
 visitor_count = 7
 rng_seed = 83
+
+[node name="WorldDetailScatter" type="Node3D" parent="."]
+script = ExtResource("29_world_detail")
+profile = 2
+rng_seed = 389
 
 [node name="Player" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1, 7)

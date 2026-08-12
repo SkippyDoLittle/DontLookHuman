@@ -28,6 +28,7 @@
 [ext_resource type="PackedScene" path="res://scenes/gameplay/WaterZone.tscn" id="26_water"]
 [ext_resource type="PackedScene" path="res://scenes/game/BaseLevel.tscn" id="27_base"]
 [ext_resource type="Script" path="res://level_config.gd" id="28_level_config"]
+[ext_resource type="Script" path="res://world_detail_scatter.gd" id="29_world_detail"]
 
 ; ── INLINE SUB-RESOURCES ──────────────────────────────────────────────────────
 ; Only resources needed by nodes that stay inline in this level file.
@@ -157,6 +158,11 @@ script = ExtResource("23_visitor_sct")
 visitor_count = 5
 
 ; ── PLAYER ────────────────────────────────────────────────────────────────────
+[node name="WorldDetailScatter" type="Node3D" parent="."]
+script = ExtResource("29_world_detail")
+profile = 0
+rng_seed = 181
+
 [node name="Player" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, 0)
 
