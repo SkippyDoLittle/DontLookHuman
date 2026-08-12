@@ -65,7 +65,7 @@ func update(delta: float) -> Dictionary:
 			reason = "Acting alone"
 
 	if is_nearby and bool(_player.get("in_water")):
-		active_gain += 12.0
+		active_gain += float(_config.get("water_gain_per_second", 12.0))
 		if reason.is_empty():
 			reason = "In the water!"
 

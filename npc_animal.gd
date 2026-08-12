@@ -109,7 +109,7 @@ func _ready() -> void:
 	# fades the sound as the player moves away — nearby pigeons are loud, distant ones silent.
 	_peck_sfx = AudioStreamPlayer3D.new()
 	_peck_sfx.stream       = SoundManager.npc_peck_stream()
-	_peck_sfx.volume_db    = 4.0
+	_peck_sfx.volume_db    = SoundManager.npc_peck_volume_db()
 	_peck_sfx.unit_size    = 2.0    # full volume within 2 units, fades beyond
 	_peck_sfx.max_distance = 7.0
 	_peck_sfx.bus          = "SFX"
@@ -117,7 +117,7 @@ func _ready() -> void:
 
 	_step_sfx = AudioStreamPlayer3D.new()
 	_step_sfx.stream       = SoundManager.npc_step_stream()
-	_step_sfx.volume_db    = 2.0
+	_step_sfx.volume_db    = SoundManager.npc_step_volume_db()
 	_step_sfx.unit_size    = 2.0
 	_step_sfx.max_distance = 6.0
 	_step_sfx.bus          = "SFX"
@@ -280,7 +280,7 @@ func _update_mimic_peck(delta: float) -> bool:
 	is_pecking = true
 	peck_time = 0.0
 	mimic_peck_count += 1
-	_peck_sfx.play()
+	SoundManager.request_npc_peck(_peck_sfx)
 	mimic_peck_started.emit(_mimic_origin)
 	return true
 
@@ -639,7 +639,7 @@ func _idle_peck(delta: float) -> void:
 	if next_peck_timer <= 0.0:
 		is_pecking  = true
 		peck_time   = 0.0
-		_peck_sfx.play()
+		SoundManager.request_npc_peck(_peck_sfx)
 		next_peck_timer = randf_range(0.8, 2.5)
 
 func _update_peck(delta: float) -> void:
@@ -696,7 +696,7 @@ func _update_walk_bob(delta: float) -> void:
 			_step_sfx.pitch_scale = randf_range(0.88, 1.12)
 			if _reaction_mode == ReactionMode.PANIC:
 				_step_sfx.pitch_scale *= randf_range(1.18, 1.42)
-			_step_sfx.play()
+			SoundManager.request_npc_step(_step_sfx)
 		_prev_sin = bob_sin
 	else:
 		head.position.z = lerp(head.position.z, head_z_rest, delta * 10.0)

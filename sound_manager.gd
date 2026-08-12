@@ -4,6 +4,10 @@
 extends Node
 
 const SAMPLE_RATE: int = 22050   # half CD quality — sufficient for SFX, saves memory
+const NPC_PECK_VOLUME_DB: float = -28.0
+const NPC_STEP_VOLUME_DB: float = -16.0
+const NPC_PECK_VOICE_LIMIT: int = 3
+const NPC_STEP_VOICE_LIMIT: int = 5
 
 var _peck:      AudioStreamPlayer
 var _npc_peck:  AudioStreamPlayer
@@ -35,6 +39,8 @@ var _close_call: AudioStreamPlayer
 var _flock_sync: AudioStreamPlayer
 var _wrong_pigeon: AudioStreamPlayer
 var _bird_flyby: AudioStreamPlayer
+var _npc_peck_voice_deadlines: Dictionary = {}
+var _npc_step_voice_deadlines: Dictionary = {}
 
 func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
@@ -144,6 +150,38 @@ func play_step(sprint: bool) -> void:
 # Returns the stream so each NPC can attach its own AudioStreamPlayer3D for distance falloff.
 func npc_peck_stream()  -> AudioStreamWAV: return _npc_peck.stream as AudioStreamWAV
 func npc_step_stream()  -> AudioStreamWAV: return _step_walk.stream as AudioStreamWAV
+func npc_peck_volume_db() -> float: return NPC_PECK_VOLUME_DB
+func npc_step_volume_db() -> float: return NPC_STEP_VOLUME_DB
+
+# NPC emitters own positional falloff, while this singleton limits same-frame flock bursts.
+# Deadlines use real elapsed time so pausing gameplay cannot leave a voice slot occupied.
+func request_npc_peck(voice: AudioStreamPlayer3D) -> bool:
+	return _request_npc_voice(voice, _npc_peck_voice_deadlines, NPC_PECK_VOICE_LIMIT)
+
+func request_npc_step(voice: AudioStreamPlayer3D) -> bool:
+	return _request_npc_voice(voice, _npc_step_voice_deadlines, NPC_STEP_VOICE_LIMIT)
+
+func _request_npc_voice(
+	voice: AudioStreamPlayer3D,
+	deadlines: Dictionary,
+	voice_limit: int
+) -> bool:
+	if not is_instance_valid(voice) or voice.stream == null:
+		return false
+	var now_ms := Time.get_ticks_msec()
+	for instance_id in deadlines.keys():
+		if int(deadlines[instance_id]) <= now_ms:
+			deadlines.erase(instance_id)
+	var voice_id := voice.get_instance_id()
+	if deadlines.has(voice_id) or deadlines.size() >= voice_limit:
+		return false
+	var duration_seconds := maxf(
+		voice.stream.get_length() / maxf(voice.pitch_scale, 0.01),
+		0.02
+	)
+	deadlines[voice_id] = now_ms + ceili(duration_seconds * 1000.0)
+	voice.play()
+	return true
 
 func set_music_volume(linear: float) -> void:
 	var idx := AudioServer.get_bus_index("Music")

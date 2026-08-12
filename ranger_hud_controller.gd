@@ -40,7 +40,6 @@ func _ensure_danger_flash() -> void:
 
 func _process(delta: float) -> void:
 	_close_call_feedback_cooldown = maxf(_close_call_feedback_cooldown - delta, 0.0)
-	_connect_new_rangers()
 	_update_bar_pulse(delta)
 	_update_warning(delta)
 
@@ -171,7 +170,7 @@ func _update_max_suspicion() -> void:
 	for value in _suspicion_by_ranger.values():
 		maximum = maxf(maximum, float(value))
 	_suspicion_bar.value = maximum
-	_vignette_material.set_shader_parameter("intensity", maximum / 100.0 * 0.65)
+	_vignette_material.set_shader_parameter("intensity", maximum / 100.0 * 0.32)
 	_sound_manager.call("set_tension", maximum / 100.0)
 
 func _update_highest_state() -> void:

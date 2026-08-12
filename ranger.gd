@@ -66,6 +66,7 @@ enum GrabPhase { IDLE, WINDUP, LUNGE, RECOVERY, CAPTURED }
 @export_range(0.1, 1.5, 0.05) var close_call_margin: float = 0.55
 @export_range(0.4, 1.25, 0.05) var wrong_pigeon_grab_radius: float = 0.9
 @export var wrong_pigeon_grab_cooldown: float = 6.0
+@export_range(0.0, 30.0, 0.5) var water_gain_per_second: float = 12.0
 
 @onready var player: CharacterBody3D = get_node("../Player")
 @onready var pigeon_visual: Node3D = get_node("../Player/PigeonVisual")
@@ -308,6 +309,7 @@ func _begin_grab() -> void:
 		self
 	)
 	grab_started.emit()
+	Input.start_joy_vibration(0, 0.0, 0.45, grab_windup_duration)
 
 func _update_grab(delta: float) -> void:
 	_grab_timer = maxf(_grab_timer - delta, 0.0)
@@ -345,6 +347,7 @@ func _begin_lunge() -> void:
 	_grab_timer = grab_lunge_duration
 	_presentation.grab_lunge()
 	_sound_manager.call("play_grab_whoosh")
+	Input.start_joy_vibration(0, 0.6, 0.0, grab_lunge_duration)
 
 func _begin_miss_recovery() -> void:
 	grab_phase = GrabPhase.RECOVERY
@@ -385,6 +388,7 @@ func _begin_miss_recovery() -> void:
 		last_personality_callout
 	)
 	grab_missed.emit()
+	Input.start_joy_vibration(0, 0.55, 0.25, 0.2)
 	if mistaken_target != null:
 		wrong_pigeon_grabbed.emit(mistaken_target)
 	else:
@@ -550,6 +554,7 @@ func _complete_physical_capture() -> void:
 	capture_variant_started.emit(capture_personality, near_exit)
 	_notify_teammates_of_capture()
 	capture_started.emit()
+	Input.start_joy_vibration(0, 0.85, 0.85, capture_hold_duration)
 	get_tree().create_timer(capture_hold_duration).timeout.connect(_emit_capture_result)
 
 func _emit_capture_result() -> void:
@@ -617,18 +622,20 @@ func react_to_commotion(origin: Vector3, chain_depth: int, chain_actor_count: in
 	_commotion_react_cooldown = 10.0
 	_commotion_lookover_timer = 0.8
 	commotion_reaction_count += 1
-	var look_target := Vector3(origin.x, global_position.y, origin.z)
-	if global_position.distance_squared_to(look_target) > 0.001:
-		look_at(look_target, Vector3.UP)
-	_presentation.commotion_lookover(capture_personality)
-	_reaction_director.broadcast_chain(
-		get_tree(),
-		PARK_REACTIONS.EVENT_LOCAL_COMMOTION,
-		global_position,
-		chain_depth + 1,
-		chain_actor_count + 1,
-		self
-	)
+	var ranger_position := global_position if is_inside_tree() else position
+	var look_target := Vector3(origin.x, ranger_position.y, origin.z)
+	if is_inside_tree():
+		if ranger_position.distance_squared_to(look_target) > 0.001:
+			look_at(look_target, Vector3.UP)
+		_presentation.commotion_lookover(capture_personality)
+		_reaction_director.broadcast_chain(
+			get_tree(),
+			PARK_REACTIONS.EVENT_LOCAL_COMMOTION,
+			ranger_position,
+			chain_depth + 1,
+			chain_actor_count + 1,
+			self
+		)
 	return true
 
 func _check_chase_collision() -> void:
@@ -761,6 +768,7 @@ func _suspicion_config() -> Dictionary:
 		"straight_line_gain_per_second": straight_line_gain_per_second,
 		"still_threshold": still_threshold,
 		"still_gain_per_second": still_gain_per_second,
+		"water_gain_per_second": water_gain_per_second,
 		"physical_capture_enabled": physical_capture_enabled,
 	}
 

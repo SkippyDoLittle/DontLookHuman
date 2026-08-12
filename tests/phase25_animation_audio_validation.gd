@@ -55,19 +55,19 @@ func _read_source(path: String) -> String:
 
 func _test_player_has_lean_strength() -> void:
 	var src := _read_source("res://player.gd")
-	_assert("player has LEAN_STRENGTH constant", src.contains("LEAN_STRENGTH"))
+	_assert("player has lean_strength tunable", src.contains("lean_strength"))
 
 func _test_player_has_turn_roll_strength() -> void:
 	var src := _read_source("res://player.gd")
-	_assert("player has TURN_ROLL_STRENGTH constant", src.contains("TURN_ROLL_STRENGTH"))
+	_assert("player has turn_roll_strength tunable", src.contains("turn_roll_strength"))
 
 func _test_player_has_stop_bounce_duration() -> void:
 	var src := _read_source("res://player.gd")
-	_assert("player has STOP_BOUNCE_DURATION constant", src.contains("STOP_BOUNCE_DURATION"))
+	_assert("player has stop_bounce_duration tunable", src.contains("stop_bounce_duration"))
 
 func _test_player_has_strain_stamina_threshold() -> void:
 	var src := _read_source("res://player.gd")
-	_assert("player has STRAIN_STAMINA_THRESHOLD constant", src.contains("STRAIN_STAMINA_THRESHOLD"))
+	_assert("player has strain_stamina_threshold tunable", src.contains("strain_stamina_threshold"))
 
 func _test_player_has_prev_velocity_xz_var() -> void:
 	var src := _read_source("res://player.gd")

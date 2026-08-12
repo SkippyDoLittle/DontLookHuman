@@ -132,12 +132,13 @@ func _move_toward_player(speed: float) -> void:
 
 func _do_patrol(delta: float) -> void:
 	_time_until_turn -= delta
+	var gp := _ranger.global_position
 	var outside_bounds := (
-		absf(_ranger.position.x) > _patrol_radius
-		or absf(_ranger.position.z) > _patrol_radius
+		absf(gp.x) > _patrol_radius
+		or absf(gp.z) > _patrol_radius
 	)
 	if outside_bounds:
-		_patrol_direction = Vector3(-_ranger.position.x, 0.0, -_ranger.position.z).normalized()
+		_patrol_direction = Vector3(-gp.x, 0.0, -gp.z).normalized()
 		_time_until_turn = 1.0
 	elif _time_until_turn <= 0.0:
 		choose_new_patrol_direction()

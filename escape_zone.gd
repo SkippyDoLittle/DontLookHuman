@@ -31,7 +31,7 @@ func _process(_delta: float) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if escaped or body != player:
+	if escaped or player == null or body != player:
 		return
 
 	var items_remaining: int = get_tree().get_nodes_in_group("collectibles").size()

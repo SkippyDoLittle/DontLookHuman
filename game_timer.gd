@@ -165,12 +165,11 @@ func _process_active_session(delta: float) -> void:
 		_pause_session()
 		return
 
-	_connect_new_rangers()
-	_refresh_collectible_count()
+	var remaining := _refresh_collectible_count()
 	_chaos_window_timer = maxf(_chaos_window_timer - delta, 0.0)
 
 	_timer.advance(delta)
-	_update_exit_marker()
+	_update_exit_marker(remaining)
 
 func _pause_session() -> void:
 	_pause_menu.visible = true
@@ -268,7 +267,7 @@ func _connect_food() -> void:
 		if food.has_signal("food_collected"):
 			food.food_collected.connect(_on_food_collected_bonus)
 
-func _on_food_collected_bonus(food: Node3D, origin: Vector3) -> void:
+func _on_food_collected_bonus(_food: Node3D, origin: Vector3) -> void:
 	if state != SessionState.ACTIVE:
 		return
 	var is_blend := _check_blend_condition()
@@ -334,8 +333,8 @@ func _refresh_collectible_count() -> int:
 		collectible_count_changed.emit(remaining)
 	return remaining
 
-func _update_exit_marker() -> void:
-	if _refresh_collectible_count() != 0:
+func _update_exit_marker(remaining: int) -> void:
+	if remaining != 0:
 		return
 	_exit_pulse_time += get_process_delta_time()
 	var pulse := sin(_exit_pulse_time * TAU * 1.5) * 0.5 + 0.5

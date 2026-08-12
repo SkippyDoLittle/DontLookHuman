@@ -34,11 +34,11 @@ const PECK_FORWARD:     float = 0.12   # how far head lunges forward
 const PECK_DROP:        float = 0.13   # how far head drops down
 const PECK_STRIKE_FRAC: float = 0.40   # first 40% of peck = strike, last 60% = recovery
 const HEAD_BOB_Z:       float = 0.06   # max head swing forward/back while walking
-const LEAN_STRENGTH: float = 0.075          # max pigeon_visual forward/back lean (radians)
-const TURN_ROLL_STRENGTH: float = 0.16      # max pigeon_visual roll on sharp direction change
-const STOP_BOUNCE_DURATION: float = 0.20    # seconds for the body-squish when stopping
-const STRAIN_WOBBLE_FREQ: float = 16.0      # Hz of the body wobble when stamina is near-empty
-const STRAIN_STAMINA_THRESHOLD: float = 32.0  # stamina below this triggers strain wobble
+@export_range(0.0, 0.3, 0.005) var lean_strength: float = 0.075
+@export_range(0.0, 0.5, 0.01)  var turn_roll_strength: float = 0.16
+@export_range(0.05, 0.5, 0.01) var stop_bounce_duration: float = 0.20
+@export_range(4.0, 32.0, 1.0)  var strain_wobble_freq: float = 16.0
+@export_range(8.0, 64.0, 1.0)  var strain_stamina_threshold: float = 32.0
 
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
@@ -431,19 +431,19 @@ func _update_movement_animation(delta: float, is_sprint: bool) -> void:
 
 	# Stop bounce: body squishes when the pigeon halts suddenly.
 	if speed_prev > 0.5 and speed_curr < 0.1:
-		_stop_bounce_timer = STOP_BOUNCE_DURATION
+		_stop_bounce_timer = stop_bounce_duration
 
 	# Turn roll: pigeon leans into sharp direction changes.
 	if curr_xz.length() > 0.2 and _prev_velocity_xz.length() > 0.2:
 		var turn_signal := _prev_velocity_xz.normalized().cross(curr_xz.normalized())
-		_turn_roll = lerpf(_turn_roll, -turn_signal * TURN_ROLL_STRENGTH, minf(delta * 14.0, 1.0))
+		_turn_roll = lerpf(_turn_roll, -turn_signal * turn_roll_strength, minf(delta * 14.0, 1.0))
 	else:
 		_turn_roll = lerpf(_turn_roll, 0.0, minf(delta * 10.0, 1.0))
 	pigeon_visual.rotation.z = _turn_roll
 
 	# Acceleration lean: body tips forward when sprinting, back when braking.
 	var speed_delta := (speed_curr - speed_prev) / maxf(delta, 0.001)
-	var target_lean := clampf(-speed_delta / (run_speed * 14.0), -LEAN_STRENGTH, LEAN_STRENGTH * 0.5)
+	var target_lean := clampf(-speed_delta / (run_speed * 14.0), -lean_strength, lean_strength * 0.5)
 	_body_lean_x = lerpf(_body_lean_x, target_lean, minf(delta * 8.0, 1.0))
 	pigeon_visual.rotation.x = _body_lean_x
 
@@ -452,7 +452,7 @@ func _update_movement_animation(delta: float, is_sprint: bool) -> void:
 	# Body scale: stop bounce > sprint strain > rest lerp.
 	if _stop_bounce_timer > 0.0:
 		_stop_bounce_timer = maxf(_stop_bounce_timer - delta, 0.0)
-		var t := 1.0 - _stop_bounce_timer / STOP_BOUNCE_DURATION
+		var t := 1.0 - _stop_bounce_timer / stop_bounce_duration
 		var bounce := sin(t * PI) * 0.12
 		if _snatch_reaction_timer <= 0.0:
 			body.scale = Vector3(
@@ -460,10 +460,10 @@ func _update_movement_animation(delta: float, is_sprint: bool) -> void:
 				_body_rest_scale.y * (1.0 - bounce * 0.65),
 				_body_rest_scale.z * (1.0 + bounce)
 			)
-	elif is_sprint and _stamina < STRAIN_STAMINA_THRESHOLD and _snatch_reaction_timer <= 0.0:
+	elif is_sprint and _stamina < strain_stamina_threshold and _snatch_reaction_timer <= 0.0:
 		_strain_time += delta
-		var strain_t := 1.0 - (_stamina / STRAIN_STAMINA_THRESHOLD)
-		var wobble := sin(_strain_time * STRAIN_WOBBLE_FREQ) * strain_t * 0.04
+		var strain_t := 1.0 - (_stamina / strain_stamina_threshold)
+		var wobble := sin(_strain_time * strain_wobble_freq) * strain_t * 0.04
 		body.scale = Vector3(
 			_body_rest_scale.x * (1.0 + absf(wobble)),
 			_body_rest_scale.y * (1.0 - absf(wobble) * 0.6),

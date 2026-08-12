@@ -9,11 +9,14 @@ var _action_tween: Tween
 var _pulse_time: float = 0.0
 var _visuals: Array[Node3D] = []
 var _rest_transforms: Dictionary = {}
+var _node_refs: Dictionary = {}
 
 func configure(host: Node, alert_label: Label3D, sound_manager: Node) -> void:
 	_host = host
 	_alert_label = alert_label
 	_sound_manager = sound_manager
+	if not is_instance_valid(_host) or not is_instance_valid(_alert_label):
+		return
 	_alert_label.visible = false
 	for node_name in [
 		"RangerBody",
@@ -26,6 +29,7 @@ func configure(host: Node, alert_label: Label3D, sound_manager: Node) -> void:
 		var visual := _host.get_node_or_null(node_name) as Node3D
 		if visual == null:
 			continue
+		_node_refs[node_name] = visual
 		_visuals.append(visual)
 		_rest_transforms[visual] = visual.transform
 
@@ -70,49 +74,45 @@ func grab_windup(duration: float, personality: String = "Steady") -> void:
 	_action_tween = _host.create_tween().set_parallel(true)
 	match personality:
 		"Rookie":
-			# Over-eager: arms shoot very high, deep nervous crouch, hat askew
 			_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.38, duration)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.38, duration)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.70, duration)
-			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.16, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.20, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.20, duration)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.38, duration)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -1.38, duration)
+			_twp(_action_tween, "RangerBody",     "scale:y",     0.70, duration)
+			_twp(_action_tween, "RangerHead",     "rotation:x",  0.16, duration)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z", -0.20, duration)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z", -0.20, duration)
 		"Hothead":
-			# Aggressive forward lean: body tips toward target, arms reach hard and fast
 			_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.22, duration * 0.65)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.22, duration * 0.65)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.74, duration)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.11, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.20, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.20, duration)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.22, duration * 0.65)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -1.22, duration * 0.65)
+			_twp(_action_tween, "RangerBody",     "scale:y",     0.74, duration)
+			_twp(_action_tween, "RangerBody",     "rotation:x", -0.11, duration)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z", -0.20, duration)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z", -0.20, duration)
 		"Veteran":
-			# Deliberate patient stance: asymmetric arms, minimal body movement, head dips
 			_action_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -0.82, duration)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.18, duration)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.82, duration)
-			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.11, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.08, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.08, duration)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -0.82, duration)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -1.18, duration)
+			_twp(_action_tween, "RangerBody",     "scale:y",     0.82, duration)
+			_twp(_action_tween, "RangerHead",     "rotation:x",  0.11, duration)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z", -0.08, duration)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z", -0.08, duration)
 		_:
-			# Steady: original balanced wind-up
 			_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.1, duration)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.1, duration)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.78, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.12, duration)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.12, duration)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.1,  duration)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -1.1,  duration)
+			_twp(_action_tween, "RangerBody",     "scale:y",     0.78, duration)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z", -0.12, duration)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z", -0.12, duration)
 
 func grab_lunge() -> void:
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.6, 0.08)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.6, 0.08)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.32, 0.08)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.12, 0.08)
+	_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.6, 0.08)
+	_twp(_action_tween, "RangerRightArm", "rotation:x", -1.6, 0.08)
+	_twp(_action_tween, "RangerBody",     "rotation:x", -0.32, 0.08)
+	_twp(_action_tween, "RangerBody",     "scale:y",     1.12, 0.08)
 
 func grab_missed(
 	recovery_duration: float,
@@ -126,32 +126,32 @@ func grab_missed(
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	match personality:
 		"Rookie":
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -1.18, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.34, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -1.25, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 1.25, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.92, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.92, 0.14)
+			_twp(_action_tween, "RangerBody",     "rotation:x", -1.18, 0.14)
+			_twp(_action_tween, "RangerBody",     "position:y", -0.34, 0.14)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:z", -1.25, 0.14)
+			_twp(_action_tween, "RangerRightArm", "rotation:z",  1.25, 0.14)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z",  0.92, 0.14)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z",  0.92, 0.14)
 		"Hothead":
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.3, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.84, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -2.15, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -2.15, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", -0.42, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", -0.42, 0.14)
+			_twp(_action_tween, "RangerBody",     "rotation:z",  0.3,  0.14)
+			_twp(_action_tween, "RangerBody",     "scale:y",     0.84, 0.14)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -2.15, 0.14)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -2.15, 0.14)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z", -0.42, 0.14)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z", -0.42, 0.14)
 		"Veteran":
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.42, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.1, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:y", 0.58, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.42, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.42, 0.14)
+			_twp(_action_tween, "RangerBody",     "rotation:x", -0.42, 0.14)
+			_twp(_action_tween, "RangerBody",     "position:y", -0.1,  0.14)
+			_twp(_action_tween, "RangerHead",     "rotation:y",  0.58, 0.14)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:z", -0.42, 0.14)
+			_twp(_action_tween, "RangerRightArm", "rotation:z",  0.42, 0.14)
 		_:
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.95, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.26, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.9, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.9, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.58, 0.14)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.58, 0.14)
+			_twp(_action_tween, "RangerBody",     "rotation:x", -0.95, 0.14)
+			_twp(_action_tween, "RangerBody",     "position:y", -0.26, 0.14)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:z", -0.9,  0.14)
+			_twp(_action_tween, "RangerRightArm", "rotation:z",  0.9,  0.14)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z",  0.58, 0.14)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z",  0.58, 0.14)
 	var reset_delay := maxf(recovery_duration - 0.42, 0.12)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.28))
 	return callout
@@ -175,12 +175,12 @@ func wrong_pigeon_grabbed(recovery_duration: float, personality: String = "Stead
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.86, 0.13)
-	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.42, 0.13)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.72, 0.13)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.5, 0.13)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.72, 0.13)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.5, 0.13)
+	_twp(_action_tween, "RangerBody",     "scale:y",     0.86, 0.13)
+	_twp(_action_tween, "RangerHead",     "rotation:x",  0.42, 0.13)
+	_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.72, 0.13)
+	_twp(_action_tween, "RangerLeftArm",  "rotation:z", -0.5,  0.13)
+	_twp(_action_tween, "RangerRightArm", "rotation:x", -1.72, 0.13)
+	_twp(_action_tween, "RangerRightArm", "rotation:z",  0.5,  0.13)
 	var reset_delay := maxf(recovery_duration - 0.3, 0.35)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.24))
 	_host.get_tree().create_timer(0.42).timeout.connect(_clear_alert_if_matches.bind(callout))
@@ -206,20 +206,20 @@ func panic_pigeon_near_miss(personality: String = "Steady") -> String:
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.22, 0.1)
-	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", -0.35, 0.1)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -1.15, 0.1)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 1.15, 0.1)
+	_twp(_action_tween, "RangerBody",     "rotation:z",  0.22, 0.1)
+	_twp(_action_tween, "RangerHead",     "rotation:x", -0.35, 0.1)
+	_twp(_action_tween, "RangerLeftArm",  "rotation:z", -1.15, 0.1)
+	_twp(_action_tween, "RangerRightArm", "rotation:z",  1.15, 0.1)
 	_host.get_tree().create_timer(0.28).timeout.connect(reset_grab_pose.bind(0.18))
 	_host.get_tree().create_timer(0.46).timeout.connect(_clear_alert_if_matches.bind(callout))
 	return callout
 
 func _miss_callout(personality: String, miss_streak: int) -> String:
 	var callouts: Dictionary = {
-		"Rookie": ["OOPS!", "SORRY!", "NOT AGAIN!"],
+		"Rookie":  ["OOPS!", "SORRY!", "NOT AGAIN!"],
 		"Hothead": ["NO FAIR!", "HOLD STILL!", "I'M TRYING!"],
 		"Veteran": ["MISSED.", "ADJUSTING.", "CALCULATED."],
-		"Steady": ["WHIFF!", "CLOSE!", "OKAY..."],
+		"Steady":  ["WHIFF!", "CLOSE!", "OKAY..."],
 	}
 	var choices := callouts.get(personality, callouts["Steady"]) as Array
 	return String(choices[mini(maxi(miss_streak - 1, 0), choices.size() - 1)])
@@ -230,14 +230,14 @@ func collision_stumble(recovery_duration: float, personality: String = "Steady",
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", 0.45, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "position:y", -0.18, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", 1.05, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:z", -0.65, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", 1.05, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:z", 0.65, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:x", 0.35, 0.11)
-	_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:x", 0.35, 0.11)
+	_twp(_action_tween, "RangerBody",     "rotation:x",  0.45, 0.11)
+	_twp(_action_tween, "RangerBody",     "position:y", -0.18, 0.11)
+	_twp(_action_tween, "RangerLeftArm",  "rotation:x",  1.05, 0.11)
+	_twp(_action_tween, "RangerLeftArm",  "rotation:z", -0.65, 0.11)
+	_twp(_action_tween, "RangerRightArm", "rotation:x",  1.05, 0.11)
+	_twp(_action_tween, "RangerRightArm", "rotation:z",  0.65, 0.11)
+	_twp(_action_tween, "RangerHatBrim",  "rotation:x",  0.35, 0.11)
+	_twp(_action_tween, "RangerHatCrown", "rotation:x",  0.35, 0.11)
 	var reset_delay := maxf(recovery_duration - 0.45, 0.18)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.28))
 
@@ -282,6 +282,8 @@ func _collision_callout(personality: String, contact_type: StringName) -> String
 		}.get(personality, "UGH!") as String
 
 func commotion_lookover(personality: String = "Steady") -> void:
+	if not _can_animate():
+		return
 	var callout := {
 		"Rookie": "HM?",
 		"Hothead": "HEY!",
@@ -291,8 +293,8 @@ func commotion_lookover(personality: String = "Steady") -> void:
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:y", 0.28, 0.12)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.06, 0.12)
+	_twp(_action_tween, "RangerHead", "rotation:y", 0.28, 0.12)
+	_twp(_action_tween, "RangerBody", "rotation:z", 0.06, 0.12)
 	_host.get_tree().create_timer(0.5).timeout.connect(reset_grab_pose.bind(0.22))
 	_host.get_tree().create_timer(0.65).timeout.connect(_clear_alert_if_matches.bind(callout))
 
@@ -301,8 +303,8 @@ func chaos_reaction(callout: String, duration: float) -> void:
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.18, 0.12)
-	_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:y", 0.65, 0.12)
+	_twp(_action_tween, "RangerBody", "rotation:z", 0.18, 0.12)
+	_twp(_action_tween, "RangerHead", "rotation:y", 0.65, 0.12)
 	var reset_delay := maxf(duration - 0.28, 0.18)
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.22))
 
@@ -318,60 +320,56 @@ func player_captured(personality: String = "Steady", near_exit: bool = false) ->
 	_kill_action_tween()
 	match personality:
 		"Rookie":
-			# Premature celebration: arms overshoot high, then correct to hold position
 			_action_tween = _host.create_tween().set_parallel(true)
 			_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -2.3, 0.18)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -2.3, 0.18)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 0.82, 0.18)
-			_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.38, 0.18)
-			_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.38, 0.18)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -2.3, 0.18)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -2.3, 0.18)
+			_twp(_action_tween, "RangerBody",     "scale:y",     0.82, 0.18)
+			_twp(_action_tween, "RangerHatBrim",  "rotation:z",  0.38, 0.18)
+			_twp(_action_tween, "RangerHatCrown", "rotation:z",  0.38, 0.18)
 			_host.get_tree().create_timer(0.32).timeout.connect(func() -> void:
 				if not is_instance_valid(_host):
 					return
 				_kill_action_tween()
 				_action_tween = _host.create_tween().set_parallel(true)
 				_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-				_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.75, 0.22)
-				_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.75, 0.22)
-				_action_tween.tween_property(_host.get_node("RangerHatBrim"), "rotation:z", 0.0, 0.22)
-				_action_tween.tween_property(_host.get_node("RangerHatCrown"), "rotation:z", 0.0, 0.22)
+				_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.75, 0.22)
+				_twp(_action_tween, "RangerRightArm", "rotation:x", -1.75, 0.22)
+				_twp(_action_tween, "RangerHatBrim",  "rotation:z",  0.0,  0.22)
+				_twp(_action_tween, "RangerHatCrown", "rotation:z",  0.0,  0.22)
 			)
 		"Hothead":
-			# Overcommit: hard forward lunge then snap back to aggressive triumph pose
 			_action_tween = _host.create_tween().set_parallel(true)
 			_action_tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:x", -0.28, 0.12)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.15, 0.12)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.14, 0.12)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -2.05, 0.12)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -2.05, 0.12)
+			_twp(_action_tween, "RangerBody",     "rotation:x", -0.28, 0.12)
+			_twp(_action_tween, "RangerBody",     "scale:y",     1.15, 0.12)
+			_twp(_action_tween, "RangerBody",     "rotation:z",  0.14, 0.12)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -2.05, 0.12)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -2.05, 0.12)
 			_host.get_tree().create_timer(0.2).timeout.connect(func() -> void:
 				if not is_instance_valid(_host):
 					return
 				_kill_action_tween()
 				_action_tween = _host.create_tween().set_parallel(true)
 				_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-				_action_tween.tween_property(_host.get_node("RangerBody"), "rotation:z", 0.0, 0.18)
-				_action_tween.tween_property(_host.get_node("RangerBody"), "scale:y", 1.0, 0.18)
-				_action_tween.tween_property(_host.get_node("RangerBody"), "scale:x", 1.12, 0.18)
-				_action_tween.tween_property(_host.get_node("RangerBody"), "scale:z", 1.12, 0.18)
+				_twp(_action_tween, "RangerBody", "rotation:z", 0.0,  0.18)
+				_twp(_action_tween, "RangerBody", "scale:y",    1.0,  0.18)
+				_twp(_action_tween, "RangerBody", "scale:x",    1.12, 0.18)
+				_twp(_action_tween, "RangerBody", "scale:z",    1.12, 0.18)
 			)
 		"Veteran":
-			# Calm, controlled: smooth single-arm hold, body barely moves
 			_action_tween = _host.create_tween().set_parallel(true)
 			_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.75, 0.3)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.45, 0.3)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale", Vector3(1.04, 0.97, 1.04), 0.3)
-			_action_tween.tween_property(_host.get_node("RangerHead"), "rotation:x", 0.1, 0.3)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -1.75, 0.3)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.45, 0.3)
+			_twp(_action_tween, "RangerBody",     "scale",      Vector3(1.04, 0.97, 1.04), 0.3)
+			_twp(_action_tween, "RangerHead",     "rotation:x",  0.1,  0.3)
 		_:
-			# Steady: original elastic arms-up with body squish
 			_action_tween = _host.create_tween().set_parallel(true)
 			_action_tween.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-			_action_tween.tween_property(_host.get_node("RangerLeftArm"), "rotation:x", -1.9, 0.22)
-			_action_tween.tween_property(_host.get_node("RangerRightArm"), "rotation:x", -1.9, 0.22)
-			_action_tween.tween_property(_host.get_node("RangerBody"), "scale", Vector3(1.12, 0.9, 1.12), 0.22)
+			_twp(_action_tween, "RangerLeftArm",  "rotation:x", -1.9,  0.22)
+			_twp(_action_tween, "RangerRightArm", "rotation:x", -1.9,  0.22)
+			_twp(_action_tween, "RangerBody",     "scale", Vector3(1.12, 0.9, 1.12), 0.22)
 
 func reset_grab_pose(duration: float = 0.2) -> void:
 	if not is_instance_valid(_host) or _rest_transforms.is_empty():
@@ -400,6 +398,8 @@ func _show_alert(
 	grow_duration: float,
 	settle_duration: float
 ) -> void:
+	if not _can_animate():
+		return
 	if _alert_tween and _alert_tween.is_valid():
 		_alert_tween.kill()
 	_alert_label.text = text
@@ -409,3 +409,17 @@ func _show_alert(
 	_alert_tween = _host.create_tween()
 	_alert_tween.tween_property(_alert_label, "scale", Vector3.ONE * peak_scale, grow_duration)
 	_alert_tween.tween_property(_alert_label, "scale", Vector3.ONE, settle_duration)
+
+func _can_animate() -> bool:
+	return (
+		is_instance_valid(_host)
+		and _host.is_inside_tree()
+		and is_instance_valid(_alert_label)
+		and _alert_label.is_inside_tree()
+	)
+
+# Safely tween a property on a cached visual node — no-op if the node was absent from Ranger.tscn.
+func _twp(tw: Tween, node_name: String, prop: String, val: Variant, dur: float) -> void:
+	var node: Object = _node_refs.get(node_name)
+	if node != null:
+		tw.tween_property(node, prop, val, dur)

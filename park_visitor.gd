@@ -23,6 +23,7 @@ var _is_waiting:   bool    = false
 var _desired_move: Vector3 = Vector3.ZERO   # bridge between AI logic and physics
 var _blocked_time: float = 0.0
 var obstacle_recoveries: int = 0
+var _reaction_director := PARK_REACTIONS.new()
 var reaction_count: int = 0
 var _reaction_event: StringName = &""
 var _reaction_origin: Vector3 = Vector3.ZERO
@@ -80,7 +81,8 @@ func _process(delta: float) -> void:
 	look_at(look_target, Vector3.UP)
 
 func react_to_park_event(event_name: StringName, origin: Vector3) -> bool:
-	var distance := global_position.distance_to(origin)
+	var visitor_position := global_position if is_inside_tree() else position
+	var distance := visitor_position.distance_to(origin)
 	var max_distance := 0.0
 	var duration := 0.0
 	match event_name:
@@ -189,15 +191,20 @@ func _update_captured_reaction() -> void:
 func receive_pigeon_flyby(pigeon: Node) -> bool:
 	if _startle_cooldown > 0.0 or not _reaction_event.is_empty():
 		return false
-	var origin := (pigeon as Node3D).global_position if pigeon is Node3D else global_position
+	var visitor_position := global_position if is_inside_tree() else position
+	var origin := visitor_position
+	if pigeon is Node3D:
+		var pigeon_node := pigeon as Node3D
+		origin = pigeon_node.global_position if pigeon_node.is_inside_tree() else pigeon_node.position
 	if not react_to_park_event(PARK_REACTIONS.EVENT_VISITOR_STARTLED, origin):
 		return false
 	_startle_cooldown = 15.0
 	startle_count += 1
-	PARK_REACTIONS.new().broadcast_chain(
-		get_tree(), PARK_REACTIONS.EVENT_VISITOR_STARTLED, global_position, 1, 1, self
-	)
-	visitor_startled.emit(global_position)
+	if is_inside_tree():
+		_reaction_director.broadcast_chain(
+			get_tree(), PARK_REACTIONS.EVENT_VISITOR_STARTLED, visitor_position, 1, 1, self
+		)
+	visitor_startled.emit(visitor_position)
 	return true
 
 func _physics_process(delta: float) -> void:
