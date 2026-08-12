@@ -13,12 +13,17 @@ const BLEND_RADIUS: float = 3.5
 const BLEND_BONUS_SECONDS: float = 5.0
 const CHAOS_WINDOW_DURATION: float = 6.0
 const CHAOS_BONUS_SECONDS: float = 4.0
+const ALIBI_QUALIFY_DURATION: float = 2.6
+const PERFECT_ALIBI_DURATION: float = 3.2
+const ALIBI_REARM_DURATION: float = 5.0
 
 signal session_state_changed(new_state: SessionState)
 signal collectible_count_changed(remaining: int)
 signal level_finished(success: bool)
 signal blend_pickup_earned(origin: Vector3, bonus_seconds: float)
 signal chaos_pickup_earned(origin: Vector3, bonus_seconds: float)
+signal perfect_alibi_ready(origin: Vector3, joiner_count: int, duration: float)
+signal perfect_alibi_pickup_earned(origin: Vector3, bonus_seconds: float)
 
 enum SessionState { TITLE, COUNTDOWN, ACTIVE, PAUSED, FINISHED }
 
@@ -51,9 +56,16 @@ var _result_transition_started: bool = false
 var _controls_closed_frame: int = -1
 var _capture_sequence_active: bool = false
 var _chaos_window_timer: float = 0.0
+var _alibi_candidate_timer: float = 0.0
+var _perfect_alibi_timer: float = 0.0
+var _alibi_rearm_timer: float = 0.0
+var _alibi_origin: Vector3 = Vector3.ZERO
+var _alibi_joiner_count: int = 0
 var _food_connected: Dictionary = {}
 var blend_bonus_count: int = 0
 var chaos_bonus_count: int = 0
+var perfect_alibi_ready_count: int = 0
+var perfect_alibi_pickup_count: int = 0
 
 var _timer := SessionTimer.new()
 var _score_manager := ScoreManager.new()
@@ -136,6 +148,7 @@ func _connect_components() -> void:
 func _initialize_world_connections() -> void:
 	_connect_new_rangers()
 	_connect_food()
+	_connect_chaos_controller()
 	items_total = get_tree().get_nodes_in_group("collectibles").size()
 	_last_collectible_count = -1
 	_refresh_collectible_count()
@@ -168,7 +181,7 @@ func _process_active_session(delta: float) -> void:
 		return
 
 	var remaining := _refresh_collectible_count()
-	_chaos_window_timer = maxf(_chaos_window_timer - delta, 0.0)
+	_update_opportunity_windows(delta)
 
 	_timer.advance(delta)
 	_update_exit_marker(remaining)
@@ -258,7 +271,7 @@ func _connect_new_rangers() -> void:
 		if ranger_node.has_signal("collision_stumble_started"):
 			ranger_node.connect("collision_stumble_started",
 				func(_t: StringName, _o: Vector3) -> void:
-					_chaos_window_timer = CHAOS_WINDOW_DURATION
+					_start_chaos_window()
 			)
 
 func _connect_food() -> void:
@@ -270,11 +283,23 @@ func _connect_food() -> void:
 		if food.has_signal("food_collected"):
 			food.food_collected.connect(_on_food_collected_bonus)
 
+func _connect_chaos_controller() -> void:
+	var controller := get_node_or_null("../ParkChaosController")
+	if controller == null or not controller.has_signal("flock_sync_started"):
+		return
+	if not controller.is_connected("flock_sync_started", _on_flock_sync_started):
+		controller.connect("flock_sync_started", _on_flock_sync_started)
+
 func _on_food_collected_bonus(_food: Node3D, origin: Vector3) -> void:
 	if state != SessionState.ACTIVE:
 		return
 	var is_blend := _check_blend_condition()
 	var is_chaos := _chaos_window_timer > 0.0
+	var is_perfect_alibi := is_blend and _perfect_alibi_timer > 0.0
+	# A food theft is the one attempt attached to this alibi. It consumes both
+	# the qualifying beat and the ready window whether or not the player stayed
+	# close enough to the flock to earn the existing blend reward.
+	_consume_alibi_opportunity()
 	if not is_blend and not is_chaos:
 		return
 	var total_bonus := 0.0
@@ -286,10 +311,19 @@ func _on_food_collected_bonus(_food: Node3D, origin: Vector3) -> void:
 		total_bonus += CHAOS_BONUS_SECONDS
 		chaos_bonus_count += 1
 		chaos_pickup_earned.emit(origin, CHAOS_BONUS_SECONDS)
+	if is_perfect_alibi:
+		perfect_alibi_pickup_count += 1
+		perfect_alibi_pickup_earned.emit(origin, BLEND_BONUS_SECONDS)
 	_timer.add_time(total_bonus)
 	var bonus_text: String
 	var bonus_color: Color
-	if is_blend and is_chaos:
+	if is_perfect_alibi and is_chaos:
+		bonus_text = "PERFECT ALIBI!  +%.0fs" % total_bonus
+		bonus_color = Color(1.0, 0.95, 0.35)
+	elif is_perfect_alibi:
+		bonus_text = "PERFECT ALIBI!  +%.0fs" % BLEND_BONUS_SECONDS
+		bonus_color = Color(0.42, 1.0, 0.86)
+	elif is_blend and is_chaos:
 		bonus_text = "PERFECT TIMING!  +%.0fs" % total_bonus
 		bonus_color = Color(1.0, 0.95, 0.35)
 	elif is_blend:
@@ -318,11 +352,121 @@ func _on_ranger_suspicion_changed(value: float) -> void:
 
 func _on_capture_started() -> void:
 	_capture_sequence_active = true
+	_cancel_alibi_opportunity()
+	_refresh_opportunity_hud()
 	_transition.start_shake(0.8)
 
 func _on_ranger_grab_missed() -> void:
-	_chaos_window_timer = CHAOS_WINDOW_DURATION
+	_start_chaos_window()
 	_transition.start_shake(0.45)
+
+func _start_chaos_window() -> void:
+	_chaos_window_timer = CHAOS_WINDOW_DURATION
+	_refresh_opportunity_hud()
+
+func _update_chaos_window(delta: float) -> void:
+	_chaos_window_timer = maxf(_chaos_window_timer - maxf(delta, 0.0), 0.0)
+	_refresh_opportunity_hud()
+
+func _update_opportunity_windows(delta: float) -> void:
+	var safe_delta := maxf(delta, 0.0)
+	var promoted_this_frame := false
+	_chaos_window_timer = maxf(_chaos_window_timer - safe_delta, 0.0)
+	_alibi_rearm_timer = maxf(_alibi_rearm_timer - safe_delta, 0.0)
+
+	if _alibi_candidate_timer > 0.0:
+		if not _alibi_runtime_is_safe():
+			_clear_alibi_candidate()
+		else:
+			_alibi_candidate_timer = maxf(_alibi_candidate_timer - safe_delta, 0.0)
+			if _check_blend_condition():
+				_promote_perfect_alibi()
+				promoted_this_frame = true
+			elif _alibi_candidate_timer <= 0.0:
+				_clear_alibi_candidate()
+
+	if _perfect_alibi_timer > 0.0 and not promoted_this_frame:
+		if not _alibi_runtime_is_safe() or not _check_blend_condition():
+			_perfect_alibi_timer = 0.0
+		else:
+			_perfect_alibi_timer = maxf(_perfect_alibi_timer - safe_delta, 0.0)
+
+	_refresh_opportunity_hud()
+
+func _on_flock_sync_started(joiner_count: int, origin: Vector3) -> void:
+	if (
+		state != SessionState.ACTIVE
+		or joiner_count < 2
+		or _capture_sequence_active
+		or _alibi_candidate_timer > 0.0
+		or _perfect_alibi_timer > 0.0
+		or _alibi_rearm_timer > 0.0
+		or not _alibi_runtime_is_safe()
+		or _maximum_ranger_suspicion() < BLEND_THRESHOLD
+	):
+		return
+	_alibi_candidate_timer = ALIBI_QUALIFY_DURATION
+	_alibi_origin = origin
+	_alibi_joiner_count = joiner_count
+
+func _promote_perfect_alibi() -> void:
+	if _alibi_candidate_timer <= 0.0 or not _alibi_runtime_is_safe():
+		return
+	_alibi_candidate_timer = 0.0
+	_perfect_alibi_timer = PERFECT_ALIBI_DURATION
+	_alibi_rearm_timer = ALIBI_REARM_DURATION
+	perfect_alibi_ready_count += 1
+	perfect_alibi_ready.emit(_alibi_origin, _alibi_joiner_count, PERFECT_ALIBI_DURATION)
+
+func _alibi_runtime_is_safe() -> bool:
+	if state != SessionState.ACTIVE or _capture_sequence_active:
+		return false
+	var found_ranger := false
+	for ranger in get_tree().get_nodes_in_group("rangers"):
+		found_ranger = true
+		if (
+			bool(ranger.get("caught"))
+			or int(ranger.get("state")) == RangerStateMachine.State.CHASE
+			or int(ranger.get("grab_phase")) != 0
+		):
+			return false
+	return found_ranger
+
+func _maximum_ranger_suspicion() -> float:
+	var maximum := 0.0
+	for ranger in get_tree().get_nodes_in_group("rangers"):
+		maximum = maxf(maximum, float(ranger.get("suspicion")))
+	return maximum
+
+func _clear_alibi_candidate() -> void:
+	_alibi_candidate_timer = 0.0
+	_alibi_origin = Vector3.ZERO
+	_alibi_joiner_count = 0
+
+func _consume_alibi_opportunity() -> void:
+	_clear_alibi_candidate()
+	_perfect_alibi_timer = 0.0
+	_refresh_opportunity_hud()
+
+func _cancel_alibi_opportunity() -> void:
+	_clear_alibi_candidate()
+	_perfect_alibi_timer = 0.0
+
+func _refresh_opportunity_hud() -> void:
+	if state != SessionState.ACTIVE or _capture_sequence_active:
+		_hud.hide_chaos_window()
+		return
+	if _perfect_alibi_timer > 0.0 and _chaos_window_timer > 0.0:
+		_hud.show_combined_window(
+			minf(_perfect_alibi_timer, _chaos_window_timer),
+			BLEND_BONUS_SECONDS + CHAOS_BONUS_SECONDS
+		)
+	elif _perfect_alibi_timer > 0.0:
+		_hud.show_alibi_window(_perfect_alibi_timer, BLEND_BONUS_SECONDS)
+	elif _chaos_window_timer > 0.0:
+		_hud.show_chaos_window(_chaos_window_timer, CHAOS_BONUS_SECONDS)
+	else:
+		_hud.hide_chaos_window()
 
 func _on_ranger_caught(ranger_node: Node) -> void:
 	_caught_reason = String(ranger_node.get("last_suspicion_reason"))
@@ -362,6 +506,10 @@ func _finish(success: bool, headline: String) -> void:
 
 	_success = success
 	_capture_sequence_active = false
+	_chaos_window_timer = 0.0
+	_cancel_alibi_opportunity()
+	_alibi_rearm_timer = 0.0
+	_hud.hide_chaos_window()
 	_set_state(SessionState.FINISHED)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
@@ -409,6 +557,7 @@ func _set_state(new_state: SessionState) -> void:
 	state = new_state
 	game_started = state in [SessionState.ACTIVE, SessionState.PAUSED, SessionState.FINISHED]
 	game_over = state == SessionState.FINISHED
+	_refresh_opportunity_hud()
 	_sound_manager.call("set_music_session_state", _music_state_name(state))
 	session_state_changed.emit(state)
 
