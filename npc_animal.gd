@@ -31,6 +31,13 @@ const PANIC_MAX_SCATTER_DISTANCE: float = 4.25
 @onready var beak:   MeshInstance3D = $PigeonVisual/Beak
 @onready var body:   MeshInstance3D = $PigeonVisual/Body
 @onready var pigeon_visual: Node3D = $PigeonVisual
+@onready var tail: MeshInstance3D = get_node_or_null("PigeonVisual/Tail") as MeshInstance3D
+@onready var left_wing: MeshInstance3D = get_node_or_null("PigeonVisual/LeftWing") as MeshInstance3D
+@onready var right_wing: MeshInstance3D = get_node_or_null("PigeonVisual/RightWing") as MeshInstance3D
+@onready var left_foot: MeshInstance3D = get_node_or_null("PigeonVisual/LeftFoot") as MeshInstance3D
+@onready var right_foot: MeshInstance3D = get_node_or_null("PigeonVisual/RightFoot") as MeshInstance3D
+@onready var left_eye: MeshInstance3D = get_node_or_null("PigeonVisual/Head/LeftEye") as MeshInstance3D
+@onready var right_eye: MeshInstance3D = get_node_or_null("PigeonVisual/Head/RightEye") as MeshInstance3D
 
 enum ReactionMode { NONE, WATCH, PANIC, SWARM }
 
@@ -74,6 +81,7 @@ var _mimic_origin: Vector3 = Vector3.ZERO
 var mimic_peck_count: int = 0
 var _mistaken_capture_active: bool = false
 var _mistaken_capture_timer: float = 0.0
+var _mistaken_capture_duration: float = 0.0
 var _mistaken_capture_time: float = 0.0
 var _mistaken_carrier: Node3D
 var _mistaken_collision_layer: int = 0
@@ -90,6 +98,24 @@ var _panic_regroup_started: bool = false
 var panic_regroup_count: int = 0
 var _panic_prev_direction: Vector3 = Vector3.ZERO
 var _panic_turn_lean: float = 0.0
+var _visual_rest_position: Vector3
+var _head_rest_rotation: Vector3
+var _beak_rest_rotation: Vector3
+var _tail_rest_rotation: Vector3
+var _left_wing_rest_rotation: Vector3
+var _right_wing_rest_rotation: Vector3
+var _left_foot_rest_position: Vector3
+var _right_foot_rest_position: Vector3
+var _left_foot_rest_rotation: Vector3
+var _right_foot_rest_rotation: Vector3
+var _left_eye_rest_scale: Vector3
+var _right_eye_rest_scale: Vector3
+var _presentation_phase: float = 0.0
+var _presentation_speed_scale: float = 1.0
+var _presentation_time: float = 0.0
+var _blink_period: float = 2.4
+var _watch_tilt_sign: float = 1.0
+var _has_identity_detail: bool = false
 
 func _ready() -> void:
 	add_to_group("pigeons")
@@ -101,6 +127,34 @@ func _ready() -> void:
 	_body_rest_rotation = body.rotation
 	_body_rest_scale = body.scale
 	_mistaken_visual_rest_rotation = pigeon_visual.rotation
+	_visual_rest_position = pigeon_visual.position
+	_head_rest_rotation = head.rotation
+	_beak_rest_rotation = beak.rotation
+	_has_identity_detail = (
+		tail != null
+		and left_wing != null
+		and right_wing != null
+		and left_foot != null
+		and right_foot != null
+		and left_eye != null
+		and right_eye != null
+	)
+	if _has_identity_detail:
+		_tail_rest_rotation = tail.rotation
+		_left_wing_rest_rotation = left_wing.rotation
+		_right_wing_rest_rotation = right_wing.rotation
+		_left_foot_rest_position = left_foot.position
+		_right_foot_rest_position = right_foot.position
+		_left_foot_rest_rotation = left_foot.rotation
+		_right_foot_rest_rotation = right_foot.rotation
+		_left_eye_rest_scale = left_eye.scale
+		_right_eye_rest_scale = right_eye.scale
+	var presentation_seed := int(get_instance_id() % 10007)
+	_presentation_phase = fmod(float(presentation_seed) * 0.754877666, TAU)
+	_presentation_speed_scale = 0.88 + float(presentation_seed % 13) / 12.0 * 0.24
+	_blink_period = 2.1 + float(presentation_seed % 7) * 0.19
+	_watch_tilt_sign = -1.0 if presentation_seed % 2 == 0 else 1.0
+	bob_time = _presentation_phase
 
 	next_peck_timer = randf_range(0.5, 1.5)
 	choose_new_behavior()
@@ -319,9 +373,11 @@ func start_mistaken_capture(carrier: Node3D, duration: float) -> bool:
 	_desired_move = Vector3.ZERO
 	head.position = Vector3(head.position.x, head_y_rest, head_z_rest)
 	beak.position = Vector3(beak.position.x, beak_y_rest, beak_z_rest)
+	_reset_identity_pose()
 	_ensure_mistaken_capture_wings()
 	_mistaken_capture_active = true
-	_mistaken_capture_timer = maxf(duration, 0.25)
+	_mistaken_capture_duration = maxf(duration, 0.25)
+	_mistaken_capture_timer = _mistaken_capture_duration
 	_mistaken_capture_time = 0.0
 	_mistaken_carrier = carrier
 	_mistaken_collision_layer = collision_layer
@@ -350,13 +406,33 @@ func _update_mistaken_capture(delta: float) -> bool:
 		- _mistaken_carrier.global_transform.basis.z * 0.22
 	)
 	global_rotation.y = _mistaken_carrier.global_rotation.y
-	var flutter := sin(_mistaken_capture_time * 32.0)
-	var kick := sin(_mistaken_capture_time * 21.0 + 0.8)
-	pigeon_visual.rotation.z = _mistaken_visual_rest_rotation.z + flutter * 0.32
-	pigeon_visual.rotation.x = _mistaken_visual_rest_rotation.x + kick * 0.11
+	var progress := clampf(_mistaken_capture_time / maxf(_mistaken_capture_duration, 0.001), 0.0, 1.0)
+	var flutter := 0.0
+	var kick := 0.0
+	var wing_open := 0.0
+	if progress < 0.2:
+		# Initial comic pop makes the wrong-bird grab legible at gameplay distance.
+		var impact_progress := progress / 0.2
+		var impact := sin(impact_progress * PI)
+		flutter = sin(impact_progress * PI * 1.5) * 0.7
+		kick = impact
+		wing_open = impact * 1.45
+	elif progress < 0.76:
+		# A fast asymmetric struggle, distinct from the player's capture pose.
+		flutter = sin(_mistaken_capture_time * 32.0)
+		kick = sin(_mistaken_capture_time * 21.0 + 0.8)
+		wing_open = 0.28 + absf(sin(_mistaken_capture_time * 35.0)) * 1.05
+	else:
+		# Brief stunned pause before release gives the punchline room to land.
+		var release_weight := 1.0 - smoothstep(0.76, 1.0, progress)
+		flutter = sin(_mistaken_capture_time * 18.0) * release_weight * 0.42
+		kick = sin(_mistaken_capture_time * 13.0) * release_weight * 0.35
+		wing_open = 0.24 + release_weight * 0.42
+	pigeon_visual.rotation.z = _mistaken_visual_rest_rotation.z + flutter * 0.34
+	pigeon_visual.rotation.x = _mistaken_visual_rest_rotation.x + kick * 0.12
 	body.scale = _body_rest_scale * (1.0 + absf(flutter) * 0.1)
-	_mistaken_left_wing.rotation.z = 0.18 + absf(flutter) * 1.18
-	_mistaken_right_wing.rotation.z = -0.18 - absf(flutter) * 1.18
+	_mistaken_left_wing.rotation.z = 0.18 + wing_open
+	_mistaken_right_wing.rotation.z = -0.18 - wing_open
 	if _mistaken_capture_timer <= 0.0:
 		_finish_mistaken_capture(_mistaken_carrier.global_position, true)
 		return false
@@ -366,6 +442,7 @@ func _finish_mistaken_capture(origin: Vector3, panic_after_release: bool) -> voi
 	var carrier := _mistaken_carrier
 	_mistaken_capture_active = false
 	_mistaken_capture_timer = 0.0
+	_mistaken_capture_duration = 0.0
 	_mistaken_capture_time = 0.0
 	_mistaken_carrier = null
 	collision_layer = _mistaken_collision_layer
@@ -373,6 +450,7 @@ func _finish_mistaken_capture(origin: Vector3, panic_after_release: bool) -> voi
 	pigeon_visual.rotation = _mistaken_visual_rest_rotation
 	body.rotation = _body_rest_rotation
 	body.scale = _body_rest_scale
+	_reset_identity_pose()
 	_mistaken_left_wing.visible = false
 	_mistaken_right_wing.visible = false
 	if is_instance_valid(carrier):
@@ -566,6 +644,7 @@ func _finish_park_reaction() -> void:
 	body.scale = _body_rest_scale
 	head.position.y = head_y_rest
 	beak.position.y = beak_y_rest
+	_reset_identity_pose()
 	choose_new_behavior()
 
 func _find_nearest_ranger() -> Node3D:
@@ -678,14 +757,15 @@ func _update_peck(delta: float) -> void:
 		beak.position.y = beak_y_rest
 
 func _update_walk_bob(delta: float) -> void:
+	_presentation_time += delta
+	var planar_speed := Vector2(_desired_move.x, _desired_move.z).length()
+	var is_moving := planar_speed > 0.05 and not is_pecking
 	if is_pecking:
+		_update_identity_animation(delta, false, 0.0, 0.0)
 		return
 
-	var is_moving: bool = not is_pausing
-
 	if is_moving:
-		var move_speed := flee_speed if is_fleeing else speed
-		bob_time += delta * move_speed * 5.0
+		bob_time += delta * planar_speed * 5.0 * _presentation_speed_scale
 		var bob_sin := sin(bob_time)
 		var bob     := bob_sin * HEAD_BOB_Z
 		head.position.z = head_z_rest + bob
@@ -693,14 +773,162 @@ func _update_walk_bob(delta: float) -> void:
 
 		# Zero-crossing detection — same pattern as player.gd.
 		if _prev_sin <= 0.0 and bob_sin > 0.0:
-			_step_sfx.pitch_scale = randf_range(0.88, 1.12)
-			if _reaction_mode == ReactionMode.PANIC:
-				_step_sfx.pitch_scale *= randf_range(1.18, 1.42)
-			SoundManager.request_npc_step(_step_sfx)
+			if _step_sfx != null:
+				_step_sfx.pitch_scale = randf_range(0.88, 1.12)
+				if _reaction_mode == ReactionMode.PANIC:
+					_step_sfx.pitch_scale *= randf_range(1.18, 1.42)
+				SoundManager.request_npc_step(_step_sfx)
 		_prev_sin = bob_sin
+		_update_identity_animation(delta, true, planar_speed, bob_sin)
 	else:
 		head.position.z = lerp(head.position.z, head_z_rest, delta * 10.0)
 		beak.position.z = lerp(beak.position.z, beak_z_rest, delta * 10.0)
+		_update_identity_animation(delta, false, 0.0, 0.0)
+
+func _update_identity_animation(
+	delta: float,
+	is_moving: bool,
+	planar_speed: float,
+	gait_sin: float
+) -> void:
+	if not _has_identity_detail:
+		return
+	_update_npc_blink()
+	match _reaction_mode:
+		ReactionMode.WATCH:
+			_update_watch_identity_pose(delta)
+		ReactionMode.PANIC:
+			_update_panic_identity_pose(delta, gait_sin)
+		ReactionMode.SWARM:
+			_update_swarm_identity_pose(delta, is_moving, gait_sin)
+		_:
+			if is_moving:
+				_update_normal_gait_pose(delta, planar_speed, gait_sin)
+			else:
+				_update_normal_idle_pose(delta)
+
+func _update_normal_gait_pose(delta: float, planar_speed: float, gait_sin: float) -> void:
+	var speed_ratio := clampf(planar_speed / maxf(flee_speed * 1.35, 0.01), 0.0, 1.0)
+	var opposite_sin := -gait_sin
+	var lift_amount := lerpf(0.02, 0.038, speed_ratio)
+	var stride_amount := lerpf(0.018, 0.034, speed_ratio)
+	pigeon_visual.position.y = lerpf(
+		pigeon_visual.position.y,
+		_visual_rest_position.y + absf(gait_sin) * lerpf(0.01, 0.022, speed_ratio),
+		minf(delta * 16.0, 1.0)
+	)
+	left_foot.position = _left_foot_rest_position + Vector3(
+		0.0, maxf(gait_sin, 0.0) * lift_amount, gait_sin * stride_amount
+	)
+	right_foot.position = _right_foot_rest_position + Vector3(
+		0.0, maxf(opposite_sin, 0.0) * lift_amount, opposite_sin * stride_amount
+	)
+	left_foot.rotation.x = _left_foot_rest_rotation.x + gait_sin * 0.14
+	right_foot.rotation.x = _right_foot_rest_rotation.x + opposite_sin * 0.14
+	tail.rotation.x = _tail_rest_rotation.x - speed_ratio * 0.065 + sin(bob_time * 2.0) * 0.028
+	var wing_open := absf(sin(bob_time * 2.0)) * lerpf(0.012, 0.07, speed_ratio)
+	left_wing.rotation.z = _left_wing_rest_rotation.z + wing_open
+	right_wing.rotation.z = _right_wing_rest_rotation.z - wing_open
+	head.rotation.y = lerp_angle(head.rotation.y, _head_rest_rotation.y, minf(delta * 10.0, 1.0))
+	beak.rotation.y = lerp_angle(beak.rotation.y, _beak_rest_rotation.y, minf(delta * 10.0, 1.0))
+	head.rotation.z = lerp_angle(head.rotation.z, _head_rest_rotation.z, minf(delta * 9.0, 1.0))
+	beak.rotation.z = lerp_angle(beak.rotation.z, _beak_rest_rotation.z, minf(delta * 9.0, 1.0))
+
+func _update_normal_idle_pose(delta: float) -> void:
+	var restore_weight := minf(delta * 9.0, 1.0)
+	pigeon_visual.position.y = lerpf(pigeon_visual.position.y, _visual_rest_position.y, restore_weight)
+	left_foot.position = left_foot.position.lerp(_left_foot_rest_position, restore_weight)
+	right_foot.position = right_foot.position.lerp(_right_foot_rest_position, restore_weight)
+	left_foot.rotation = left_foot.rotation.lerp(_left_foot_rest_rotation, restore_weight)
+	right_foot.rotation = right_foot.rotation.lerp(_right_foot_rest_rotation, restore_weight)
+	tail.rotation = tail.rotation.lerp(_tail_rest_rotation, minf(delta * 6.0, 1.0))
+	var wing_breath := sin(_presentation_time * 1.8 + _presentation_phase) * 0.01
+	left_wing.rotation.z = lerpf(
+		left_wing.rotation.z,
+		_left_wing_rest_rotation.z + wing_breath,
+		minf(delta * 4.0, 1.0)
+	)
+	right_wing.rotation.z = lerpf(
+		right_wing.rotation.z,
+		_right_wing_rest_rotation.z - wing_breath,
+		minf(delta * 4.0, 1.0)
+	)
+	var scan := (
+		sin(_presentation_time * 0.72 + _presentation_phase) * 0.12
+		+ sin(_presentation_time * 0.23 + _presentation_phase * 1.7) * 0.04
+	)
+	if is_pecking:
+		scan = 0.0
+	head.rotation.y = lerp_angle(head.rotation.y, _head_rest_rotation.y + scan, minf(delta * 3.2, 1.0))
+	beak.rotation.y = lerp_angle(beak.rotation.y, _beak_rest_rotation.y + scan * 0.72, minf(delta * 3.2, 1.0))
+	head.rotation.z = lerp_angle(head.rotation.z, _head_rest_rotation.z + scan * 0.12, minf(delta * 3.2, 1.0))
+	beak.rotation.z = lerp_angle(beak.rotation.z, _beak_rest_rotation.z + scan * 0.12, minf(delta * 3.2, 1.0))
+
+func _update_watch_identity_pose(delta: float) -> void:
+	var weight := minf(delta * 12.0, 1.0)
+	pigeon_visual.position.y = lerpf(pigeon_visual.position.y, _visual_rest_position.y - 0.014, weight)
+	left_wing.rotation.z = lerpf(left_wing.rotation.z, _left_wing_rest_rotation.z + 0.16, weight)
+	right_wing.rotation.z = lerpf(right_wing.rotation.z, _right_wing_rest_rotation.z - 0.16, weight)
+	tail.rotation.x = lerpf(tail.rotation.x, _tail_rest_rotation.x - 0.09, weight)
+	head.rotation.z = lerp_angle(head.rotation.z, _head_rest_rotation.z + _watch_tilt_sign * 0.11, weight)
+	beak.rotation.z = lerp_angle(beak.rotation.z, _beak_rest_rotation.z + _watch_tilt_sign * 0.08, weight)
+
+func _update_panic_identity_pose(delta: float, gait_sin: float) -> void:
+	var burst_weight := 1.0 - clampf(_reaction_active_time / 0.42, 0.0, 1.0)
+	var rapid_flap := absf(sin(_reaction_time * 34.0))
+	var wing_open := 0.08 + burst_weight * (0.28 + rapid_flap * 0.62)
+	left_wing.rotation.z = lerpf(left_wing.rotation.z, _left_wing_rest_rotation.z + wing_open, minf(delta * 24.0, 1.0))
+	right_wing.rotation.z = lerpf(right_wing.rotation.z, _right_wing_rest_rotation.z - wing_open, minf(delta * 24.0, 1.0))
+	tail.rotation.x = _tail_rest_rotation.x - 0.13 + gait_sin * 0.045
+	head.rotation.z = lerp_angle(head.rotation.z, _head_rest_rotation.z - _panic_turn_lean * 0.28, minf(delta * 15.0, 1.0))
+	beak.rotation.z = lerp_angle(beak.rotation.z, _beak_rest_rotation.z - _panic_turn_lean * 0.2, minf(delta * 15.0, 1.0))
+	_update_fast_feet(gait_sin, 0.045, 0.04)
+
+func _update_swarm_identity_pose(delta: float, is_moving: bool, gait_sin: float) -> void:
+	var bustle := absf(sin(_reaction_time * 18.0 + _presentation_phase))
+	var wing_open := 0.055 + bustle * 0.11
+	left_wing.rotation.z = lerpf(left_wing.rotation.z, _left_wing_rest_rotation.z + wing_open, minf(delta * 16.0, 1.0))
+	right_wing.rotation.z = lerpf(right_wing.rotation.z, _right_wing_rest_rotation.z - wing_open, minf(delta * 16.0, 1.0))
+	tail.rotation.x = _tail_rest_rotation.x - bustle * 0.055
+	if is_moving:
+		_update_fast_feet(gait_sin, 0.032, 0.03)
+	else:
+		left_foot.position = left_foot.position.lerp(_left_foot_rest_position, minf(delta * 10.0, 1.0))
+		right_foot.position = right_foot.position.lerp(_right_foot_rest_position, minf(delta * 10.0, 1.0))
+
+func _update_fast_feet(gait_sin: float, lift_amount: float, stride_amount: float) -> void:
+	left_foot.position = _left_foot_rest_position + Vector3(
+		0.0, maxf(gait_sin, 0.0) * lift_amount, gait_sin * stride_amount
+	)
+	right_foot.position = _right_foot_rest_position + Vector3(
+		0.0, maxf(-gait_sin, 0.0) * lift_amount, -gait_sin * stride_amount
+	)
+
+func _update_npc_blink() -> void:
+	if left_eye == null or right_eye == null:
+		return
+	var blink_phase := fmod(_presentation_time + _presentation_phase, _blink_period)
+	var openness := 1.0
+	if blink_phase < 0.12:
+		openness = 0.12 + absf(cos(blink_phase / 0.12 * PI)) * 0.88
+	left_eye.scale.y = _left_eye_rest_scale.y * openness
+	right_eye.scale.y = _right_eye_rest_scale.y * openness
+
+func _reset_identity_pose() -> void:
+	if not _has_identity_detail:
+		return
+	pigeon_visual.position = _visual_rest_position
+	head.rotation = _head_rest_rotation
+	beak.rotation = _beak_rest_rotation
+	tail.rotation = _tail_rest_rotation
+	left_wing.rotation = _left_wing_rest_rotation
+	right_wing.rotation = _right_wing_rest_rotation
+	left_foot.position = _left_foot_rest_position
+	right_foot.position = _right_foot_rest_position
+	left_foot.rotation = _left_foot_rest_rotation
+	right_foot.rotation = _right_foot_rest_rotation
+	left_eye.scale = _left_eye_rest_scale
+	right_eye.scale = _right_eye_rest_scale
 
 func choose_new_behavior() -> void:
 	is_pausing = randf() < 0.35   # 35% chance to stand still, 65% to walk

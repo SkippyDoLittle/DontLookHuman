@@ -34,6 +34,9 @@ const PECK_FORWARD:     float = 0.12   # how far head lunges forward
 const PECK_DROP:        float = 0.13   # how far head drops down
 const PECK_STRIKE_FRAC: float = 0.40   # first 40% of peck = strike, last 60% = recovery
 const HEAD_BOB_Z:       float = 0.06   # max head swing forward/back while walking
+const BLINK_DURATION: float = 0.11
+const CAPTURE_IMPACT_DURATION: float = 0.16
+const CAPTURE_FIGHT_DURATION: float = 0.72
 @export_range(0.0, 0.3, 0.005) var lean_strength: float = 0.075
 @export_range(0.0, 0.5, 0.01)  var turn_roll_strength: float = 0.16
 @export_range(0.05, 0.5, 0.01) var stop_bounce_duration: float = 0.20
@@ -65,10 +68,6 @@ var _water_zones: Dictionary = {}
 var _water_speed_multiplier: float = 1.0
 var is_captured: bool = false
 var _capture_reaction_time: float = 0.0
-var _camera_shake_timer: float = 0.0
-var _camera_shake_duration: float = 0.0
-var _camera_shake_intensity: float = 0.0
-var _camera_shake_time: float = 0.0
 var camera_shake_count: int = 0
 var _snatch_reaction_timer: float = 0.0
 var _snatch_reaction_duration: float = 0.44
@@ -79,6 +78,7 @@ var _body_lean_x: float = 0.0
 var _turn_roll: float = 0.0
 var _stop_bounce_timer: float = 0.0
 var _strain_time: float = 0.0
+var _camera_feedback: CameraFeedbackController
 
 # Camera orbit angles — driven by mouse input in _input(), applied to spring_arm each frame.
 var camera_yaw:   float = 0.0
@@ -95,11 +95,33 @@ var _zoom_target: float = 4.0
 @onready var beak:          MeshInstance3D = $PigeonVisual/Beak
 @onready var left_wing:     MeshInstance3D = get_node_or_null("PigeonVisual/LeftWing") as MeshInstance3D
 @onready var right_wing:    MeshInstance3D = get_node_or_null("PigeonVisual/RightWing") as MeshInstance3D
+@onready var tail:          MeshInstance3D = get_node_or_null("PigeonVisual/Tail") as MeshInstance3D
+@onready var left_foot:     MeshInstance3D = get_node_or_null("PigeonVisual/LeftFoot") as MeshInstance3D
+@onready var right_foot:    MeshInstance3D = get_node_or_null("PigeonVisual/RightFoot") as MeshInstance3D
+@onready var left_eye:      MeshInstance3D = get_node_or_null("PigeonVisual/Head/LeftEye") as MeshInstance3D
+@onready var right_eye:     MeshInstance3D = get_node_or_null("PigeonVisual/Head/RightEye") as MeshInstance3D
 @onready var _stamina_bar:  ProgressBar   = get_node("../HUD/StaminaBar")
 
 var _body_rest_scale: Vector3
 var _left_wing_rest_rotation: Vector3
 var _right_wing_rest_rotation: Vector3
+var _visual_rest_position: Vector3
+var _head_rest_rotation: Vector3
+var _beak_rest_rotation: Vector3
+var _tail_rest_rotation: Vector3
+var _left_foot_rest_position: Vector3
+var _right_foot_rest_position: Vector3
+var _left_foot_rest_rotation: Vector3
+var _right_foot_rest_rotation: Vector3
+var _left_eye_rest_scale: Vector3
+var _right_eye_rest_scale: Vector3
+var _gait_phase: float = 0.0
+var _idle_look_timer: float = 0.8
+var _idle_look_target: float = 0.0
+var _idle_look_index: int = 0
+var _blink_timer: float = 2.1
+var _blink_time: float = 0.0
+var _has_character_detail: bool = false
 
 func _ready() -> void:
 	_load_camera_settings()
@@ -112,6 +134,26 @@ func _ready() -> void:
 	_body_rest_scale = body.scale
 	_left_wing_rest_rotation = left_wing.rotation
 	_right_wing_rest_rotation = right_wing.rotation
+	_visual_rest_position = pigeon_visual.position
+	_head_rest_rotation = head.rotation
+	_beak_rest_rotation = beak.rotation
+	_has_character_detail = (
+		tail != null
+		and left_foot != null
+		and right_foot != null
+		and left_eye != null
+		and right_eye != null
+		and left_wing != null
+		and right_wing != null
+	)
+	if _has_character_detail:
+		_tail_rest_rotation = tail.rotation
+		_left_foot_rest_position = left_foot.position
+		_right_foot_rest_position = right_foot.position
+		_left_foot_rest_rotation = left_foot.rotation
+		_right_foot_rest_rotation = right_foot.rotation
+		_left_eye_rest_scale = left_eye.scale
+		_right_eye_rest_scale = right_eye.scale
 
 	# Initialise camera angles from whatever the scene has set on the spring arm,
 	# so there's no snap on the first frame of mouse input.
@@ -119,6 +161,7 @@ func _ready() -> void:
 	camera_pitch = spring_arm.rotation.x
 	# Seed the zoom target from the scene's spring_length so Inspector edits take effect.
 	_zoom_target = spring_arm.spring_length
+	_camera_feedback = CameraFeedbackController.shared_for_camera(gameplay_camera)
 
 func _ensure_food_snatch_wings() -> void:
 	if left_wing == null:
@@ -205,26 +248,13 @@ func _load_camera_settings() -> void:
 	invert_camera_y = bool(config.get_value("camera", "invert_y", invert_camera_y))
 
 func add_camera_trauma(intensity: float = 0.16, duration: float = 0.42) -> void:
-	_camera_shake_intensity = maxf(_camera_shake_intensity, clampf(intensity, 0.0, 0.35))
-	_camera_shake_duration = maxf(_camera_shake_duration, duration)
-	_camera_shake_timer = maxf(_camera_shake_timer, duration)
-	_camera_shake_time = 0.0
+	if _camera_feedback != null:
+		_camera_feedback.add_trauma(clampf(intensity / 0.35, 0.0, 1.0), duration)
 	camera_shake_count += 1
 
 func _update_camera_shake(delta: float) -> void:
-	if _camera_shake_timer <= 0.0:
-		gameplay_camera.h_offset = lerpf(gameplay_camera.h_offset, 0.0, minf(delta * 18.0, 1.0))
-		gameplay_camera.v_offset = lerpf(gameplay_camera.v_offset, 0.0, minf(delta * 18.0, 1.0))
-		return
-	_camera_shake_timer = maxf(_camera_shake_timer - delta, 0.0)
-	_camera_shake_time += delta
-	var fade := _camera_shake_timer / maxf(_camera_shake_duration, 0.001)
-	var strength := _camera_shake_intensity * fade * fade
-	gameplay_camera.h_offset = sin(_camera_shake_time * 63.0) * strength
-	gameplay_camera.v_offset = sin(_camera_shake_time * 47.0 + 1.7) * strength * 0.62
-	if _camera_shake_timer <= 0.0:
-		_camera_shake_intensity = 0.0
-		_camera_shake_duration = 0.0
+	if _camera_feedback != null:
+		_camera_feedback.update(delta)
 
 func _physics_process(delta: float) -> void:
 	_update_controller_camera(delta)
@@ -373,6 +403,11 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_movement_animation(delta, sprinting)
+	_update_character_presentation(
+		delta,
+		Vector2(velocity.x, velocity.z).length(),
+		sprinting
+	)
 
 	_wall_bump_cooldown = maxf(_wall_bump_cooldown - delta, 0.0)
 	if is_on_wall() and _wall_bump_cooldown <= 0.0:
@@ -474,6 +509,127 @@ func _update_movement_animation(delta: float, is_sprint: bool) -> void:
 		if _snatch_reaction_timer <= 0.0:
 			body.scale = body.scale.lerp(_body_rest_scale, minf(delta * 7.0, 1.0))
 
+func _update_character_presentation(delta: float, planar_speed: float, is_sprint: bool) -> void:
+	# This layer only animates visual children. Capture and the food-snatch wings
+	# keep priority over ambient locomotion so action poses never fight each other.
+	if is_captured or not _has_character_detail:
+		return
+	_update_eye_blink(delta)
+	var is_moving := planar_speed > 0.1 and not is_pecking
+	if is_moving:
+		_update_character_gait(delta, planar_speed, is_sprint)
+	else:
+		_update_character_idle(delta)
+
+func _update_character_gait(delta: float, planar_speed: float, is_sprint: bool) -> void:
+	var speed_ratio := clampf(planar_speed / maxf(run_speed, 0.01), 0.0, 1.0)
+	var cadence := lerpf(7.0, 12.5, speed_ratio)
+	_gait_phase = fmod(_gait_phase + delta * cadence, TAU)
+	var gait_sin := sin(_gait_phase)
+	var opposite_sin := sin(_gait_phase + PI)
+	var lift_amount := 0.042 if is_sprint else 0.027
+	var stride_amount := 0.038 if is_sprint else 0.024
+	var body_bob := absf(gait_sin) * (0.025 if is_sprint else 0.014)
+	pigeon_visual.position.y = lerpf(
+		pigeon_visual.position.y,
+		_visual_rest_position.y + body_bob,
+		minf(delta * 18.0, 1.0)
+	)
+	left_foot.position = _left_foot_rest_position + Vector3(
+		0.0,
+		maxf(gait_sin, 0.0) * lift_amount,
+		gait_sin * stride_amount
+	)
+	right_foot.position = _right_foot_rest_position + Vector3(
+		0.0,
+		maxf(opposite_sin, 0.0) * lift_amount,
+		opposite_sin * stride_amount
+	)
+	left_foot.rotation.x = _left_foot_rest_rotation.x + gait_sin * 0.16
+	right_foot.rotation.x = _right_foot_rest_rotation.x + opposite_sin * 0.16
+	tail.rotation.x = _tail_rest_rotation.x - speed_ratio * 0.08 + sin(_gait_phase * 2.0) * 0.035
+	_idle_look_target = 0.0
+	head.rotation.y = lerp_angle(head.rotation.y, _head_rest_rotation.y, minf(delta * 12.0, 1.0))
+	beak.rotation.y = lerp_angle(beak.rotation.y, _beak_rest_rotation.y, minf(delta * 12.0, 1.0))
+	head.rotation.z = lerp_angle(head.rotation.z, _head_rest_rotation.z, minf(delta * 10.0, 1.0))
+	beak.rotation.z = lerp_angle(beak.rotation.z, _beak_rest_rotation.z, minf(delta * 10.0, 1.0))
+	if _snatch_reaction_timer <= 0.0:
+		var flutter := absf(sin(_gait_phase * 2.0))
+		var wing_open := (0.08 + flutter * 0.1) if is_sprint else flutter * 0.025
+		left_wing.rotation.z = _left_wing_rest_rotation.z + wing_open
+		right_wing.rotation.z = _right_wing_rest_rotation.z - wing_open
+
+func _update_character_idle(delta: float) -> void:
+	pigeon_visual.position.y = lerpf(
+		pigeon_visual.position.y,
+		_visual_rest_position.y,
+		minf(delta * 10.0, 1.0)
+	)
+	left_foot.position = left_foot.position.lerp(_left_foot_rest_position, minf(delta * 12.0, 1.0))
+	right_foot.position = right_foot.position.lerp(_right_foot_rest_position, minf(delta * 12.0, 1.0))
+	left_foot.rotation = left_foot.rotation.lerp(_left_foot_rest_rotation, minf(delta * 12.0, 1.0))
+	right_foot.rotation = right_foot.rotation.lerp(_right_foot_rest_rotation, minf(delta * 12.0, 1.0))
+	tail.rotation = tail.rotation.lerp(_tail_rest_rotation, minf(delta * 7.0, 1.0))
+	if _snatch_reaction_timer <= 0.0:
+		var breath := sin(Time.get_ticks_msec() * 0.0018) * 0.012
+		left_wing.rotation.z = lerpf(
+			left_wing.rotation.z,
+			_left_wing_rest_rotation.z + breath,
+			minf(delta * 5.0, 1.0)
+		)
+		right_wing.rotation.z = lerpf(
+			right_wing.rotation.z,
+			_right_wing_rest_rotation.z - breath,
+			minf(delta * 5.0, 1.0)
+		)
+	_idle_look_timer -= delta
+	if _idle_look_timer <= 0.0 and not is_pecking:
+		var look_targets: Array[float] = [0.2, -0.16, 0.1, 0.0]
+		_idle_look_target = look_targets[_idle_look_index % look_targets.size()]
+		_idle_look_index += 1
+		_idle_look_timer = 1.15 + float(_idle_look_index % 3) * 0.42
+	if is_pecking:
+		_idle_look_target = 0.0
+	var look_weight := minf(delta * 5.5, 1.0)
+	head.rotation.y = lerp_angle(head.rotation.y, _head_rest_rotation.y + _idle_look_target, look_weight)
+	beak.rotation.y = lerp_angle(beak.rotation.y, _beak_rest_rotation.y + _idle_look_target * 0.75, look_weight)
+	var curious_tilt := _idle_look_target * 0.2
+	head.rotation.z = lerp_angle(head.rotation.z, _head_rest_rotation.z + curious_tilt, look_weight)
+	beak.rotation.z = lerp_angle(beak.rotation.z, _beak_rest_rotation.z + curious_tilt, look_weight)
+
+func _update_eye_blink(delta: float) -> void:
+	if left_eye == null or right_eye == null:
+		return
+	if _blink_time > 0.0:
+		_blink_time = maxf(_blink_time - delta, 0.0)
+		var progress := 1.0 - _blink_time / BLINK_DURATION
+		var openness := 0.12 + absf(cos(progress * PI)) * 0.88
+		left_eye.scale.y = _left_eye_rest_scale.y * openness
+		right_eye.scale.y = _right_eye_rest_scale.y * openness
+		return
+	_blink_timer = maxf(_blink_timer - delta, 0.0)
+	if _blink_timer <= 0.0:
+		_blink_time = BLINK_DURATION
+		_blink_timer = 2.35 + float(_idle_look_index % 4) * 0.31
+	left_eye.scale = left_eye.scale.lerp(_left_eye_rest_scale, minf(delta * 22.0, 1.0))
+	right_eye.scale = right_eye.scale.lerp(_right_eye_rest_scale, minf(delta * 22.0, 1.0))
+
+func _reset_character_presentation_pose() -> void:
+	if not _has_character_detail:
+		return
+	pigeon_visual.position = _visual_rest_position
+	head.rotation = _head_rest_rotation
+	beak.rotation = _beak_rest_rotation
+	tail.rotation = _tail_rest_rotation
+	left_foot.position = _left_foot_rest_position
+	right_foot.position = _right_foot_rest_position
+	left_foot.rotation = _left_foot_rest_rotation
+	right_foot.rotation = _right_foot_rest_rotation
+	left_wing.rotation = _left_wing_rest_rotation
+	right_wing.rotation = _right_wing_rest_rotation
+	left_eye.scale = _left_eye_rest_scale
+	right_eye.scale = _right_eye_rest_scale
+
 func try_consume_peck() -> bool:
 	if is_captured or not is_pecking or _peck_consumed:
 		return false
@@ -486,6 +642,7 @@ func start_capture_reaction(ranger_position: Vector3) -> void:
 	is_captured = true
 	is_pecking = false
 	_reset_food_snatch_pose()
+	_reset_character_presentation_pose()
 	_capture_reaction_time = 0.0
 	velocity.x = 0.0
 	velocity.z = 0.0
@@ -497,16 +654,47 @@ func start_capture_reaction(ranger_position: Vector3) -> void:
 
 func _update_capture_reaction(delta: float) -> void:
 	_capture_reaction_time += delta
-	var struggle := sin(_capture_reaction_time * 24.0)
-	var squash := absf(sin(_capture_reaction_time * 17.0))
-	pigeon_visual.rotation.z = struggle * 0.24
+	var struggle := 0.0
+	var squash := 0.0
+	var wing_open := 0.0
+	var foot_kick := 0.0
+	if _capture_reaction_time < CAPTURE_IMPACT_DURATION:
+		# One readable impact beat: squash first, then burst outward.
+		var impact_progress := _capture_reaction_time / CAPTURE_IMPACT_DURATION
+		var impact := sin(impact_progress * PI)
+		struggle = sin(impact_progress * PI * 1.5) * 0.55
+		squash = impact
+		wing_open = impact * 1.05
+		foot_kick = impact * 0.24
+	elif _capture_reaction_time < CAPTURE_FIGHT_DURATION:
+		# The frantic middle beat sells the pigeon fighting the grab.
+		var fight_time := _capture_reaction_time - CAPTURE_IMPACT_DURATION
+		struggle = sin(fight_time * 29.0)
+		squash = absf(sin(fight_time * 21.0)) * 0.8
+		wing_open = 0.32 + absf(sin(fight_time * 34.0)) * 0.82
+		foot_kick = sin(fight_time * 25.0) * 0.2
+	else:
+		# Settle into short struggling bursts instead of an endless robot wobble.
+		var burst_time := fmod(_capture_reaction_time - CAPTURE_FIGHT_DURATION, 1.18)
+		var burst_weight := 1.0 - smoothstep(0.48, 0.82, burst_time)
+		struggle = sin(burst_time * 22.0) * burst_weight * 0.58
+		squash = absf(sin(burst_time * 18.0)) * burst_weight * 0.42
+		wing_open = 0.12 + absf(sin(burst_time * 25.0)) * burst_weight * 0.5
+		foot_kick = sin(burst_time * 17.0) * burst_weight * 0.11
+	pigeon_visual.rotation.z = struggle * 0.28
 	pigeon_visual.scale = Vector3(
-		1.0 + squash * 0.16,
-		1.0 - squash * 0.12,
-		1.0 + squash * 0.16
+		1.0 + squash * 0.18,
+		1.0 - squash * 0.14,
+		1.0 + squash * 0.18
 	)
-	head.position.y = head_y_rest + sin(_capture_reaction_time * 31.0) * 0.05
-	beak.position.y = beak_y_rest + sin(_capture_reaction_time * 31.0) * 0.05
+	var head_jolt := struggle * 0.045 - squash * 0.025
+	head.position.y = head_y_rest + head_jolt
+	beak.position.y = beak_y_rest + head_jolt
+	if _has_character_detail:
+		left_wing.rotation.z = _left_wing_rest_rotation.z + wing_open
+		right_wing.rotation.z = _right_wing_rest_rotation.z - wing_open
+		left_foot.rotation.x = _left_foot_rest_rotation.x + foot_kick
+		right_foot.rotation.x = _right_foot_rest_rotation.x - foot_kick
 
 func enter_water_zone(zone: Area3D, speed_multiplier: float) -> void:
 	_water_zones[zone] = clampf(speed_multiplier, 0.05, 1.0)

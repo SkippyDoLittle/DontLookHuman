@@ -10,6 +10,10 @@ var _pulse_time: float = 0.0
 var _visuals: Array[Node3D] = []
 var _rest_transforms: Dictionary = {}
 var _node_refs: Dictionary = {}
+var _locomotion_time: float = 0.0
+var _locomotion_blend: float = 0.0
+var _personality: String = "Steady"
+var _action_pose_active: bool = false
 
 func configure(host: Node, alert_label: Label3D, sound_manager: Node) -> void:
 	_host = host
@@ -17,11 +21,18 @@ func configure(host: Node, alert_label: Label3D, sound_manager: Node) -> void:
 	_sound_manager = sound_manager
 	if not is_instance_valid(_host) or not is_instance_valid(_alert_label):
 		return
+	_personality = _host_personality()
 	_alert_label.visible = false
 	for node_name in [
 		"RangerBody",
 		"RangerLeftArm",
 		"RangerRightArm",
+		"RangerBelt",
+		"RangerBadge",
+		"RangerLeftLeg",
+		"RangerRightLeg",
+		"RangerLeftBoot",
+		"RangerRightBoot",
 		"RangerHead",
 		"RangerHatBrim",
 		"RangerHatCrown",
@@ -51,6 +62,7 @@ func state_changed(new_state: int) -> void:
 			_show_alert("!!", Color(1.0, 0.2, 0.2, 1.0), 1.6, 0.08, 0.14)
 
 func update(delta: float, state: int) -> void:
+	_update_locomotion(delta, state)
 	match state:
 		RangerStateMachine.State.PATROL:
 			_pulse_time = 0.0
@@ -64,6 +76,7 @@ func update(delta: float, state: int) -> void:
 			_alert_label.modulate = Color(1.0, 0.2, 0.2, lerp(0.5, 1.0, pulse))
 
 func grab_windup(duration: float, personality: String = "Steady") -> void:
+	_begin_action_pose(personality)
 	var callout := {
 		"Rookie": "UH-OH!",
 		"Hothead": "GOT YOU!",
@@ -106,6 +119,7 @@ func grab_windup(duration: float, personality: String = "Steady") -> void:
 			_twp(_action_tween, "RangerHatCrown", "rotation:z", -0.12, duration)
 
 func grab_lunge() -> void:
+	_begin_action_pose(_personality)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -119,6 +133,7 @@ func grab_missed(
 	personality: String = "Steady",
 	miss_streak: int = 1
 ) -> String:
+	_begin_action_pose(personality)
 	var callout := _miss_callout(personality, miss_streak)
 	_show_alert(callout, Color(1.0, 0.72, 0.15, 1.0), 1.55, 0.05, 0.10)
 	_kill_action_tween()
@@ -166,6 +181,7 @@ func teammate_miss_reaction(personality: String = "Steady") -> String:
 	return callout
 
 func wrong_pigeon_grabbed(recovery_duration: float, personality: String = "Steady") -> String:
+	_begin_action_pose(personality)
 	var callout := {
 		"Rookie": "I GOT—OH.",
 		"Hothead": "NOT YOU?!",
@@ -197,6 +213,7 @@ func teammate_wrong_pigeon_reaction(personality: String = "Steady") -> String:
 	return callout
 
 func panic_pigeon_near_miss(personality: String = "Steady") -> String:
+	_begin_action_pose(personality)
 	var callout := {
 		"Rookie": "BIRD!",
 		"Hothead": "MOVE!",
@@ -225,6 +242,7 @@ func _miss_callout(personality: String, miss_streak: int) -> String:
 	return String(choices[mini(maxi(miss_streak - 1, 0), choices.size() - 1)])
 
 func collision_stumble(recovery_duration: float, personality: String = "Steady", contact_type: StringName = &"obstacle") -> void:
+	_begin_action_pose(personality)
 	var callout := _collision_callout(personality, contact_type)
 	_show_alert(callout, Color(1.0, 0.65, 0.15, 1.0), 1.55, 0.05, 0.09)
 	_kill_action_tween()
@@ -284,6 +302,7 @@ func _collision_callout(personality: String, contact_type: StringName) -> String
 func commotion_lookover(personality: String = "Steady") -> void:
 	if not _can_animate():
 		return
+	_begin_action_pose(personality)
 	var callout := {
 		"Rookie": "HM?",
 		"Hothead": "HEY!",
@@ -299,6 +318,7 @@ func commotion_lookover(personality: String = "Steady") -> void:
 	_host.get_tree().create_timer(0.65).timeout.connect(_clear_alert_if_matches.bind(callout))
 
 func chaos_reaction(callout: String, duration: float) -> void:
+	_begin_action_pose(_personality)
 	_show_alert(callout, Color(0.35, 0.9, 1.0, 1.0), 1.45, 0.06, 0.12)
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
@@ -309,6 +329,7 @@ func chaos_reaction(callout: String, duration: float) -> void:
 	_host.get_tree().create_timer(reset_delay).timeout.connect(reset_grab_pose.bind(0.22))
 
 func player_captured(personality: String = "Steady", near_exit: bool = false) -> void:
+	_begin_action_pose(personality)
 	var callout := {
 		"Rookie": "I GOT ONE!",
 		"Hothead": "YES!",
@@ -377,13 +398,115 @@ func reset_grab_pose(duration: float = 0.2) -> void:
 	_kill_action_tween()
 	_action_tween = _host.create_tween().set_parallel(true)
 	_action_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_locomotion_blend = 0.0
 	for visual in _visuals:
 		if is_instance_valid(visual):
 			_action_tween.tween_property(visual, "transform", _rest_transforms[visual], duration)
+	_action_tween.finished.connect(_finish_action_pose)
 
 func _kill_action_tween() -> void:
 	if _action_tween and _action_tween.is_valid():
 		_action_tween.kill()
+
+func _begin_action_pose(personality: String) -> void:
+	_personality = personality
+	_action_pose_active = true
+	_locomotion_blend = 0.0
+	_restore_rest_transforms_immediately()
+
+func _finish_action_pose() -> void:
+	_action_pose_active = false
+	_locomotion_blend = 0.0
+
+func _update_locomotion(delta: float, state: int) -> void:
+	if not _can_animate() or _action_pose_active or _action_tween_is_active():
+		return
+	var profile := _locomotion_profile(state, _personality)
+	_locomotion_time = fmod(_locomotion_time + delta * float(profile["cadence"]), TAU)
+	_locomotion_blend = move_toward(_locomotion_blend, 1.0, delta * 7.0)
+	var step_wave := sin(_locomotion_time)
+	var bounce := absf(sin(_locomotion_time))
+	var stride := float(profile["stride"])
+	var body_bob := float(profile["body_bob"])
+	var forward_lean := float(profile["forward_lean"])
+	var arm_swing := float(profile["arm_swing"])
+	var hat_sway := float(profile["hat_sway"])
+
+	_pose_from_rest("RangerLeftLeg", Vector3(step_wave * stride, 0.0, 0.0), Vector3.ZERO)
+	_pose_from_rest("RangerRightLeg", Vector3(-step_wave * stride, 0.0, 0.0), Vector3.ZERO)
+	_pose_from_rest("RangerLeftBoot", Vector3(step_wave * stride * 0.65, 0.0, 0.0), Vector3(0.0, 0.0, step_wave * 0.012))
+	_pose_from_rest("RangerRightBoot", Vector3(-step_wave * stride * 0.65, 0.0, 0.0), Vector3(0.0, 0.0, -step_wave * 0.012))
+	var upper_body_bob := Vector3(0.0, bounce * body_bob, 0.0)
+	_pose_from_rest("RangerLeftArm", Vector3(-step_wave * arm_swing, 0.0, 0.0), upper_body_bob)
+	_pose_from_rest("RangerRightArm", Vector3(step_wave * arm_swing, 0.0, 0.0), upper_body_bob)
+	var body_rotation := Vector3(forward_lean, 0.0, step_wave * float(profile["body_sway"]))
+	_pose_from_rest("RangerBody", body_rotation, upper_body_bob)
+	_pose_from_rest("RangerBelt", body_rotation, upper_body_bob)
+	_pose_from_rest("RangerBadge", body_rotation, upper_body_bob)
+	_pose_from_rest("RangerHead", Vector3(-forward_lean * 0.35, step_wave * float(profile["head_scan"]), 0.0), upper_body_bob)
+	_pose_from_rest("RangerHatBrim", Vector3(0.0, 0.0, -step_wave * hat_sway), upper_body_bob)
+	_pose_from_rest("RangerHatCrown", Vector3(0.0, 0.0, -step_wave * hat_sway), upper_body_bob)
+
+func _locomotion_profile(state: int, personality: String) -> Dictionary:
+	var profile: Dictionary
+	match state:
+		RangerStateMachine.State.INVESTIGATE:
+			profile = {
+				"cadence": 5.1, "stride": 0.28, "body_bob": 0.014,
+				"forward_lean": -0.045, "arm_swing": 0.18,
+				"body_sway": 0.018, "head_scan": 0.12, "hat_sway": 0.025,
+			}
+		RangerStateMachine.State.CHASE:
+			profile = {
+				"cadence": 8.6, "stride": 0.52, "body_bob": 0.035,
+				"forward_lean": -0.14, "arm_swing": 0.46,
+				"body_sway": 0.035, "head_scan": 0.02, "hat_sway": 0.055,
+			}
+		_:
+			profile = {
+				"cadence": 3.35, "stride": 0.20, "body_bob": 0.009,
+				"forward_lean": 0.0, "arm_swing": 0.13,
+				"body_sway": 0.012, "head_scan": 0.035, "hat_sway": 0.016,
+			}
+
+	match personality:
+		"Rookie":
+			profile["cadence"] = float(profile["cadence"]) * 1.12
+			profile["body_bob"] = float(profile["body_bob"]) * 1.3
+			profile["hat_sway"] = float(profile["hat_sway"]) * 1.45
+		"Hothead":
+			profile["cadence"] = float(profile["cadence"]) * 1.08
+			profile["stride"] = float(profile["stride"]) * 1.12
+			profile["forward_lean"] = float(profile["forward_lean"]) - 0.035
+		"Veteran":
+			profile["cadence"] = float(profile["cadence"]) * 0.88
+			profile["body_bob"] = float(profile["body_bob"]) * 0.62
+			profile["hat_sway"] = float(profile["hat_sway"]) * 0.55
+	return profile
+
+func _pose_from_rest(node_name: String, rotation_offset: Vector3, position_offset: Vector3) -> void:
+	var visual := _node_refs.get(node_name) as Node3D
+	if not is_instance_valid(visual) or not _rest_transforms.has(visual):
+		return
+	var rest: Transform3D = _rest_transforms[visual]
+	var target := rest
+	target.basis = Basis.from_euler(rest.basis.get_euler() + rotation_offset).scaled(rest.basis.get_scale())
+	target.origin = rest.origin + position_offset
+	visual.transform = visual.transform.interpolate_with(target, _locomotion_blend)
+
+func _action_tween_is_active() -> bool:
+	return _action_tween != null and _action_tween.is_valid() and _action_tween.is_running()
+
+func _restore_rest_transforms_immediately() -> void:
+	for visual in _visuals:
+		if is_instance_valid(visual) and _rest_transforms.has(visual):
+			visual.transform = _rest_transforms[visual]
+
+func _host_personality() -> String:
+	for property in _host.get_property_list():
+		if StringName(property.name) == &"capture_personality":
+			return String(_host.get("capture_personality"))
+	return "Steady"
 
 func _clear_alert_if_matches(callout: String) -> void:
 	if not is_instance_valid(_alert_label) or _alert_label.text != callout:

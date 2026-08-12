@@ -18,7 +18,7 @@ size = Vector3(0.34, 0.38, 0.2)
 albedo_color = Color(0.25, 0.45, 0.8, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_pants"]
-size = Vector3(0.3, 0.35, 0.18)
+size = Vector3(0.3, 0.18, 0.18)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_default_pants"]
 albedo_color = Color(0.2, 0.25, 0.45, 1)
@@ -31,6 +31,14 @@ rings = 4
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_skin"]
 albedo_color = Color(0.89, 0.72, 0.56, 1)
+
+; Left/right limbs share one mesh resource per type.  Their parent Node3Ds are
+; shoulder/hip pivots so park_visitor.gd can pose them without extra geometry.
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+size = Vector3(0.1, 0.32, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_leg"]
+size = Vector3(0.11, 0.22, 0.14)
 
 ; ── SCENE TREE ────────────────────────────────────────────────────────────────
 
@@ -47,7 +55,7 @@ mesh = SubResource("BoxMesh_body")
 surface_material_override/0 = SubResource("StandardMaterial3D_default_shirt")
 
 [node name="VisitorPants" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.27, 0)
 mesh = SubResource("BoxMesh_pants")
 surface_material_override/0 = SubResource("StandardMaterial3D_default_pants")
 
@@ -55,3 +63,35 @@ surface_material_override/0 = SubResource("StandardMaterial3D_default_pants")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
 mesh = SubResource("SphereMesh_head")
 surface_material_override/0 = SubResource("StandardMaterial3D_skin")
+
+[node name="LeftArm" type="Node3D" parent="."]
+position = Vector3(-0.22, 0.14, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="LeftArm"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_default_shirt")
+
+[node name="RightArm" type="Node3D" parent="."]
+position = Vector3(0.22, 0.14, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="RightArm"]
+position = Vector3(0, -0.15, 0)
+mesh = SubResource("BoxMesh_arm")
+surface_material_override/0 = SubResource("StandardMaterial3D_default_shirt")
+
+[node name="LeftLeg" type="Node3D" parent="."]
+position = Vector3(-0.09, -0.28, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="LeftLeg"]
+position = Vector3(0, -0.11, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_default_pants")
+
+[node name="RightLeg" type="Node3D" parent="."]
+position = Vector3(0.09, -0.28, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="RightLeg"]
+position = Vector3(0, -0.11, 0)
+mesh = SubResource("BoxMesh_leg")
+surface_material_override/0 = SubResource("StandardMaterial3D_default_pants")
