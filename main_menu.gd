@@ -30,10 +30,12 @@ const LEVEL_NAMES: Array[String] = [
 @onready var _howto_panel:       Control       = $CanvasLayer/HowToPlayPanel
 @onready var _settings_panel:    Control       = $CanvasLayer/SettingsPanel
 @onready var _levelselect_panel: Control       = $CanvasLayer/LevelSelectPanel
+@onready var _quality_settings: VisualQualitySettings = get_node("/root/QualitySettings")
 @onready var _music_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MusicSlider
 @onready var _sfx_slider:       HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/SFXSlider
 @onready var _mouse_slider:     HSlider       = $CanvasLayer/SettingsPanel/VBoxContainer/MouseSensitivitySlider
 @onready var _controller_slider: HSlider      = $CanvasLayer/SettingsPanel/VBoxContainer/ControllerSensitivitySlider
+@onready var _quality_option:   OptionButton  = $CanvasLayer/SettingsPanel/VBoxContainer/QualityPresetOption
 @onready var _invert_y_check:   CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/InvertYCheck
 @onready var _fullscreen_check: CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/FullscreenCheck
 @onready var _reset_dialog: ConfirmationDialog = $CanvasLayer/ResetCampaignDialog
@@ -50,11 +52,13 @@ var _score_store := BestScoreStore.new()
 var _progress_store := CampaignProgressStore.new()
 var _continue_level_index: int = 0
 var settings_path: String = SETTINGS_PATH
+var _loading_settings: bool = false
 
 func _ready() -> void:
 	_migrate_score_progress()
 	_refresh_campaign_ui()
 	_show_panel(_main_panel)
+	_configure_quality_options()
 	_load_settings_into_ui()
 
 func _show_panel(panel: Node) -> void:
@@ -137,20 +141,36 @@ func _focus_panel(panel: Node) -> void:
 		target.grab_focus()
 
 func _on_music_slider_changed(value: float) -> void:
+	if _loading_settings:
+		return
 	SoundManager.set_music_volume(value)
 	_save_settings()
 
 func _on_sfx_slider_changed(value: float) -> void:
+	if _loading_settings:
+		return
 	SoundManager.set_sfx_volume(value)
 	_save_settings()
 
 func _on_camera_setting_changed(_value: float = 0.0) -> void:
+	if _loading_settings:
+		return
 	_save_settings()
 
 func _on_invert_y_toggled(_pressed: bool) -> void:
+	if _loading_settings:
+		return
+	_save_settings()
+
+func _on_quality_preset_selected(index: int) -> void:
+	if _loading_settings:
+		return
+	_quality_settings.apply_preset_index(index, false)
 	_save_settings()
 
 func _on_fullscreen_toggled(pressed: bool) -> void:
+	if _loading_settings:
+		return
 	if pressed:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
@@ -173,13 +193,21 @@ func _on_reset_campaign_confirmed() -> void:
 
 func _save_settings() -> void:
 	var config := ConfigFile.new()
+	config.load(settings_path)
 	config.set_value("audio",   "music",      _music_slider.value)
 	config.set_value("audio",   "sfx",        _sfx_slider.value)
 	config.set_value("camera",  "mouse_sensitivity", _mouse_slider.value)
 	config.set_value("camera",  "controller_sensitivity", _controller_slider.value)
 	config.set_value("camera",  "invert_y", _invert_y_check.button_pressed)
 	config.set_value("display", "fullscreen",  _fullscreen_check.button_pressed)
+	config.set_value("display", "quality_preset", _quality_settings.preset_name_from_index(_quality_option.selected))
 	config.save(settings_path)
+
+func _configure_quality_options() -> void:
+	_quality_option.clear()
+	for preset_name in _quality_settings.preset_names():
+		_quality_option.add_item(preset_name)
+	_quality_option.select(_quality_settings.current_preset_index())
 
 func _load_settings_into_ui() -> void:
 	# SoundManager already applied the saved volumes on startup.
@@ -187,9 +215,14 @@ func _load_settings_into_ui() -> void:
 	var config := ConfigFile.new()
 	if config.load(settings_path) != OK:
 		return   # first run — UI defaults are fine
+	_loading_settings = true
 	_music_slider.value              = config.get_value("audio",   "music",      1.0)
 	_sfx_slider.value                = config.get_value("audio",   "sfx",        1.0)
 	_mouse_slider.value              = config.get_value("camera",  "mouse_sensitivity", 0.003)
 	_controller_slider.value         = config.get_value("camera",  "controller_sensitivity", 2.4)
 	_invert_y_check.button_pressed   = config.get_value("camera",  "invert_y", false)
 	_fullscreen_check.button_pressed = config.get_value("display", "fullscreen", false)
+	var quality_preset := String(config.get_value("display", "quality_preset", _quality_settings.current_preset))
+	_quality_option.select(_quality_settings.preset_index(quality_preset))
+	_loading_settings = false
+	_quality_settings.apply_preset_index(_quality_option.selected, false)

@@ -7,19 +7,23 @@
 size = Vector3(1.8, 0.08, 0.9)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tabletop"]
-albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+albedo_color = Color(0.43, 0.21, 0.075, 1)
+roughness = 0.86
 
 [sub_resource type="BoxMesh" id="BoxMesh_seat"]
 size = Vector3(1.6, 0.06, 0.3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_seat"]
-albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+albedo_color = Color(0.43, 0.21, 0.075, 1)
+roughness = 0.86
 
 [sub_resource type="BoxMesh" id="BoxMesh_leg"]
 size = Vector3(0.08, 0.72, 0.8)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_leg"]
-albedo_color = Color(0.627451, 0.38431373, 0.16470589, 1)
+albedo_color = Color(0.15, 0.11, 0.075, 1)
+metallic = 0.36
+roughness = 0.58
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_table"]
 size = Vector3(1.8, 0.72, 0.9)

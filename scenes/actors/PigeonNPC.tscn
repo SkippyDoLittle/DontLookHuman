@@ -15,7 +15,9 @@ radial_segments = 8
 rings = 4
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgbody"]
-albedo_color = Color(0.53333, 0.6, 0.73333, 1)
+albedo_color = Color(0.34, 0.39, 0.46, 1)
+metallic = 0.03
+roughness = 0.72
 
 [sub_resource type="SphereMesh" id="SphereMesh_pghead"]
 radius = 0.13
@@ -24,19 +26,64 @@ radial_segments = 8
 rings = 4
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pghead"]
-albedo_color = Color(0.6, 0.66667, 0.73333, 1)
+albedo_color = Color(0.38, 0.43, 0.49, 1)
+roughness = 0.68
 
 [sub_resource type="BoxMesh" id="BoxMesh_pgbeak"]
 size = Vector3(0.04, 0.04, 0.1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgbeak"]
-albedo_color = Color(0.8, 0.53333, 0.2, 1)
+albedo_color = Color(0.9, 0.44, 0.11, 1)
+roughness = 0.55
 
 [sub_resource type="BoxMesh" id="BoxMesh_pgtail"]
 size = Vector3(0.18, 0.05, 0.14)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgtail"]
-albedo_color = Color(0.4, 0.46667, 0.53333, 1)
+albedo_color = Color(0.17, 0.21, 0.27, 1)
+roughness = 0.74
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgwing"]
+size = Vector3(0.16, 0.045, 0.32)
+
+[sub_resource type="SphereMesh" id="SphereMesh_pgeye"]
+radius = 0.032
+height = 0.058
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgeye"]
+albedo_color = Color(0.9, 0.88, 0.75, 1)
+roughness = 0.48
+
+[sub_resource type="SphereMesh" id="SphereMesh_pgpupil"]
+radius = 0.014
+height = 0.026
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgpupil"]
+albedo_color = Color(0.015, 0.02, 0.026, 1)
+roughness = 0.36
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pgneck"]
+top_radius = 0.092
+bottom_radius = 0.132
+height = 0.095
+radial_segments = 8
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgneck"]
+albedo_color = Color(0.12, 0.34, 0.36, 1)
+metallic = 0.09
+roughness = 0.53
+
+[sub_resource type="BoxMesh" id="BoxMesh_pgfoot"]
+size = Vector3(0.072, 0.024, 0.135)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pgfoot"]
+albedo_color = Color(0.76, 0.23, 0.065, 1)
+roughness = 0.62
 
 ; ── SCENE TREE ────────────────────────────────────────────────────────────────
 
@@ -60,10 +107,59 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0.1)
 mesh = SubResource("SphereMesh_pghead")
 surface_material_override/0 = SubResource("StandardMaterial3D_pghead")
 
+[node name="LeftEye" type="MeshInstance3D" parent="PigeonVisual/Head"]
+position = Vector3(-0.092, 0.028, 0.083)
+mesh = SubResource("SphereMesh_pgeye")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgeye")
+
+[node name="LeftPupil" type="MeshInstance3D" parent="PigeonVisual/Head/LeftEye"]
+position = Vector3(0, 0, 0.025)
+mesh = SubResource("SphereMesh_pgpupil")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgpupil")
+
+[node name="RightEye" type="MeshInstance3D" parent="PigeonVisual/Head"]
+position = Vector3(0.092, 0.028, 0.083)
+mesh = SubResource("SphereMesh_pgeye")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgeye")
+
+[node name="RightPupil" type="MeshInstance3D" parent="PigeonVisual/Head/RightEye"]
+position = Vector3(0, 0, 0.025)
+mesh = SubResource("SphereMesh_pgpupil")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgpupil")
+
 [node name="Beak" type="MeshInstance3D" parent="PigeonVisual"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0.23)
 mesh = SubResource("BoxMesh_pgbeak")
 surface_material_override/0 = SubResource("StandardMaterial3D_pgbeak")
+
+[node name="NeckAccent" type="MeshInstance3D" parent="PigeonVisual"]
+position = Vector3(0, 0.188, 0.035)
+mesh = SubResource("CylinderMesh_pgneck")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgneck")
+
+[node name="LeftWing" type="MeshInstance3D" parent="PigeonVisual"]
+position = Vector3(-0.21, 0, -0.01)
+rotation = Vector3(0, 0, 0.12)
+mesh = SubResource("BoxMesh_pgwing")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="RightWing" type="MeshInstance3D" parent="PigeonVisual"]
+position = Vector3(0.21, 0, -0.01)
+rotation = Vector3(0, 0, -0.12)
+mesh = SubResource("BoxMesh_pgwing")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgtail")
+
+[node name="LeftFoot" type="MeshInstance3D" parent="PigeonVisual"]
+position = Vector3(-0.088, -0.17, 0.103)
+rotation = Vector3(-0.08, 0, -0.05)
+mesh = SubResource("BoxMesh_pgfoot")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgfoot")
+
+[node name="RightFoot" type="MeshInstance3D" parent="PigeonVisual"]
+position = Vector3(0.088, -0.17, 0.103)
+rotation = Vector3(-0.08, 0, 0.05)
+mesh = SubResource("BoxMesh_pgfoot")
+surface_material_override/0 = SubResource("StandardMaterial3D_pgfoot")
 
 [node name="Tail" type="MeshInstance3D" parent="PigeonVisual"]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, -0.25881904, 0, 0.25881904, 0.9659258, 0, -0.07, -0.27)

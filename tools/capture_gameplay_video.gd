@@ -110,7 +110,6 @@ func _load_level(path: String) -> Node:
 	session.call("_set_state", GameSession.SessionState.ACTIVE)
 
 	_configure_hud(_active_level)
-	_polish_lighting(_active_level)
 	_camera = Camera3D.new()
 	_camera.name = "TrailerCamera"
 	_camera.fov = 58.0
@@ -872,18 +871,6 @@ func _set_hud_detail(level: Node, visible: bool) -> void:
 		var control := level.get_node_or_null(node_path) as CanvasItem
 		if control != null:
 			control.visible = visible
-
-func _polish_lighting(level: Node) -> void:
-	var world_environment := level.get_node_or_null("WorldEnvironment") as WorldEnvironment
-	if world_environment != null and world_environment.environment != null:
-		world_environment.environment.adjustment_enabled = true
-		world_environment.environment.adjustment_brightness = 1.0
-		world_environment.environment.adjustment_contrast = 1.06
-		world_environment.environment.adjustment_saturation = 1.08
-	var sunlight := level.get_node_or_null("DirectionalLight3D") as DirectionalLight3D
-	if sunlight != null:
-		sunlight.light_energy *= 1.05
-		sunlight.shadow_enabled = true
 
 func _set_actions(actions: Array[StringName]) -> void:
 	_release_actions()

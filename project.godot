@@ -19,6 +19,7 @@ config/icon="res://assets/branding/game_icon.png"
 [autoload]
 
 SoundManager="*res://sound_manager.gd"
+QualitySettings="*res://quality_settings.gd"
 
 [display]
 

@@ -42,7 +42,25 @@ process_mode = 3
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 2
 sky = SubResource("Sky_main")
-ambient_light_energy = 0.35
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.42, 0.56, 1)
+ambient_light_energy = 0.66
+reflected_light_source = 2
+tonemap_mode = 2
+tonemap_exposure = 0.95
+tonemap_white = 4.0
+ssao_enabled = true
+ssao_radius = 0.58
+ssao_intensity = 0.58
+ssao_power = 1.12
+ssao_detail = 0.3
+ssao_sharpness = 0.72
+fog_enabled = true
+fog_light_color = Color(0.52, 0.3, 0.34, 1)
+fog_light_energy = 0.42
+fog_density = 0.0024
+fog_aerial_perspective = 0.38
+fog_sky_affect = 0.22
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
 size = Vector3(500, 0.2, 500)
@@ -117,10 +135,12 @@ environment = SubResource("Environment_main")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=920458761]
 transform = Transform3D(0.7071, 0.5, -0.5, 0, 0.7071, 0.7071, 0.7071, -0.5, 0.5, 0, 1, 0)
 light_color = Color(1, 0.78, 0.55, 1)
-light_energy = 0.8
+light_energy = 0.92
+light_angular_distance = 1.35
 shadow_enabled = true
-directional_shadow_mode = 0
+directional_shadow_mode = 1
 directional_shadow_max_distance = 32.0
+directional_shadow_fade_start = 0.78
 
 [node name="TreeScatter" type="Node3D" parent="." unique_id=99551028]
 script = ExtResource("18_tree_sct")

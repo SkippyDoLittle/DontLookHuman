@@ -25,6 +25,8 @@ uniform float cloud_speed:    hint_range(0.0, 0.2)  = 0.015;
 // Half-angle of the visible sun disc in degrees (real sun ≈ 0.25°; 4° is more readable in-game).
 // The disc automatically appears wherever the DirectionalLight3D is pointing — no manual positioning needed.
 uniform float sun_angle_max: hint_range(0.5, 20.0) = 4.0;
+uniform float sun_disc_strength: hint_range(0.0, 2.0) = 0.55;
+uniform float sun_halo_strength: hint_range(0.0, 1.0) = 0.16;
 
 // ── Noise utilities ───────────────────────────────────────────────────────────
 float hash2(vec2 p) {
@@ -83,8 +85,8 @@ void sky() {
 	float cos_max = cos(radians(sun_angle_max));
 	float sdot    = dot(EYEDIR, LIGHT0_DIRECTION);
 	float disc    = smoothstep(cos_max - 0.002, cos_max, sdot);
-	float glow    = pow(max(sdot, 0.0), 48.0) * 0.55;
-	col          += LIGHT0_COLOR * LIGHT0_ENERGY * (disc + glow);
+	float glow    = pow(max(sdot, 0.0), 64.0) * sun_halo_strength;
+	col          += LIGHT0_COLOR * (disc * sun_disc_strength + glow);
 
 	COLOR = col;
 }

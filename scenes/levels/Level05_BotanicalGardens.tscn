@@ -36,7 +36,25 @@ process_mode = 3
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 2
 sky = SubResource("Sky_main")
-ambient_light_energy = 0.55
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.61, 0.64, 1)
+ambient_light_energy = 0.84
+reflected_light_source = 2
+tonemap_mode = 2
+tonemap_exposure = 1.0
+tonemap_white = 4.0
+ssao_enabled = true
+ssao_radius = 0.64
+ssao_intensity = 0.62
+ssao_power = 1.2
+ssao_detail = 0.32
+ssao_sharpness = 0.7
+fog_enabled = true
+fog_light_color = Color(0.59, 0.66, 0.67, 1)
+fog_light_energy = 0.3
+fog_density = 0.003
+fog_aerial_perspective = 0.42
+fog_sky_affect = 0.3
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
 size = Vector3(500, 0.2, 500)
@@ -171,10 +189,12 @@ environment = SubResource("Environment_main")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2000244461]
 transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
 light_color = Color(0.85, 0.88, 0.95, 1)
-light_energy = 0.6
+light_energy = 0.82
+light_angular_distance = 1.5
 shadow_enabled = true
-directional_shadow_mode = 0
+directional_shadow_mode = 1
 directional_shadow_max_distance = 32.0
+directional_shadow_fade_start = 0.76
 
 [node name="PigeonScatter" type="Node3D" parent="." unique_id=485191734]
 script = ExtResource("22_pigeon_sct")

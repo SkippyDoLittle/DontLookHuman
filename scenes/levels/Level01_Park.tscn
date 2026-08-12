@@ -53,7 +53,23 @@ process_mode = 3
 background_mode = 2
 sky = SubResource("Sky_main")
 ambient_light_source = 0
-ambient_light_energy = 0.5
+ambient_light_energy = 0.74
+reflected_light_source = 2
+tonemap_mode = 2
+tonemap_exposure = 0.98
+tonemap_white = 4.0
+ssao_enabled = true
+ssao_radius = 0.55
+ssao_intensity = 0.55
+ssao_power = 1.15
+ssao_detail = 0.3
+ssao_sharpness = 0.75
+fog_enabled = true
+fog_light_color = Color(0.72, 0.79, 0.65, 1)
+fog_light_energy = 0.35
+fog_density = 0.0016
+fog_aerial_perspective = 0.24
+fog_sky_affect = 0.18
 
 ; Ground
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
@@ -107,9 +123,13 @@ environment = SubResource("Environment_main")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+light_color = Color(1, 0.88, 0.69, 1)
+light_energy = 1.08
+light_angular_distance = 1.0
 shadow_enabled = true
-directional_shadow_mode = 0
+directional_shadow_mode = 1
 directional_shadow_max_distance = 32.0
+directional_shadow_fade_start = 0.8
 
 ; ── SCATTER NODES (reference sibling template nodes by name) ──────────────────
 [node name="TreeScatter" type="Node3D" parent="."]

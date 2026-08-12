@@ -47,7 +47,23 @@ process_mode = 3
 background_mode = 2
 sky = SubResource("Sky_main")
 ambient_light_source = 0
-ambient_light_energy = 0.5
+ambient_light_energy = 0.75
+reflected_light_source = 2
+tonemap_mode = 2
+tonemap_exposure = 0.94
+tonemap_white = 4.0
+ssao_enabled = true
+ssao_radius = 0.5
+ssao_intensity = 0.5
+ssao_power = 1.05
+ssao_detail = 0.28
+ssao_sharpness = 0.72
+fog_enabled = true
+fog_light_color = Color(0.78, 0.84, 0.89, 1)
+fog_light_energy = 0.28
+fog_density = 0.0011
+fog_aerial_perspective = 0.2
+fog_sky_affect = 0.14
 
 ; Ground — sandy tan
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
@@ -121,9 +137,13 @@ environment = SubResource("Environment_main")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8660254, 0.35355338, -0.35355338, 0, 0.70710677, 0.70710677, 0.5, -0.6123724, 0.6123724, 0, 0, 0)
+light_color = Color(1, 0.93, 0.78, 1)
+light_energy = 0.98
+light_angular_distance = 1.1
 shadow_enabled = true
-directional_shadow_mode = 0
+directional_shadow_mode = 1
 directional_shadow_max_distance = 32.0
+directional_shadow_fade_start = 0.8
 
 ; ── SCATTER ───────────────────────────────────────────────────────────────────
 [node name="TreeScatter" type="Node3D" parent="."]
