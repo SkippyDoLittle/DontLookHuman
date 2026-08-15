@@ -95,23 +95,27 @@ func _add_layer(
 	var generated_scales := PackedVector3Array()
 
 	for index in range(positions.size()):
-		var position := positions[index]
+		var sampled_position := positions[index]
 		var uniform_scale := rng.randf_range(scale_min, scale_max)
 		var instance_scale := base_scale * uniform_scale
 		generated_scales.append(instance_scale)
 		var yaw := rng.randf_range(0.0, TAU)
-		var basis: Basis
+		var instance_basis: Basis
 		if is_flat:
-			basis = Basis.from_euler(Vector3(
+			instance_basis = Basis.from_euler(Vector3(
 				rng.randf_range(-0.045, 0.045),
 				yaw,
 				rng.randf_range(-0.045, 0.045)
 			))
 		else:
-			basis = Basis(Vector3.UP, yaw)
-		basis = basis.scaled(instance_scale)
-		var origin := Vector3(position.x, base_y * instance_scale.y, position.z)
-		multimesh.set_instance_transform(index, Transform3D(basis, origin))
+			instance_basis = Basis(Vector3.UP, yaw)
+		instance_basis = instance_basis.scaled(instance_scale)
+		var origin := Vector3(
+			sampled_position.x,
+			base_y * instance_scale.y,
+			sampled_position.z
+		)
+		multimesh.set_instance_transform(index, Transform3D(instance_basis, origin))
 		multimesh.set_instance_color(index, palette[rng.randi_range(0, palette.size() - 1)])
 		_accumulate_signature(origin, yaw, instance_scale)
 
@@ -189,12 +193,12 @@ func _collect_exclusion_points() -> PackedVector3Array:
 	return points
 
 
-func _accumulate_signature(origin: Vector3, yaw: float, scale: Vector3) -> void:
+func _accumulate_signature(origin: Vector3, yaw: float, detail_scale: Vector3) -> void:
 	var component := (
 		int(round(origin.x * 1000.0)) * 17
 		+ int(round(origin.z * 1000.0)) * 31
 		+ int(round(yaw * 1000.0)) * 13
-		+ int(round(scale.x * 1000.0))
+		+ int(round(detail_scale.x * 1000.0))
 	)
 	generated_signature = abs((generated_signature * 65599 + component) % 2147483647)
 
