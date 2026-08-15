@@ -5,6 +5,8 @@ extends Node
 
 const ADAPTIVE_MUSIC_DIRECTOR_SCRIPT = preload("res://adaptive_music_director.gd")
 const SAMPLE_RATE: int = 22050   # half CD quality — sufficient for SFX, saves memory
+const MASTER_BUS_NAME: StringName = &"Master"
+const MASTER_OUTPUT_LINEAR_GAIN: float = 0.45  # A second 30% cut; 55% below the original mix.
 const NPC_PECK_VOLUME_DB: float = -28.0
 const NPC_STEP_VOLUME_DB: float = -16.0
 const NPC_PECK_VOICE_LIMIT: int = 3
@@ -48,6 +50,7 @@ func _ready() -> void:
 	# PROCESS_MODE_ALWAYS so audio keeps playing while the scene tree is paused (countdown, pause menu).
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	_apply_master_output_ceiling()
 	_ensure_bus("Music")
 	_ensure_bus("Ambience")
 	_ensure_bus("SFX")
@@ -210,6 +213,7 @@ func npc_peck_stream()  -> AudioStreamWAV: return _npc_peck.stream as AudioStrea
 func npc_step_stream()  -> AudioStreamWAV: return _step_walk.stream as AudioStreamWAV
 func npc_peck_volume_db() -> float: return NPC_PECK_VOLUME_DB
 func npc_step_volume_db() -> float: return NPC_STEP_VOLUME_DB
+func master_output_linear_gain() -> float: return MASTER_OUTPUT_LINEAR_GAIN
 
 # NPC emitters own positional falloff, while this singleton limits same-frame flock bursts.
 # Deadlines use real elapsed time so pausing gameplay cannot leave a voice slot occupied.
@@ -360,13 +364,6 @@ func _park_ambient() -> AudioStreamWAV:
 	# Float buffer so we can add layers cleanly before converting to bytes.
 	var buf := PackedFloat32Array(); buf.resize(n)
 
-	# ── Wind: ultra-heavy low-pass (0.007) creates smooth hiss; slow sine breathes amplitude.
-	var wnd: float = 0.0
-	for i in n:
-		var t := float(i) / float(SAMPLE_RATE)
-		wnd    = lerp(wnd, randf_range(-1.0, 1.0), 0.007)
-		buf[i] = wnd * 0.28 * (0.75 + 0.25 * sin(TAU * t / 3.2))
-
 	# ── Crickets: two voices at 3200/3500 Hz, offset by half a period so they interleave.
 	# 8-second loop was chosen so the 2.0 s cricket cycle completes exactly 4 times (no seam).
 	var c_pulse := int(0.018 * float(SAMPLE_RATE))
@@ -420,6 +417,14 @@ func _park_ambient() -> AudioStreamWAV:
 	return w
 
 # ── BUS UTILITIES ────────────────────────────────────────────────────────────────
+
+func _apply_master_output_ceiling() -> void:
+	var master_index := AudioServer.get_bus_index(MASTER_BUS_NAME)
+	if master_index >= 0:
+		AudioServer.set_bus_volume_db(
+			master_index,
+			linear_to_db(MASTER_OUTPUT_LINEAR_GAIN)
+		)
 
 func _ensure_bus(bus_name: String) -> void:
 	if AudioServer.get_bus_index(bus_name) == -1:

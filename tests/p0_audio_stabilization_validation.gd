@@ -13,6 +13,7 @@ func _init() -> void:
 
 func _run_all() -> void:
 	_test_repetitive_music_removed()
+	_test_master_output_headroom()
 	_test_npc_emitters_use_quiet_manager_gains()
 	_test_npc_voice_limits_are_bounded_and_independent()
 	await process_frame
@@ -25,6 +26,22 @@ func _test_repetitive_music_removed() -> void:
 	_assert("six second melody builder removed", not sound_source.contains("_melody_loop"))
 	_assert("session no longer starts placeholder music", not session_source.contains("start_music"))
 	_assert("session no longer stops placeholder music", not session_source.contains("stop_music"))
+	_assert("legacy fallback ambience has no static-like wind bed", not sound_source.contains("var wnd"))
+
+func _test_master_output_headroom() -> void:
+	var sound_manager := root.get_node_or_null("SoundManager")
+	_assert("SoundManager autoload exists", sound_manager != null)
+	if sound_manager == null:
+		return
+	var configured_gain := float(sound_manager.call("master_output_linear_gain"))
+	_assert("master output is reduced by at least thirty percent", configured_gain <= 0.70)
+	_assert("master output includes the second thirty percent reduction", configured_gain <= 0.455)
+	_assert("master output retains useful headroom", configured_gain >= 0.40)
+	var master_index := AudioServer.get_bus_index(&"Master")
+	_assert("Master bus exists", master_index >= 0)
+	if master_index >= 0:
+		var live_gain := db_to_linear(AudioServer.get_bus_volume_db(master_index))
+		_assert("Master bus applies the configured output ceiling", is_equal_approx(live_gain, configured_gain))
 
 func _test_npc_emitters_use_quiet_manager_gains() -> void:
 	var npc_source := _read_source("res://npc_animal.gd")

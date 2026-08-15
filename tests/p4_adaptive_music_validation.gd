@@ -25,6 +25,7 @@ func _run_all() -> void:
 
 func _test_long_form_layer_contract(director: AdaptiveMusicDirector) -> void:
 	_assert("director processes while paused", director.process_mode == Node.PROCESS_MODE_ALWAYS)
+	_assert("music has a quieter internal output trim", director.music_output_linear_gain() <= 0.60)
 	_assert("arrangement has sixteen authored bars", director.arrangement_bar_count() == 16)
 	_assert("arrangement lasts at least twenty four seconds", director.loop_duration_seconds() >= 24.0)
 	var layer_names := director.layer_names()
@@ -62,6 +63,14 @@ func _test_adaptive_targets_and_crossfade(director: AdaptiveMusicDirector) -> vo
 	var first_fade_gain := director.layer_current_linear(&"normal")
 	_assert("calm stem fades up from silence", first_fade_gain > 0.0)
 	_assert("calm fade does not jump to target", first_fade_gain < calm_target)
+	var normal_player := director.layer_player(&"normal")
+	_assert(
+		"music player applies the internal output trim",
+		is_equal_approx(
+			db_to_linear(normal_player.volume_db),
+			first_fade_gain * director.music_output_linear_gain()
+		)
+	)
 
 	director.set_tension(0.50)
 	_assert("mid tension adds suspense", director.layer_target_linear(&"tension") > 0.0)

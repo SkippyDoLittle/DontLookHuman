@@ -14,6 +14,7 @@ const BAR_COUNT: int = 16
 const BAR_SECONDS: float = LOOP_SECONDS / float(BAR_COUNT)
 const BEAT_SECONDS: float = BAR_SECONDS / 4.0
 const CROSSFADE_SECONDS: float = 0.85
+const MUSIC_OUTPUT_LINEAR_GAIN: float = 0.55
 const SILENT_GAIN: float = 0.0001
 const STOP_GAIN: float = 0.001
 const MAX_PCM_BYTES: int = 8 * 1024 * 1024
@@ -55,7 +56,10 @@ func _process(delta: float) -> void:
 		loudest_gain = maxf(loudest_gain, current)
 		var player := _players.get(layer_name) as AudioStreamPlayer
 		if is_instance_valid(player):
-			player.volume_db = linear_to_db(maxf(current, SILENT_GAIN))
+			player.volume_db = linear_to_db(maxf(
+				current * MUSIC_OUTPUT_LINEAR_GAIN,
+				SILENT_GAIN
+			))
 
 	if _stop_when_silent and loudest_gain <= STOP_GAIN:
 		_stop_when_silent = false
@@ -131,6 +135,9 @@ func layer_target_linear(layer_name: StringName) -> float:
 
 func layer_current_linear(layer_name: StringName) -> float:
 	return float(_current_gains.get(layer_name, 0.0))
+
+func music_output_linear_gain() -> float:
+	return MUSIC_OUTPUT_LINEAR_GAIN
 
 func total_pcm_bytes() -> int:
 	var total := 0

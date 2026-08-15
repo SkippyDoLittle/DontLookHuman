@@ -75,43 +75,43 @@ func _resolve_level_id() -> StringName:
 	return &"level_01"
 
 static func profile_for_level_id(level_id: StringName) -> Dictionary:
-	# All levels retain the park's wind/bird/people identity.  Optional layers
+	# All levels retain the park's bird/people identity. Optional layers
 	# add place without creating a different audio system for every scene.
 	match level_id:
 		&"level_02":
 			return {
-				"id": &"level_02", "seed": 202, "wind": 0.15,
+				"id": &"level_02", "seed": 202,
 				"birds": 0.28, "people": 0.16, "water": 0.0,
 				"festival": 0.0, "bird_calls": 3,
 			}
 		&"level_03":
 			return {
-				"id": &"level_03", "seed": 303, "wind": 0.22,
+				"id": &"level_03", "seed": 303,
 				"birds": 0.18, "people": 0.08, "water": 0.18,
 				"festival": 0.0, "bird_calls": 2,
 			}
 		&"level_04":
 			return {
-				"id": &"level_04", "seed": 404, "wind": 0.10,
+				"id": &"level_04", "seed": 404,
 				"birds": 0.12, "people": 0.24, "water": 0.0,
 				"festival": 0.18, "bird_calls": 1,
 			}
 		&"level_05":
 			return {
-				"id": &"level_05", "seed": 505, "wind": 0.18,
+				"id": &"level_05", "seed": 505,
 				"birds": 0.32, "people": 0.10, "water": 0.0,
 				"festival": 0.0, "bird_calls": 3,
 			}
 		_:
 			return {
-				"id": &"level_01", "seed": 101, "wind": 0.20,
+				"id": &"level_01", "seed": 101,
 				"birds": 0.24, "people": 0.12, "water": 0.10,
 				"festival": 0.0, "bird_calls": 2,
 			}
 
 static func active_layer_names(level_id: StringName) -> PackedStringArray:
 	var profile := profile_for_level_id(level_id)
-	var layers := PackedStringArray(["wind", "birds", "people"])
+	var layers := PackedStringArray(["birds", "people"])
 	if float(profile["water"]) > 0.0:
 		layers.append("water")
 	if float(profile["festival"]) > 0.0:
@@ -126,7 +126,6 @@ static func build_profile_stream(level_id: StringName) -> AudioStreamWAV:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(profile["seed"])
 
-	var wind_state := 0.0
 	var murmur_fast := 0.0
 	var murmur_slow := 0.0
 	var water_fast := 0.0
@@ -135,7 +134,6 @@ static func build_profile_stream(level_id: StringName) -> AudioStreamWAV:
 	var festival_slow := 0.0
 	for frame in frame_count:
 		var t := float(frame) / float(MIX_RATE)
-		wind_state = lerpf(wind_state, rng.randf_range(-1.0, 1.0), 0.012)
 		murmur_fast = lerpf(murmur_fast, rng.randf_range(-1.0, 1.0), 0.055)
 		murmur_slow = lerpf(murmur_slow, murmur_fast, 0.006)
 		water_fast = lerpf(water_fast, rng.randf_range(-1.0, 1.0), 0.12)
@@ -143,13 +141,11 @@ static func build_profile_stream(level_id: StringName) -> AudioStreamWAV:
 		festival_fast = lerpf(festival_fast, rng.randf_range(-1.0, 1.0), 0.08)
 		festival_slow = lerpf(festival_slow, festival_fast, 0.010)
 
-		var wind := wind_state * (0.72 + 0.28 * sin(TAU * t / 4.0))
 		var people := (murmur_fast - murmur_slow) * (0.70 + 0.30 * sin(TAU * t / 3.2))
 		var water := (water_fast - water_slow) * (0.58 + 0.42 * sin(TAU * t / 2.7))
 		var festival := (festival_fast - festival_slow) * (0.78 + 0.22 * sin(TAU * t / 5.0))
 		samples[frame] = (
-			wind * float(profile["wind"])
-			+ people * float(profile["people"])
+			people * float(profile["people"])
 			+ water * float(profile["water"])
 			+ festival * float(profile["festival"])
 		)

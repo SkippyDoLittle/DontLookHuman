@@ -65,7 +65,7 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with s
 
 `SoundManager` retains the semantic gameplay SFX API and owns the separate Music, Ambience, and SFX buses. `AdaptiveMusicDirector` generates four synchronized 24-second stems and crossfades normal, tension, rhythm, and chase layers from existing session state. It replaces the earlier short repeating melody without changing gameplay calls.
 
-Each `BaseLevel` owns a `ParkAmbienceDirector`. Five deterministic profiles combine wind, birds, people, water where appropriate, and Festival crowd texture; ambience continues underneath a muted score because it is routed to its own bus. NPC pecks and steps use bounded concurrency and quiet canonical emitter gains so a large flock cannot overwhelm the mix.
+Each `BaseLevel` owns a `ParkAmbienceDirector`. Five deterministic profiles combine birds, people, water where appropriate, and Festival crowd texture; the former synthetic wind/static layer has been removed. Ambience continues underneath a muted score because it is routed to its own bus, while the adaptive score carries an additional internal output trim so it stays behind gameplay. NPC pecks and steps use bounded concurrency and quiet canonical emitter gains so a large flock cannot overwhelm the mix.
 
 ## Reusable world systems
 

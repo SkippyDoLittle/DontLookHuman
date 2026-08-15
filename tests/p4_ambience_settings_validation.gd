@@ -33,11 +33,11 @@ func _validate_profiles() -> void:
 	var signatures: Dictionary = {}
 	for level_id in LEVEL_IDS:
 		var profile := AMBIENCE_DIRECTOR.profile_for_level_id(level_id)
-		_check(float(profile["wind"]) > 0.0, "%s has wind" % level_id)
+		_check(not profile.has("wind"), "%s has no synthetic wind layer" % level_id)
 		_check(float(profile["birds"]) > 0.0, "%s has birds" % level_id)
 		_check(float(profile["people"]) > 0.0, "%s has distant people" % level_id)
-		var signature := "%s|%s|%s|%s|%s" % [
-			profile["wind"], profile["birds"], profile["people"],
+		var signature := "%s|%s|%s|%s" % [
+			profile["birds"], profile["people"],
 			profile["water"], profile["festival"],
 		]
 		signatures[signature] = true
@@ -73,6 +73,7 @@ func _validate_pcm_budget_and_identity() -> void:
 		_check(stream.data.size() <= 180000, "%s PCM stays below 180 KB" % level_id)
 		_check(stream.get_length() <= 8.01, "%s loop is no longer than eight seconds" % level_id)
 		_check(StringName(stream.get_meta("profile_id")) == level_id, "%s stream keeps its profile identity" % level_id)
+		_check(not (stream.get_meta("layers") as PackedStringArray).has("wind"), "%s metadata excludes wind" % level_id)
 		stream_hashes[hash(stream.data)] = true
 	_check(stream_hashes.size() == LEVEL_IDS.size(), "Each ambience profile renders distinct PCM")
 
@@ -169,6 +170,7 @@ func _validate_source_contracts() -> void:
 	var menu_source := _read_source("res://main_menu.gd")
 	var pause_source := _read_source("res://pause_menu.gd")
 	_check(not ambience_source.contains("cricket"), "Ambience has no loud repetitive cricket layer")
+	_check(not ambience_source.contains("wind_state") and not ambience_source.contains('"wind":'), "Ambience removes synthetic wind entirely")
 	_check(menu_source.contains("config.load(settings_path)"), "Main menu loads before saving existing settings")
 	_check(pause_source.contains("config.load(settings_path)"), "Pause menu loads before saving existing settings")
 	_check(
