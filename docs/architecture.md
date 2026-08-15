@@ -2,7 +2,7 @@
 
 ## Runtime flow
 
-`MainMenu.tscn` is the project entry point. A new campaign loads `Level01_Park.tscn`; returning players continue from their highest unlocked level. Successful sessions follow the `next_level_scene` path in each level's `LevelConfig` until Level 5 ends the campaign. Level Select exposes unlocked maps and their best scores.
+`MainMenu.tscn` is the project entry point. A new campaign loads `Level01_Park.tscn`; returning players continue from their highest unlocked level. Successful sessions follow the `next_level_scene` path in each level's `LevelConfig` until Level 5 ends the campaign. Level Select exposes unlocked maps and their best scores. The menu, pause screen, HUD, and results share one branded low-poly park theme while retaining stable scripted node paths and controller focus order.
 
 All five playable maps inherit `scenes/game/BaseLevel.tscn`. The base scene owns the shared player, HUD, session controller, pause UI, title/countdown UI, transition layer, and controls screen. Individual level scenes supply their environment, ranger instances and tuning, collectibles, exit placement, water zones, NPC populations, and `LevelConfig` resource.
 
@@ -33,7 +33,7 @@ Rangers and pigeons use groups rather than exact numbered node names. This allow
 
 The approved controlled-chaos capture system now runs across the campaign. A full suspicion meter exposes the player, a committed grab can be dodged, and only contact starts the delayed capture tableau. Levels tune wind-up, lunge speed, and recovery independently. Rookie, Steady, Hothead, and Veteran rangers now use distinct miss poses, escalating failure callouts, and teammate responses. The first miss preserves its approved timing; later misses add a capped player-favoring recovery bonus so comedy also prevents frustration.
 
-Rangers track the actual closest distance reached during each lunge. A miss within the configured close-call margin triggers a 0.14-second real-time-safe cinematic beat after recovery has already begun: brief slow motion, feathers, camera/audio feedback, and a dedicated HUD punchline. Comfortable dodges remain ordinary misses. The controller restores the previous global time scale both on its safety timer and if the level exits mid-effect.
+Rangers track the actual closest distance reached during each lunge. A miss within the configured close-call margin triggers a 0.14-second real-time-safe cinematic beat after recovery has already begun: brief slow motion when reduced motion is off, feathers, camera/audio feedback, and a dedicated HUD punchline. Comfortable dodges remain ordinary misses. The controller restores the previous global time scale both on its safety timer and if the level exits mid-effect.
 
 Calm NPC pigeons now answer a nearby player peck with a capped, distance-delayed mimic wave. Each pigeon decides independently whether it is eligible, so ranger proximity, fleeing, and every park reaction retain priority. The park controller only coordinates the six-bird cap, short presentation cooldown, chime, and low-priority HUD acknowledgment; flock sync never changes suspicion, objectives, or capture timing.
 
@@ -41,17 +41,31 @@ An earned lunge dodge can now produce mistaken identity when a calm or wind-up-w
 
 Panicking pigeons use a bounded two-stage path: a 0.72-second outward burst followed by a curved return to a deterministic loose ring near the event, clamped inside their normal roaming area. This prevents the flock from emptying to map boundaries and keeps birds available for later ranger interactions. A narrow 0.72-unit ranger flyby can occur along that path; each bird gets one proximity attempt per panic and each ranger has a 5.5-second presentation cooldown. An accepted flyby adds a personality flinch, short world callout, flutter sound, and small feather burst while deliberately preserving the ranger's movement, state, suspicion, grab phase, and capture timing.
 
-Each campaign map also has one deterministic environmental story: Park feeding frenzy, Playground swing surprise, Lakeside splash alarm, Festival popcorn panic, and the Botanical Gardens sprinkler finale. Separately, the first Chase in each danger cycle scatters the flock, alerts visitors, flashes the HUD, adds a short camera punch, and plays an exposure sting. That feedback rearms only after suspicion falls below 55 and does not alter detection or capture difficulty.
+Each campaign map also has one deterministic environmental story: Park feeding frenzy, Playground swing surprise, Lakeside splash alarm, Festival popcorn panic, and the Botanical Gardens sprinkler finale. Separately, the first Chase in each danger cycle scatters the flock, alerts visitors, flashes the HUD and adds a short camera punch when reduced motion is off, and plays an exposure sting. That feedback rearms only after suspicion falls below 55 and does not alter detection or capture difficulty.
 
 A food theft or dodge near the active escape zone triggers a brief orange near-exit alert with personality-specific caught-near-escape poses. Timed steals during active blend windows or park-wide chaos events add bonus seconds to the session clock.
 
+The Perfect Alibi opportunity layer connects existing systems rather than inventing another suspicion rule. A valid two-or-more-bird flock-sync wave can arm a short candidate only when the player begins at meaningful suspicion. If normal peck-driven decay brings every ranger below the established blend threshold while the player remains with the flock, `GameSession` promotes a short teal theft prompt. The next food-theft attempt consumes the prompt; if the player is still blended, it uses the existing +5-second reward. Overlap with the existing +4-second chaos window remains exactly +9 seconds. It never writes suspicion, movement, ranger state, or capture timing.
+
 Rangers and the player now express state through per-frame procedural body animation: personality-matched wind-up poses, forward body lean on acceleration, turn roll on sharp direction changes, and a sprint strain wobble when stamina runs low. NPC pigeons enter a crouched alert pose during WATCH reactions and apply a velocity-based lean through PANIC turns.
+
+Player and NPC pigeon scenes share authored low-poly eyes, feet, wings, tail, and neck accents. Stable per-instance phases prevent the flock from bobbing in sync. `RangerPresentation` blends rest-relative patrol, investigate, and chase gaits around its existing action-pose lock; visitors use inexpensive limb motion and reaction poses. Presentation code never moves gameplay roots or changes AI velocities.
+
+`CameraFeedbackController` is the single owner of gameplay camera trauma and offsets. Player and transition feedback share it instead of overwriting one another. Reduce Motion & Flashes immediately clears and suppresses camera trauma, makes suspicion and ranger world alerts steady semantic amber/red instead of pulsing, suppresses the danger overlay flash, and skips close-call slow motion. It preserves particles, fades, audio, gameplay animation, cooldowns, counters, and signals.
 
 ## Level configuration and persistence
 
 Each `LevelConfig` contains a stable save key, display text, time limit, next-level path, and Lightning/Great/Nice grade thresholds. Best scores use one `ConfigFile` key per level. Campaign state uses `user://campaign_progress.cfg`; existing per-level records are migrated into equivalent unlock progress. The earlier shared `user://best_score.dat` value remains readable as a Level 1 fallback, avoiding destructive migration. Settings offers a confirmed reset that clears campaign, current records, and the legacy fallback together.
 
-Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with audio and display preferences. Player instances load those camera values during `_ready()`.
+Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with separate Music, Ambience, and SFX levels, fullscreen state, graphics quality, and the Reduce Motion & Flashes preference. Player instances load the camera values during `_ready()`. `AccessibilitySettings` is a lazy static helper rather than an autoload, so direct scene boots and legacy compatibility tests still obtain the same persistent value.
+
+`QualitySettings` is the only presentation-settings autoload. Low, Medium, and High presets adjust viewport scaling/antialiasing, SSAO, and directional shadows while leaving authored level palettes intact. Every `WorldEnvironment` owns an instance-local environment resource, preventing a preset applied in one level from leaking into another.
+
+## Audio direction
+
+`SoundManager` retains the semantic gameplay SFX API and owns the separate Music, Ambience, and SFX buses. `AdaptiveMusicDirector` generates four synchronized 24-second stems and crossfades normal, tension, rhythm, and chase layers from existing session state. It replaces the earlier short repeating melody without changing gameplay calls.
+
+Each `BaseLevel` owns a `ParkAmbienceDirector`. Five deterministic profiles combine wind, birds, people, water where appropriate, and Festival crowd texture; ambience continues underneath a muted score because it is routed to its own bus. NPC pecks and steps use bounded concurrency and quiet canonical emitter gains so a large flock cannot overwhelm the mix.
 
 ## Reusable world systems
 
@@ -60,6 +74,8 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 - Actor, gameplay, and prop scenes live under `scenes/actors`, `scenes/gameplay`, and `scenes/props`.
 - Scatter scripts duplicate reusable templates with deterministic seeds.
 - Large visual-only scenery populations use MultiMesh rendering.
+- `WorldDetailScatter` adds two or three deterministic, collision-free MultiMesh layers per level: grass/leaves, pebbles/chalk, reeds/stones, confetti/paper, or foliage/flowers. A single bounded GPU sway shader is used only where motion helps.
+- Each level keeps its own authored sky, ambient light, fog, sun, and color identity. Shared opaque `StandardMaterial3D` resources are assigned only to intended pigeon and park-prop surfaces; no runtime material-tree replacement is permitted.
 
 ## Verification
 
@@ -81,6 +97,8 @@ Camera sensitivity and inverted-Y preferences share `user://settings.cfg` with a
 
 `tools/phase25_anim_monitor.gd` logs body lean, turn roll, sprint strain, and personality windup events during live playtesting sessions.
 
-Permanent headless validation covers base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, per-level save isolation, campaign unlocks and reset, dynamic collectibles, camera preferences, controller mappings, menu focus, result actions, modal pause behavior, obstacle recovery, progression paths, branding metadata, release/debug diagnostics behavior, trailer structure, and packaging contracts.
+`tools/run_validations.ps1` discovers every permanent validation script, runs it in a fresh headless Godot process, and treats nonzero exits plus runtime `ERROR`, `SCRIPT ERROR`, and parse-error output as failures. Coverage includes base-level contracts, timer and score flow, ranger behavior, physical grab fairness and reaction propagation, route balance, safe spawns, grade boundaries, persistence, input and focus, accessibility, audio, visuals, media determinism, performance/report schemas, and packaging contracts.
 
-`tools/capture_portfolio_screenshots.gd` reproduces the five portfolio screenshots from the actual scenes. `tools/capture_gameplay_video.gd` directs a repeatable 33-second, four-sequence trailer in Godot Movie Maker mode: a Festival food theft beside an alert ranger, a Lakeside flock blend gag, a Playground ranger collision, and a Botanical Gardens gauntlet escape. It owns the cinematic camera, deterministic gameplay staging, animated text and logo beats, trailer-only portal presentation, and audio mix. `tools/trailer_soundtrack.gd` generates the original synchronized score. `tools/finalize_trailer.ps1` normalizes Godot's RIFF length field and verifies all 990 (or a custom -FrameCount) video and audio chunks plus the AVI index without replacing any animated frame. `tools/package_windows_release.ps1` exports the Windows build into a versioned folder, adds player instructions, creates a ZIP, and writes its SHA-256 checksum.
+`tools/capture_portfolio_screenshots.gd` reproduces the five portfolio screenshots from the actual scenes using a fixed seed, explicit capture preset, fixed resolution, silent audio directors, and frozen staged actors. `tools/capture_gameplay_video.gd` directs a repeatable 33-second, four-sequence trailer in Godot Movie Maker mode: a Festival food theft beside an alert ranger, a Lakeside flock blend gag, a Playground ranger collision, and a Botanical Gardens gauntlet escape. It owns the cinematic camera, deterministic gameplay staging, animated text and logo beats, trailer-only portal presentation, and audio mix. `tools/trailer_soundtrack.gd` generates the original synchronized score. `tools/finalize_trailer.ps1` normalizes Godot's RIFF length field and verifies all 990 (or a custom `-FrameCount`) video and audio chunks plus the AVI index without replacing any animated frame.
+
+`tools/performance_benchmark.gd` collects a visible-renderer, machine-specific baseline for every level and writes both JSON and Markdown reports. Frame-rate targets are advisory, while runtime errors and deliberately generous runaway-scene budgets are blocking. `tools/package_windows_release.ps1` exports the embedded-PCK Windows build into a versioned folder, verifies the executable header and exact ZIP contents, performs a bounded boot smoke test, and writes and rechecks its SHA-256 checksum.

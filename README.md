@@ -34,8 +34,12 @@ Steal every food item, manage ranger suspicion by blending into the flock, and r
 ## Highlights
 
 - Suspicion reacts to player-like behavior rather than a simple visibility meter.
-- Rangers use patrol, investigate, and chase states with level-specific tuning.
-- NPC pigeons provide blending cover and react to the closest ranger.
+- Rangers use patrol, investigate, and chase states with distinct personalities, readable movement, recoverable misses, and occasional wrong-pigeon grabs.
+- NPC pigeons provide blending cover, mimic the player, panic and regroup, and react to nearby rangers and park events.
+- Perfect Alibi links an ordinary-looking flock peck to a short, readable theft opportunity without changing the underlying suspicion rules.
+- Five authored lighting palettes and themed MultiMesh details give every park its own identity while keeping dense scenes inexpensive.
+- Procedural character motion, capture staging, camera feedback, particles, and crowd reactions make success, danger, and failure readable in play and on video.
+- A 16-bar adaptive score and five park ambience profiles respond to tension while keeping Music, Ambience, and SFX independently adjustable.
 - Five levels share reusable player, HUD, session, ranger, prop, food, water, and escape components.
 - Persistent campaign unlocks and per-level best-score presentation.
 - Confirmed campaign-and-record reset plus persistent camera sensitivity and inverted-Y settings.
@@ -43,13 +47,13 @@ Steal every food item, manage ranger suspicion by blending into the flock, and r
 - Full keyboard/mouse and controller gameplay plus menu navigation.
 - Frozen result screens with focused next-level, replay, campaign replay, and main-menu actions.
 - Dynamic minimap support for arbitrary ranger and collectible counts.
-- Procedural ambient audio and sound effects.
+- Low, Medium, and High graphics presets plus persistent camera, fullscreen, volume, and reduced-motion settings.
 - MultiMesh scenery for large prop populations.
-- Automated architecture, session, ranger, balance, and reliability validation.
+- Automated architecture, gameplay, accessibility, media, performance, packaging, and runtime-error validation.
 
 ## Running the project
 
-Requirements: Godot 4.7 or a compatible Godot 4 release.
+Requirements: Godot 4.7, or a newer Godot version that you have verified as compatible.
 
 1. Open `project.godot` in Godot.
 2. Run the project with the editor's Play button.
@@ -63,27 +67,11 @@ Godot_v4.7-stable_win64_console.exe --path .
 
 ## Validation
 
-Run the permanent validation suite from the project root:
+Run every permanent validation script with strict runtime-error checking from the project root:
 
 ```powershell
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase3_level_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase4_session_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase4_ranger_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase5_balance_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase6_reliability_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase7_release_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase8_ux_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase9_publishing_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase10_release_media_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase11_controlled_chaos_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase12_signature_chaos_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase13_suspicion_escalation_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase14_food_snatch_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase15_ranger_personality_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase16_close_call_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase17_flock_sync_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase18_mistaken_identity_validation.gd
-Godot_v4.7-stable_win64_console.exe --headless --path . --script res://tests/phase19_panic_flyby_validation.gd
+.\tools\run_validations.ps1 `
+  -GodotPath "C:\path\to\Godot_v4.7-stable_win64_console.exe"
 ```
 
 In debug builds, the `F3` overlay shows the current level ID, session state, remaining collectibles, player water state, FPS, and every ranger's state and suspicion. Release exports disable the overlay.
@@ -102,7 +90,7 @@ In debug builds, the `F3` overlay shows the current level ID, session state, rem
 
 ## Release trailer
 
-[Watch or download the 33-second release trailer](docs/gameplay_preview.avi). The hook-first 1280×720 cut opens directly on a theft beside a ranger, escalates through flock blending and a three-pickup montage, then ends with a four-ranger escape, the "JUST A PIGEON." hook, and an animated wishlist reveal. Gameplay sound is mixed with an original generated trailer score.
+[Watch or download the 33-second release trailer](docs/gameplay_preview.avi). The hook-first 1280×720 cut opens directly on a theft beside a ranger, escalates through flock blending and a ranger-collision gag, then ends with a four-ranger escape, the "JUST A PIGEON." hook, and an animated wishlist reveal. Gameplay sound is mixed with an original generated trailer score.
 
 ## Windows release package
 
@@ -111,10 +99,22 @@ Create a versioned Windows ZIP and SHA-256 checksum from PowerShell:
 ```powershell
 .\tools\package_windows_release.ps1 `
   -GodotPath "C:\path\to\Godot_v4.7-stable_win64_console.exe" `
-  -Version "0.9.0"
+  -Version "0.9.0" `
+  -OutputRoot "export\release-candidate-p6"
 ```
 
-The generated package remains under the ignored `export/release/` directory.
+The script exports the embedded-PCK executable, performs a bounded headless boot smoke test, verifies the ZIP contents, and writes a SHA-256 checksum. It refuses to overwrite an existing target unless an intentional same-version rebuild passes `-Force`; choosing a new `-OutputRoot` is safer. Generated packages remain under the ignored `export/` directory.
+
+## Performance benchmark
+
+Capture a machine-specific, visible-renderer baseline at 1280×720 Medium:
+
+```powershell
+.\tools\run_performance_benchmark.ps1 `
+  -GodotPath "C:\path\to\Godot_v4.7-stable_win64_console.exe"
+```
+
+The committed [baseline](docs/performance/performance_baseline.md) is advisory hardware evidence; runtime errors and deliberately generous structural budgets remain release-blocking.
 
 ## Project documentation
 

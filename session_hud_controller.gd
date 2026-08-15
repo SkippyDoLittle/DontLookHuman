@@ -18,6 +18,7 @@ var _suspicion_bar: ProgressBar
 var _stamina_bar: ProgressBar
 var _countdown_label: Label
 var _help_hint: Label
+var _minimap: Control
 var _chaos_window_callout: PanelContainer
 var _chaos_window_label: Label
 var _opportunity_background: StyleBoxFlat
@@ -37,6 +38,7 @@ func configure(level_root: Node) -> void:
 	_suspicion_bar = _hud.get_node("SuspicionBar") as ProgressBar
 	_stamina_bar = _hud.get_node("StaminaBar") as ProgressBar
 	_countdown_label = _hud.get_node("CountdownLabel") as Label
+	_minimap = _hud.get_node_or_null("Minimap") as Control
 	_chaos_window_callout = _hud.get_node_or_null("ChaosWindowCallout") as PanelContainer
 	if _chaos_window_callout == null:
 		_chaos_window_callout = _create_chaos_window_callout()
@@ -117,6 +119,7 @@ func _create_result_actions() -> HBoxContainer:
 
 func add_controls_hint() -> Label:
 	_help_hint = Label.new()
+	_help_hint.name = "HelpHint"
 	_help_hint.text = "H / Pause menu - controls"
 	_help_hint.add_theme_font_size_override("font_size", 13)
 	_help_hint.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85, 0.60))
@@ -265,6 +268,9 @@ func show_result(
 	_objective_label.visible = false
 	_suspicion_bar.visible = false
 	_stamina_bar.visible = false
+	if is_instance_valid(_minimap):
+		_minimap.visible = false
+	hide_controls_hint()
 	hide_chaos_window()
 
 	_primary_button.visible = success

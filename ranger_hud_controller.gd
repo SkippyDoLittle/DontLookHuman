@@ -22,6 +22,7 @@ var close_call_feedback_count: int = 0
 var _close_call_feedback_cooldown: float = 0.0
 var flock_sync_feedback_count: int = 0
 var wrong_pigeon_feedback_count: int = 0
+var settings_path: String = AccessibilitySettings.DEFAULT_SETTINGS_PATH
 
 func _ready() -> void:
 	_ensure_danger_flash()
@@ -40,6 +41,8 @@ func _ensure_danger_flash() -> void:
 
 func _process(delta: float) -> void:
 	_close_call_feedback_cooldown = maxf(_close_call_feedback_cooldown - delta, 0.0)
+	if AccessibilitySettings.is_reduced_motion_enabled(settings_path):
+		_suppress_danger_flash()
 	_update_bar_pulse(delta)
 	_update_warning(delta)
 
@@ -125,6 +128,9 @@ func trigger_exposure_feedback() -> void:
 	exposure_feedback_count += 1
 	_status_label.text = "Rangers: Alert!"
 	_show_warning("SPOTTED!", Color(1.0, 0.84, 0.12, 1.0), 1.35)
+	if AccessibilitySettings.is_reduced_motion_enabled(settings_path):
+		_suppress_danger_flash()
+		return
 	if _danger_flash_tween and _danger_flash_tween.is_valid():
 		_danger_flash_tween.kill()
 	_danger_flash.color = Color(0.82, 0.025, 0.01, 0.0)
@@ -179,6 +185,16 @@ func _update_highest_state() -> void:
 		_highest_state = maxi(_highest_state, int(ranger_state))
 
 func _update_bar_pulse(delta: float) -> void:
+	if AccessibilitySettings.is_reduced_motion_enabled(settings_path):
+		_pulse_time = 0.0
+		match _highest_state:
+			RangerStateMachine.State.PATROL:
+				_suspicion_bar.modulate = Color.WHITE
+			RangerStateMachine.State.INVESTIGATE:
+				_suspicion_bar.modulate = Color(1.0, 0.62, 0.08, 1.0)
+			RangerStateMachine.State.CHASE:
+				_suspicion_bar.modulate = Color(1.0, 0.12, 0.04, 1.0)
+		return
 	match _highest_state:
 		RangerStateMachine.State.PATROL:
 			_pulse_time = 0.0
@@ -191,6 +207,13 @@ func _update_bar_pulse(delta: float) -> void:
 			_pulse_time += delta
 			var pulse := sin(_pulse_time * TAU * 6.0) * 0.5 + 0.5
 			_suspicion_bar.modulate = Color(1.0, lerp(0.0, 0.3, pulse), 0.0)
+
+func _suppress_danger_flash() -> void:
+	if _danger_flash_tween and _danger_flash_tween.is_valid():
+		_danger_flash_tween.kill()
+	_danger_flash_tween = null
+	if is_instance_valid(_danger_flash):
+		_danger_flash.color = Color(0.82, 0.025, 0.01, 0.0)
 
 func _show_warning(text: String, color: Color, duration: float) -> void:
 	_warning_label.text = text

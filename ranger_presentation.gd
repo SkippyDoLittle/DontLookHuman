@@ -14,6 +14,7 @@ var _locomotion_time: float = 0.0
 var _locomotion_blend: float = 0.0
 var _personality: String = "Steady"
 var _action_pose_active: bool = false
+var settings_path: String = AccessibilitySettings.DEFAULT_SETTINGS_PATH
 
 func configure(host: Node, alert_label: Label3D, sound_manager: Node) -> void:
 	_host = host
@@ -63,14 +64,21 @@ func state_changed(new_state: int) -> void:
 
 func update(delta: float, state: int) -> void:
 	_update_locomotion(delta, state)
+	var reduced_motion := AccessibilitySettings.is_reduced_motion_enabled(settings_path)
 	match state:
 		RangerStateMachine.State.PATROL:
 			_pulse_time = 0.0
 		RangerStateMachine.State.INVESTIGATE:
+			if reduced_motion:
+				_alert_label.modulate = Color(1.0, 0.85, 0.1, 1.0)
+				return
 			_pulse_time += delta
 			var pulse := sin(_pulse_time * TAU * 2.5) * 0.5 + 0.5
 			_alert_label.modulate = Color(1.0, 0.85, 0.1, lerp(0.6, 1.0, pulse))
 		RangerStateMachine.State.CHASE:
+			if reduced_motion:
+				_alert_label.modulate = Color(1.0, 0.2, 0.2, 1.0)
+				return
 			_pulse_time += delta
 			var pulse := sin(_pulse_time * TAU * 6.0) * 0.5 + 0.5
 			_alert_label.modulate = Color(1.0, 0.2, 0.2, lerp(0.5, 1.0, pulse))

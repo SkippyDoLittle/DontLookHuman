@@ -40,6 +40,9 @@ const LEVEL_NAMES: Array[String] = [
 @onready var _quality_option:   OptionButton  = $CanvasLayer/SettingsPanel/VBoxContainer/QualityPresetOption
 @onready var _invert_y_check:   CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/InvertYCheck
 @onready var _fullscreen_check: CheckButton   = $CanvasLayer/SettingsPanel/VBoxContainer/FullscreenCheck
+@onready var _reduced_motion_check: CheckButton = get_node_or_null(
+	"CanvasLayer/SettingsPanel/VBoxContainer/ReducedMotionCheck"
+) as CheckButton
 @onready var _reset_dialog: ConfirmationDialog = $CanvasLayer/ResetCampaignDialog
 @onready var _play_button:      Button        = $CanvasLayer/MainPanel/PlayButton
 @onready var _level_buttons: Array[Button] = [
@@ -61,6 +64,7 @@ func _ready() -> void:
 	_refresh_campaign_ui()
 	_show_panel(_main_panel)
 	_configure_quality_options()
+	_configure_accessibility_control()
 	_load_settings_into_ui()
 
 func _show_panel(panel: Node) -> void:
@@ -179,11 +183,15 @@ func _on_quality_preset_selected(index: int) -> void:
 func _on_fullscreen_toggled(pressed: bool) -> void:
 	if _loading_settings:
 		return
-	if pressed:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	_apply_fullscreen_mode(pressed)
 	_save_settings()
+
+func _on_reduced_motion_toggled(pressed: bool) -> void:
+	if _loading_settings:
+		return
+	var save_error := AccessibilitySettings.set_reduced_motion(pressed, settings_path)
+	if save_error != OK:
+		push_warning("Could not save reduced-motion preference (error %d)." % save_error)
 
 func _on_reset_campaign_pressed() -> void:
 	_reset_dialog.popup_centered(Vector2i(480, 220))
@@ -218,9 +226,22 @@ func _configure_quality_options() -> void:
 		_quality_option.add_item(preset_name)
 	_quality_option.select(_quality_settings.current_preset_index())
 
+func _configure_accessibility_control() -> void:
+	if not is_instance_valid(_reduced_motion_check):
+		return
+	var callback := Callable(self, "_on_reduced_motion_toggled")
+	if not _reduced_motion_check.toggled.is_connected(callback):
+		_reduced_motion_check.toggled.connect(callback)
+
 func _load_settings_into_ui() -> void:
 	# SoundManager already applied the saved volumes on startup.
 	# This only updates the slider positions to match what was loaded.
+	if is_instance_valid(_reduced_motion_check):
+		_loading_settings = true
+		_reduced_motion_check.button_pressed = (
+			AccessibilitySettings.is_reduced_motion_enabled(settings_path)
+		)
+		_loading_settings = false
 	var config := ConfigFile.new()
 	if config.load(settings_path) != OK:
 		return   # first run — UI defaults are fine
@@ -237,6 +258,14 @@ func _load_settings_into_ui() -> void:
 	_loading_settings = false
 	_apply_ambient_volume(_ambient_slider.value)
 	_quality_settings.apply_preset_index(_quality_option.selected, false)
+	_apply_fullscreen_mode(_fullscreen_check.button_pressed)
+
+func _apply_fullscreen_mode(enabled: bool) -> void:
+	DisplayServer.window_set_mode(
+		DisplayServer.WINDOW_MODE_FULLSCREEN
+		if enabled
+		else DisplayServer.WINDOW_MODE_WINDOWED
+	)
 
 func _apply_ambient_volume(value: float) -> void:
 	# SoundManager owns this API once its audio pass is integrated.  The helper

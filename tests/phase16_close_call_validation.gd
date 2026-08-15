@@ -15,6 +15,9 @@ func _validate() -> void:
 	await process_frame
 	paused = false
 	var controller := level.get_node("ParkChaosController") as ParkChaosController
+	var accessibility_path := "user://phase16_accessibility_%s.cfg" % Time.get_ticks_usec()
+	controller.settings_path = accessibility_path
+	AccessibilitySettings.invalidate_cache(accessibility_path)
 	var hud := level.get_node("HUD") as RangerHUDController
 	var ranger := level.get_node("Ranger")
 	var player := level.get_node("Player") as CharacterBody3D
@@ -57,6 +60,9 @@ func _validate() -> void:
 	paused = false
 	level.queue_free()
 	await process_frame
+	AccessibilitySettings.invalidate_cache(accessibility_path)
+	if FileAccess.file_exists(accessibility_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(accessibility_path))
 	_check(is_equal_approx(Engine.time_scale, 1.0), "Leaving the level mid-effect always restores normal speed")
 
 	if _failures == 0:

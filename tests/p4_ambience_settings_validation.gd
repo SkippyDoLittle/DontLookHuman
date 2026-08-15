@@ -10,6 +10,7 @@ const LEVEL_IDS: Array[StringName] = [
 
 var _failures: int = 0
 var _settings_path := "user://p4_ambience_settings_validation_%d.cfg" % Time.get_ticks_usec()
+var _temporary_paths: Array[String] = []
 
 func _initialize() -> void:
 	call_deferred("_validate")
@@ -128,6 +129,8 @@ func _validate_menu_settings_persistence() -> void:
 
 	var menu := (load("res://MainMenu.tscn") as PackedScene).instantiate()
 	menu.set("settings_path", _settings_path)
+	menu.set("_score_store", BestScoreStore.new(_temporary_path("menu_scores"), _temporary_path("menu_legacy")))
+	menu.set("_progress_store", CampaignProgressStore.new(_temporary_path("menu_progress")))
 	root.add_child(menu)
 	await process_frame
 	var ambient_slider := menu.get_node("CanvasLayer/SettingsPanel/VBoxContainer/AmbientSlider") as HSlider
@@ -184,6 +187,14 @@ func _read_source(path: String) -> String:
 func _cleanup_settings() -> void:
 	if FileAccess.file_exists(_settings_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(_settings_path))
+	for path in _temporary_paths:
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+func _temporary_path(label: String) -> String:
+	var path := "user://p4_%s_%s.cfg" % [label, Time.get_ticks_usec()]
+	_temporary_paths.append(path)
+	return path
 
 func _check(condition: bool, message: String) -> void:
 	if condition:

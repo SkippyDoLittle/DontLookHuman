@@ -45,12 +45,16 @@ func _validate_result_flow(level_path: String, expected_primary_text: String) ->
 	var primary := actions.get_node("PrimaryButton") as Button
 	var retry := actions.get_node("RetryButton") as Button
 	var menu := actions.get_node("MenuButton") as Button
+	var minimap := level.get_node("HUD/Minimap") as Control
+	var help_hint := level.get_node("HUD/HelpHint") as Label
 	_check(paused, "%s freezes the scene tree on results" % level_path)
 	_check(not player.can_process(), "%s stops player simulation behind results" % level_path)
 	_check(actions.visible and actions.can_process(), "%s keeps result controls interactive while paused" % level_path)
 	_check(primary.text == expected_primary_text, "%s presents the correct primary campaign action" % level_path)
 	_check(retry.text == "REPLAY LEVEL", "%s offers a level replay" % level_path)
 	_check(menu.visible, "%s offers a main-menu action" % level_path)
+	_check(not minimap.visible, "%s hides the gameplay minimap on results" % level_path)
+	_check(not help_hint.visible, "%s hides the inactive controls hint on results" % level_path)
 	_check(primary.has_focus(), "%s focuses its primary result action" % level_path)
 
 	paused = false

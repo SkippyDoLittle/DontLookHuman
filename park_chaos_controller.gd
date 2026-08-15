@@ -36,6 +36,7 @@ var _close_call_cooldown: float = 0.0
 var _close_call_active: bool = false
 var _previous_time_scale: float = 1.0
 var _flock_sync_cooldown: float = 0.0
+var settings_path: String = AccessibilitySettings.DEFAULT_SETTINGS_PATH
 
 func _ready() -> void:
 	add_to_group("chaos_controllers")
@@ -85,6 +86,8 @@ func _process(delta: float) -> void:
 	_exposure_cooldown = maxf(_exposure_cooldown - delta, 0.0)
 	_close_call_cooldown = maxf(_close_call_cooldown - delta, 0.0)
 	_flock_sync_cooldown = maxf(_flock_sync_cooldown - delta, 0.0)
+	if _close_call_active and AccessibilitySettings.is_reduced_motion_enabled(settings_path):
+		_end_close_call_slowmo()
 	if _sprinkler_lifetime <= 0.0 or not is_instance_valid(_sprinkler_rig):
 		return
 	_sprinkler_lifetime = maxf(_sprinkler_lifetime - delta, 0.0)
@@ -189,9 +192,11 @@ func _on_ranger_close_call(distance: float, _ranger: Node) -> void:
 	if player == null:
 		return
 	_close_call_cooldown = 2.8
-	_close_call_active = true
-	_previous_time_scale = Engine.time_scale
-	Engine.time_scale = minf(_previous_time_scale, 0.38)
+	var reduced_motion := AccessibilitySettings.is_reduced_motion_enabled(settings_path)
+	if not reduced_motion:
+		_close_call_active = true
+		_previous_time_scale = Engine.time_scale
+		Engine.time_scale = minf(_previous_time_scale, 0.38)
 	close_call_event_count += 1
 	var origin := player.global_position
 	_play_sound("play_close_call")
@@ -199,9 +204,10 @@ func _on_ranger_close_call(distance: float, _ranger: Node) -> void:
 		player.call("add_camera_trauma", 0.11, 0.28)
 	_spawn_close_call_feathers(origin + Vector3.UP * 0.12)
 	close_call_cinematic_started.emit(distance, origin)
-	get_tree().create_timer(0.14, true, false, true).timeout.connect(
-		_end_close_call_slowmo
-	)
+	if not reduced_motion:
+		get_tree().create_timer(0.14, true, false, true).timeout.connect(
+			_end_close_call_slowmo
+		)
 
 func _end_close_call_slowmo() -> void:
 	if not _close_call_active:

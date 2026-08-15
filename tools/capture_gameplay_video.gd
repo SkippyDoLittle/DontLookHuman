@@ -2,6 +2,7 @@ extends SceneTree
 
 const FPS: int = 30
 const TRAILER_SECONDS: float = 33.0
+const CAPTURE_SIZE: Vector2i = Vector2i(1280, 720)
 const BRAND_IMAGE: String = "res://assets/branding/store_capsule.png"
 const CARD_SCENE: PackedScene = preload("res://tools/trailer_card.tscn")
 const SOUNDTRACK_SCRIPT: Script = preload("res://tools/trailer_soundtrack.gd")
@@ -21,21 +22,25 @@ const SHOT_SPECS: Array[Dictionary] = [
 		"path": "res://scenes/levels/Level04_Festival.tscn",
 		"kind": &"hook",
 		"duration": 5.0,
+		"seed": 40401,
 	},
 	{
 		"path": "res://scenes/levels/Level03_Lakeside.tscn",
 		"kind": &"blend",
 		"duration": 5.0,
+		"seed": 30302,
 	},
 	{
 		"path": "res://scenes/levels/Level02_Playground.tscn",
 		"kind": &"collision",
 		"duration": 5.0,
+		"seed": 20203,
 	},
 	{
 		"path": "res://scenes/levels/Level05_BotanicalGardens.tscn",
 		"kind": &"gauntlet",
 		"duration": 14.0,
+		"seed": 50504,
 	},
 ]
 
@@ -46,23 +51,28 @@ var _overlay_layer: CanvasLayer = null
 var _cut_rect: ColorRect = null
 var _punch_label: Label = null
 var _music_player: AudioStreamPlayer = null
+var _capture_frame_index: int = 0
+var _active_shot_seed: int = 0
 
 func _initialize() -> void:
 	call_deferred("_record_trailer")
 
 func _record_trailer() -> void:
-	DisplayServer.window_set_size(Vector2i(1280, 720))
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	DisplayServer.window_set_size(CAPTURE_SIZE)
+	_force_capture_quality()
+	_force_capture_accessibility()
 	_cleanup_temporary_saves()
 	_install_overlay()
 	_prepare_audio()
 
-	var level := _load_level(String(SHOT_SPECS[0].path))
+	var level := _load_level(SHOT_SPECS[0])
 	await _capture_hook(level, float(SHOT_SPECS[0].duration))
-	level = _load_level(String(SHOT_SPECS[1].path))
+	level = _load_level(SHOT_SPECS[1])
 	await _capture_blend(level, float(SHOT_SPECS[1].duration))
-	level = _load_level(String(SHOT_SPECS[2].path))
+	level = _load_level(SHOT_SPECS[2])
 	await _capture_collision_comedy(level, float(SHOT_SPECS[2].duration))
-	level = _load_level(String(SHOT_SPECS[3].path))
+	level = _load_level(SHOT_SPECS[3])
 	await _capture_gauntlet(level, float(SHOT_SPECS[3].duration))
 	await _show_final_hook(0.8)
 	await _show_logo_reveal(3.2)
@@ -80,11 +90,17 @@ func _record_trailer() -> void:
 		)
 	quit(_failures)
 
-func _load_level(path: String) -> Node:
+func _load_level(spec: Dictionary) -> Node:
 	_release_actions()
 	paused = false
 	if is_instance_valid(_active_level):
 		_active_level.free()
+	_active_shot_seed = int(spec.seed)
+	_capture_frame_index = 0
+	seed(_active_shot_seed)
+	_force_capture_quality()
+	_force_capture_accessibility()
+	var path := String(spec.path)
 
 	var packed := load(path) as PackedScene
 	if packed == null:
@@ -93,6 +109,8 @@ func _load_level(path: String) -> Node:
 
 	_active_level = packed.instantiate()
 	root.add_child(_active_level)
+	_force_capture_quality()
+	_stop_shipping_audio()
 	for overlay_name in ["TitleScreen", "TransitionLayer", "PauseMenu", "HowToPlayScreen"]:
 		var overlay := _active_level.get_node_or_null(overlay_name)
 		if overlay != null:
@@ -140,6 +158,7 @@ func _capture_hook(level: Node, duration: float) -> void:
 
 	var total_frames := ceili(duration * FPS)
 	for frame in total_frames:
+		_capture_frame_index = frame
 		var elapsed := float(frame) / float(FPS)
 		_reset_frame_overlay()
 		var actions: Array[StringName] = []
@@ -224,6 +243,7 @@ func _capture_blend(level: Node, duration: float) -> void:
 	var staged_pickup := false
 	var total_frames := ceili(duration * FPS)
 	for frame in total_frames:
+		_capture_frame_index = frame
 		var elapsed := float(frame) / float(FPS)
 		_reset_frame_overlay()
 		_show_punch("ACT NATURAL.", elapsed, 0.0, 0.92)
@@ -319,6 +339,7 @@ func _capture_collision_comedy(level: Node, duration: float) -> void:
 
 	var total_frames := ceili(duration * FPS)
 	for frame in total_frames:
+		_capture_frame_index = frame
 		var elapsed := float(frame) / float(FPS)
 		_reset_frame_overlay()
 
@@ -430,6 +451,7 @@ func _capture_gauntlet(level: Node, duration: float) -> void:
 	var escape_sound_played := false
 	var total_frames := ceili(duration * FPS)
 	for frame in total_frames:
+		_capture_frame_index = frame
 		var elapsed := float(frame) / float(FPS)
 		_reset_frame_overlay()
 		_show_punch("TOO LATE.", elapsed, 0.0, 0.78)
@@ -621,9 +643,7 @@ func _show_logo_reveal(duration: float) -> void:
 		await process_frame
 
 func _prepare_audio() -> void:
-	var sound_manager := root.get_node_or_null("SoundManager")
-	if sound_manager != null:
-		sound_manager.call("stop_ambient")
+	_stop_shipping_audio()
 	var music_bus := AudioServer.get_bus_index("Music")
 	var sfx_bus := AudioServer.get_bus_index("SFX")
 	if music_bus >= 0:
@@ -718,11 +738,14 @@ func _apply_white_impact(frame: int, impact_frame: int, radius: int) -> void:
 func _set_camera(position: Vector3, target: Vector3, fov: float, shake: float = 0.0) -> void:
 	if not is_instance_valid(_camera):
 		return
-	var ticks := float(Time.get_ticks_msec()) * 0.001
+	var deterministic_phase := (
+		float(_capture_frame_index) / float(FPS)
+		+ float(_active_shot_seed % 997) * 0.001
+	)
 	var shake_offset := Vector3(
-		sin(ticks * 61.0) * shake,
-		cos(ticks * 73.0) * shake * 0.55,
-		sin(ticks * 47.0) * shake * 0.35
+		sin(deterministic_phase * 61.0) * shake,
+		cos(deterministic_phase * 73.0) * shake * 0.55,
+		sin(deterministic_phase * 47.0) * shake * 0.35
 	)
 	_camera.global_position = position + shake_offset
 	_camera.fov = fov
@@ -772,12 +795,9 @@ func _arrange_pigeons(level: Node, origin: Vector3, offsets: Array[Vector3]) -> 
 func _force_collect(food: Node3D) -> void:
 	if not is_instance_valid(food) or food.is_queued_for_deletion():
 		return
-	food.set("collected", true)
-	food.call("_spawn_burst")
-	var sound_manager := root.get_node_or_null("SoundManager")
-	if sound_manager != null:
-		sound_manager.call("play_collect")
-	food.free()
+	# Use the shipping collection path so signals, objective state, sound, particles,
+	# and the beak-flight animation remain honest and cannot drift from gameplay.
+	food.call("_begin_collection")
 
 func _script_ranger(ranger: CharacterBody3D, alert_text: String) -> void:
 	ranger.process_mode = Node.PROCESS_MODE_DISABLED
@@ -861,6 +881,8 @@ func _configure_hud(level: Node) -> void:
 		"HUD/ResultLabel",
 		"HUD/ResultActions",
 		"HUD/DebugOverlay",
+		"HUD/ChaosWindowCallout",
+		"HUD/HelpHint",
 	]:
 		var control := level.get_node_or_null(node_path) as CanvasItem
 		if control != null:
@@ -885,6 +907,37 @@ func _cleanup_temporary_saves() -> void:
 	for path in [TEMP_SCORE_PATH, TEMP_LEGACY_SCORE_PATH, TEMP_PROGRESS_PATH]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+func _force_capture_quality() -> void:
+	var quality_settings := root.get_node_or_null("QualitySettings")
+	if quality_settings != null and quality_settings.has_method("apply_preset"):
+		quality_settings.call("apply_preset", "High", false)
+
+func _force_capture_accessibility() -> void:
+	# Capture is a separate process. Override the lazy cache only; never write the
+	# player's user://settings.cfg or change their persisted reduced-motion choice.
+	AccessibilitySettings._reduced_motion_cache[
+		AccessibilitySettings.DEFAULT_SETTINGS_PATH
+	] = false
+
+func _stop_shipping_audio() -> void:
+	var sound_manager := root.get_node_or_null("SoundManager")
+	if sound_manager == null:
+		return
+	sound_manager.call("stop_music")
+	sound_manager.call("stop_ambient")
+	# stop_music intentionally fades during gameplay. Capture needs zero adaptive
+	# bleed on the very first frame, so stop only its known layer players now. The
+	# separately-owned TrailerSoundtrack player remains untouched and audible.
+	if sound_manager.has_method("adaptive_music_director"):
+		var music_director: Node = sound_manager.call("adaptive_music_director") as Node
+		if is_instance_valid(music_director):
+			var layer_names: Array[StringName] = music_director.call("layer_names")
+			for layer_name in layer_names:
+				var layer_player := music_director.call("layer_player", layer_name) as AudioStreamPlayer
+				if is_instance_valid(layer_player):
+					layer_player.stop()
+					layer_player.volume_db = -80.0
 
 func _fail(message: String) -> void:
 	_failures += 1

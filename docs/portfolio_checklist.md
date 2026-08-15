@@ -7,7 +7,7 @@
 - [x] Architecture summary
 - [x] Known-issues list
 - [x] Five reproducible 1280×720 level screenshots
-- [x] Reproducible 10-second gameplay preview showing suspicion and a food pickup
+- [x] Reproducible 10-second gameplay preview showing suspicion and a food pickup (historical; superseded by the 33-second trailer)
 - [x] Per-level save records and fair level-specific grade thresholds
 - [x] Automated score, grade, timer, collectible, progression, save, and debug-overlay validation
 - [x] Toggleable `F3` development overlay
@@ -58,6 +58,20 @@
 - [x] Rebuilt release trailer tool to showcase Phases 21–25 moments: Festival hook, Lakeside blend gag, Playground ranger collision comedy, Botanical Gardens gauntlet escape
 - [x] Updated architecture documentation to reflect Phases 23–25 systems (near-exit alert, chaos window bonuses, procedural body animation)
 - [x] Updated known-issues assessment to reflect Phase 25 visual communication improvements
+
+## Completed in release-candidate polish (Phases P0–P6)
+
+- [x] Removed the unsafe global material override and short repetitive music loop
+- [x] Added five distinct authored lighting profiles, shared low-poly materials, camera composition, and Low/Medium/High quality presets
+- [x] Added expressive player, NPC pigeon, ranger, and visitor movement while preserving gameplay roots and action timing
+- [x] Added deterministic, collision-free themed MultiMesh details to every level
+- [x] Added a 16-bar adaptive score plus independent level ambience and Music/Ambience/SFX controls
+- [x] Added readable chaos-window and Perfect Alibi opportunities without changing suspicion or reward balance
+- [x] Added a shared branded menu/HUD theme with intact controller focus and scripted node paths
+- [x] Added persistent Reduce Motion & Flashes behavior for camera trauma, danger flashes/pulses, and close-call slow motion
+- [x] Added strict all-suite runtime validation, visible-renderer performance reporting, deterministic media tooling, and verified Windows package smoke testing
+- [x] Regenerated and inspected the five level screenshots and 33-second trailer from shipping scenes
+- [x] Produced a fresh ignored Windows release candidate with exact ZIP-content and SHA-256 verification
 
 ## Final trailer structure
 

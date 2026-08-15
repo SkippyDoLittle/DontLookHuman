@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://dqinwyd3h4b1j"]
 
 [ext_resource type="Script" path="res://main_menu.gd" id="1_mainmenu"]
+[ext_resource type="Theme" path="res://assets/ui/park_ui_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/branding/game_icon.png" id="3_icon"]
 
 ; ── BUTTON STYLE BOXES ──────────────────────────────────────────────────────
 ; StyleBoxFlat defines the visual appearance of a button in each state.
@@ -67,7 +69,37 @@ layer = 5
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.03, 0.06, 0.03, 1.0)
+mouse_filter = 2
+color = Color(0.018, 0.075, 0.059, 1)
+
+[node name="BrandEmblem" type="TextureRect" parent="CanvasLayer"]
+modulate = Color(1, 1, 1, 0.88)
+layout_mode = 1
+anchors_preset = 15
+anchor_left = 0.52
+anchor_top = 0.04
+anchor_right = 0.98
+anchor_bottom = 0.96
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BrandDivider" type="ColorRect" parent="CanvasLayer"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -2.0
+offset_right = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.847, 0.604, 0.169, 0.48)
 
 ; ── MAIN PANEL ───────────────────────────────────────────────────────────────
 ; A VBoxContainer centered on screen holding the title labels and nav buttons.
@@ -75,29 +107,33 @@ color = Color(0.03, 0.06, 0.03, 1.0)
 ; offsets push the container 170px left/right and 200px up/down from centre.
 
 [node name="MainPanel" type="VBoxContainer" parent="CanvasLayer" unique_id=3001000003]
-anchor_left = 0.5
+anchor_left = 0.25
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 0.25
 anchor_bottom = 0.5
-offset_left = -170.0
+offset_left = -200.0
 offset_top = -240.0
-offset_right = 170.0
+offset_right = 200.0
 offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 theme_override_constants/separation = 8
 
 [node name="TitleLabel" type="Label" parent="CanvasLayer/MainPanel" unique_id=3001000004]
-theme_override_font_sizes/font_size = 42
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 44
 text = "Don't Look Human"
-horizontal_alignment = 1
+horizontal_alignment = 0
 
 [node name="SubtitleLabel" type="Label" parent="CanvasLayer/MainPanel" unique_id=3001000005]
 theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.45, 0.65, 0.45, 1.0)
-text = "A pigeon stealth game"
-horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 1)
+text = "ACT NATURAL. STEAL EVERYTHING."
+horizontal_alignment = 0
 
 [node name="Spacer" type="Control" parent="CanvasLayer/MainPanel" unique_id=3001000006]
 custom_minimum_size = Vector2(0, 28)
@@ -105,46 +141,26 @@ custom_minimum_size = Vector2(0, 28)
 [node name="PlayButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000010]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "PLAY"
 
 [node name="LevelSelectButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000050]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "LEVEL SELECT"
 
 [node name="HowToPlayButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000011]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "HOW TO PLAY"
 
 [node name="SettingsButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000012]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "SETTINGS"
 
 [node name="QuitButton" type="Button" parent="CanvasLayer/MainPanel" unique_id=3001000013]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "QUIT"
 
 ; ── HOW TO PLAY PANEL ────────────────────────────────────────────────────────
@@ -160,7 +176,23 @@ anchor_bottom = 1.0
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.03, 0.06, 0.03, 0.96)
+mouse_filter = 2
+color = Color(0.018, 0.075, 0.059, 0.94)
+
+[node name="PanelFrame" type="Panel" parent="CanvasLayer/HowToPlayPanel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -315.0
+offset_right = 310.0
+offset_bottom = 315.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HowToPlayPanel" unique_id=3001000022]
 anchor_left = 0.5
@@ -173,23 +205,24 @@ offset_right = 280.0
 offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 theme_override_constants/separation = 12
 
 [node name="Header" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000023]
 theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
 text = "HOW TO PLAY"
 horizontal_alignment = 1
 
 [node name="Divider" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000024]
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
 [node name="ControlsLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000025]
 theme_override_font_sizes/font_size = 17
-theme_override_colors/font_color = Color(0.80, 0.92, 0.80, 1.0)
+theme_override_colors/font_color = Color(0.91, 0.92, 0.82, 1)
 text = "WASD / Left Stick       Move
 Shift / Left Shoulder   Sprint  (drains stamina)
 E / A                   Peck food
@@ -206,7 +239,7 @@ custom_minimum_size = Vector2(0, 16)
 
 [node name="GoalLabel" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000027]
 theme_override_font_sizes/font_size = 17
-theme_override_colors/font_color = Color(0.65, 0.88, 0.65, 1.0)
+theme_override_colors/font_color = Color(0.66, 0.86, 0.74, 1)
 text = "Steal all 5 food items, then reach the exit portal.
 Blend in with the other pigeons.
 Don't look human."
@@ -214,17 +247,13 @@ horizontal_alignment = 1
 
 [node name="Divider2" type="Label" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000028]
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="CanvasLayer/HowToPlayPanel/VBoxContainer" unique_id=3001000029]
 custom_minimum_size = Vector2(0, 48)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "BACK"
 
 ; ── SETTINGS PANEL ───────────────────────────────────────────────────────────
@@ -240,7 +269,23 @@ anchor_bottom = 1.0
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.03, 0.06, 0.03, 0.96)
+mouse_filter = 2
+color = Color(0.018, 0.075, 0.059, 0.94)
+
+[node name="PanelFrame" type="Panel" parent="CanvasLayer/SettingsPanel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -245.0
+offset_top = -355.0
+offset_right = 245.0
+offset_bottom = 355.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/SettingsPanel" unique_id=3001000032]
 anchor_left = 0.5
@@ -248,22 +293,23 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -220.0
-offset_top = -340.0
+offset_top = -350.0
 offset_right = 220.0
-offset_bottom = 340.0
+offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 6
+theme = ExtResource("2_theme")
+theme_override_constants/separation = 2
 
 [node name="Header" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000033]
 theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
 text = "SETTINGS"
 horizontal_alignment = 1
 
 [node name="Divider" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000034]
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
@@ -273,7 +319,7 @@ theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Music Volume"
 
 [node name="MusicSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000036]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 28)
 min_value = 0.0
 max_value = 1.0
 step = 0.01
@@ -286,7 +332,7 @@ theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Park Ambience Volume"
 
 [node name="AmbientSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 28)
 min_value = 0.0
 max_value = 1.0
 step = 0.01
@@ -300,12 +346,13 @@ theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Sound Effects Volume"
 
 [node name="SFXSlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000038]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 28)
 min_value = 0.0
 max_value = 1.0
 step = 0.01
 value = 1.0
 focus_neighbor_top = NodePath("../AmbientSlider")
+focus_neighbor_bottom = NodePath("../MouseSensitivitySlider")
 
 [node name="MouseSensitivityLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
 theme_override_font_sizes/font_size = 17
@@ -313,11 +360,13 @@ theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Mouse Camera Sensitivity"
 
 [node name="MouseSensitivitySlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 28)
 min_value = 0.001
 max_value = 0.008
 step = 0.0005
 value = 0.003
+focus_neighbor_top = NodePath("../SFXSlider")
+focus_neighbor_bottom = NodePath("../ControllerSensitivitySlider")
 
 [node name="ControllerSensitivityLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
 theme_override_font_sizes/font_size = 17
@@ -325,11 +374,12 @@ theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Controller Camera Sensitivity"
 
 [node name="ControllerSensitivitySlider" type="HSlider" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 28)
 min_value = 0.8
 max_value = 4.5
 step = 0.1
 value = 2.4
+focus_neighbor_top = NodePath("../MouseSensitivitySlider")
 focus_neighbor_bottom = NodePath("../QualityPresetOption")
 
 [node name="QualityPresetLabel" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
@@ -348,21 +398,31 @@ focus_neighbor_bottom = NodePath("../InvertYCheck")
 custom_minimum_size = Vector2(0, 4)
 
 [node name="InvertYCheck" type="CheckButton" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 32)
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Invert Camera Y Axis"
 focus_neighbor_top = NodePath("../QualityPresetOption")
+focus_neighbor_bottom = NodePath("../ReducedMotionCheck")
+
+[node name="ReducedMotionCheck" type="CheckButton" parent="CanvasLayer/SettingsPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+theme_override_font_sizes/font_size = 17
+text = "Reduce Motion & Flashes"
+focus_neighbor_top = NodePath("../InvertYCheck")
+focus_neighbor_bottom = NodePath("../FullscreenCheck")
 
 [node name="FullscreenCheck" type="CheckButton" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000040]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 32)
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1.0)
 text = "Fullscreen"
+focus_neighbor_top = NodePath("../ReducedMotionCheck")
+focus_neighbor_bottom = NodePath("../ResetCampaignButton")
 
 [node name="Divider2" type="Label" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000041]
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
@@ -370,19 +430,15 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(0, 44)
 theme_override_font_sizes/font_size = 17
 theme_override_colors/font_color = Color(1, 0.72, 0.62, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "RESET CAMPAIGN & SCORES"
+focus_neighbor_top = NodePath("../FullscreenCheck")
+focus_neighbor_bottom = NodePath("../BackButton")
 
 [node name="BackButton" type="Button" parent="CanvasLayer/SettingsPanel/VBoxContainer" unique_id=3001000042]
 custom_minimum_size = Vector2(0, 48)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "BACK"
+focus_neighbor_top = NodePath("../ResetCampaignButton")
 
 [node name="ResetCampaignDialog" type="ConfirmationDialog" parent="CanvasLayer"]
 title = "Reset campaign?"
@@ -402,7 +458,23 @@ anchor_bottom = 1.0
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.03, 0.06, 0.03, 0.96)
+mouse_filter = 2
+color = Color(0.018, 0.075, 0.059, 0.94)
+
+[node name="PanelFrame" type="Panel" parent="CanvasLayer/LevelSelectPanel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -265.0
+offset_top = -325.0
+offset_right = 265.0
+offset_bottom = 325.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/LevelSelectPanel" unique_id=3001000053]
 anchor_left = 0.5
@@ -415,78 +487,55 @@ offset_right = 240.0
 offset_bottom = 310.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 theme_override_constants/separation = 10
 
 [node name="Header" type="Label" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000054]
 theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1.0)
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
 text = "LEVEL SELECT"
 horizontal_alignment = 1
 
 [node name="Divider" type="Label" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000055]
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
 [node name="Level1Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000056]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Level 1 — Community Park"
 
 [node name="Level2Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000057]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Level 2 — Playground"
 
 [node name="Level3Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000058]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Level 3 — Lakeside"
 
 [node name="Level4Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000059]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Level 4 — Festival"
 
 [node name="Level5Button" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000060]
 custom_minimum_size = Vector2(0, 52)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "Level 5 — Botanical Gardens"
 
 [node name="Divider2" type="Label" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000061]
 theme_override_font_sizes/font_size = 14
-theme_override_colors/font_color = Color(0.30, 0.50, 0.30, 1.0)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 text = "──────────────────────────────────"
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="CanvasLayer/LevelSelectPanel/VBoxContainer" unique_id=3001000062]
 custom_minimum_size = Vector2(0, 48)
 theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1.0)
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 text = "BACK"
 
 ; ── SIGNAL CONNECTIONS ───────────────────────────────────────────────────────

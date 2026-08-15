@@ -89,6 +89,8 @@ func _test_settings_menu_integration() -> void:
 
 	var menu := (load("res://MainMenu.tscn") as PackedScene).instantiate()
 	menu.set("settings_path", path)
+	menu.set("_score_store", BestScoreStore.new(_temporary_path("menu_scores"), _temporary_path("menu_legacy")))
+	menu.set("_progress_store", CampaignProgressStore.new(_temporary_path("menu_progress")))
 	root.add_child(menu)
 	await process_frame
 	await process_frame

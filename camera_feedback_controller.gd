@@ -13,6 +13,7 @@ var _maximum_offset: float = 0.06
 var _time: float = 0.0
 var _owns_offsets: bool = false
 var _last_update_frame: int = -1
+var settings_path: String = AccessibilitySettings.DEFAULT_SETTINGS_PATH
 
 static func shared_for_camera(camera: Camera3D) -> CameraFeedbackController:
 	if not is_instance_valid(camera):
@@ -30,12 +31,20 @@ func configure(camera: Camera3D) -> void:
 	_camera = camera
 
 func add_trauma(strength: float, duration: float = 0.42) -> void:
+	if AccessibilitySettings.is_reduced_motion_enabled(settings_path):
+		reset()
+		return
 	_trauma = maxf(_trauma, clampf(strength, 0.0, 1.0))
 	_decay_per_second = 1.0 / maxf(duration, 0.05)
 	_owns_offsets = true
 
 func update(delta: float) -> void:
 	if not is_instance_valid(_camera):
+		return
+	# Check before the shared-frame guard so a live preference toggle clears an
+	# active offset immediately, even if another owner updated this frame.
+	if AccessibilitySettings.is_reduced_motion_enabled(settings_path):
+		reset()
 		return
 	# Player and level presentation both reference this shared compositor. Only
 	# advance it once per rendered frame when both systems call update().

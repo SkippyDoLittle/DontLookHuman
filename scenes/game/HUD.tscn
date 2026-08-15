@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://schud000tscn01"]
+[gd_scene load_steps=16 format=3 uid="uid://schud000tscn01"]
 
 [ext_resource type="Shader" uid="uid://vuanvjjixpkc" path="res://vignette.gdshader" id="1_vgnt"]
 [ext_resource type="Script" uid="uid://b72gt285sr2xn" path="res://minimap.gd" id="2_mmap"]
 [ext_resource type="Script" path="res://ranger_hud_controller.gd" id="3_ranger_hud"]
 [ext_resource type="Script" path="res://debug_overlay.gd" id="4_debug"]
+[ext_resource type="Theme" path="res://assets/ui/park_ui_theme.tres" id="5_theme"]
 
 ; ── SUB-RESOURCES ─────────────────────────────────────────────────────────────
 
@@ -12,18 +13,78 @@ shader = ExtResource("1_vgnt")
 shader_parameter/intensity = 0.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_bg"]
-bg_color = Color(0.08, 0.08, 0.08, 0.85)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+bg_color = Color(0.018, 0.075, 0.059, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.604, 0.169, 0.9)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stam_fill"]
-bg_color = Color(1, 0.85, 0.1, 1)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+bg_color = Color(0.949, 0.713, 0.278, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_suspicion_bg"]
+bg_color = Color(0.013, 0.049, 0.041, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.48, 0.4, 0.95)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_suspicion_fill"]
+bg_color = Color(0.949, 0.557, 0.157, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_status_panel"]
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.027, 0.098, 0.08, 0.94)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.847, 0.604, 0.169, 0.88)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0.025, 0.02, 0.58)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_timer_panel"]
+content_margin_left = 8.0
+content_margin_top = 2.0
+content_margin_right = 8.0
+content_margin_bottom = 2.0
+bg_color = Color(0.027, 0.098, 0.08, 0.94)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 2
+border_width_bottom = 1
+border_color = Color(0.847, 0.604, 0.169, 0.88)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0.025, 0.02, 0.58)
+shadow_size = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_debug"]
 bg_color = Color(0.02, 0.03, 0.04, 0.92)
@@ -94,22 +155,42 @@ mouse_filter = 2
 color = Color(0.82, 0.025, 0.01, 0)
 
 [node name="RangerStatus" type="Label" parent="."]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 332.0
+offset_bottom = 106.0
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_status_panel")
 text = "Ranger: Calm"
+vertical_alignment = 0
 
 [node name="ObjectiveStatus" type="Label" parent="."]
 offset_left = 20.0
-offset_top = 40.0
-offset_right = 258.0
-offset_bottom = 63.0
+offset_top = 39.0
+offset_right = 320.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.82, 0.9, 0.8, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 15
 text = "Steal all 5 items, then reach the exit!"
 
 [node name="SuspicionBar" type="ProgressBar" parent="."]
 offset_left = 20.0
-offset_top = 70.0
+offset_top = 69.0
 offset_right = 320.0
-offset_bottom = 97.0
+offset_bottom = 98.0
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_styles/background = SubResource("StyleBoxFlat_suspicion_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_suspicion_fill")
 
 ; Vertical stamina bar anchored to the bottom-left edge; fill_mode=3 = bottom-to-top.
 [node name="StaminaBar" type="ProgressBar" parent="."]
@@ -130,12 +211,19 @@ show_percentage = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -70.0
-offset_top = 5.0
-offset_right = 70.0
-offset_bottom = 30.0
+offset_left = -74.0
+offset_top = 4.0
+offset_right = 74.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_timer_panel")
 text = "1:30"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="WarnLabel" type="Label" parent="."]
 visible = false
@@ -154,6 +242,17 @@ horizontal_alignment = 1
 
 [node name="ResultBackground" type="ColorRect" parent="."]
 visible = false
+z_index = 20
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.004, 0.022, 0.018, 0.9)
+
+[node name="ResultFrame" type="Panel" parent="ResultBackground"]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -163,10 +262,14 @@ offset_left = -250.0
 offset_top = -210.0
 offset_right = 250.0
 offset_bottom = 210.0
-color = Color(0.05, 0.05, 0.05, 0.82)
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("5_theme")
 
 [node name="ResultLabel" type="Label" parent="."]
 visible = false
+z_index = 21
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -176,6 +279,10 @@ offset_left = -230.0
 offset_top = -190.0
 offset_right = 230.0
 offset_bottom = 90.0
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
@@ -183,6 +290,7 @@ autowrap_mode = 3
 [node name="ResultActions" type="HBoxContainer" parent="."]
 process_mode = 3
 visible = false
+z_index = 21
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -194,37 +302,26 @@ offset_right = 238.0
 offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("5_theme")
 theme_override_constants/separation = 10
 alignment = 1
 
 [node name="PrimaryButton" type="Button" parent="ResultActions"]
 custom_minimum_size = Vector2(145, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_result_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_result_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_result_pressed")
 text = "NEXT LEVEL"
 
 [node name="RetryButton" type="Button" parent="ResultActions"]
 custom_minimum_size = Vector2(145, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_result_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_result_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_result_pressed")
 text = "RETRY"
 
 [node name="MenuButton" type="Button" parent="ResultActions"]
 custom_minimum_size = Vector2(145, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_result_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_result_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_result_pressed")
 text = "MAIN MENU"
 
 ; Fade-in overlay — TransitionController tweens its alpha on scene load.
@@ -264,28 +361,44 @@ offset_bottom = 130.0
 grow_horizontal = 0
 script = ExtResource("2_mmap")
 
+[node name="MapFrame" type="Panel" parent="Minimap"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("5_theme")
+
 [node name="MapBackground" type="ColorRect" parent="Minimap"]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.05, 0.05, 0.1, 0.82)
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+mouse_filter = 2
+color = Color(0.012, 0.055, 0.051, 0.9)
 
 [node name="PlayerDot" type="ColorRect" parent="Minimap"]
 layout_mode = 0
 offset_right = 10.0
 offset_bottom = 10.0
+color = Color(0.957, 0.906, 0.765, 1)
 
 [node name="RangerDot" type="ColorRect" parent="Minimap"]
 layout_mode = 0
 offset_right = 8.0
 offset_bottom = 8.0
-color = Color(1, 0.2, 0.2, 1)
+color = Color(0.91, 0.22, 0.16, 1)
 
 [node name="RangerDot2" type="ColorRect" parent="Minimap"]
 layout_mode = 0
 offset_right = 8.0
 offset_bottom = 8.0
-color = Color(1, 0.2, 0.2, 1)
+color = Color(0.91, 0.22, 0.16, 1)
 
 [node name="FoodDot1" type="ColorRect" parent="Minimap"]
 layout_mode = 0
@@ -322,7 +435,7 @@ visible = false
 layout_mode = 0
 offset_right = 8.0
 offset_bottom = 8.0
-color = Color(0.2, 1, 0.3, 1)
+color = Color(0.24, 0.88, 0.67, 1)
 
 [node name="DebugOverlay" type="PanelContainer" parent="."]
 visible = false

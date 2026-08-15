@@ -28,9 +28,9 @@ The intended audience reaction is:
 
 ### 0:10–0:15 — Rhythm and variety
 
-- Use three differently framed Playground pickups as a beat-driven montage.
-- Increase ranger count and suspicion on every cut.
-- End with the pigeon boxed in between multiple rangers.
+- Cut to a Playground ranger collision instead of another ordinary pickup.
+- Let the pigeon sidestep as the charging ranger stumbles through the frame.
+- Use the mistake as a comic release before the final danger escalation.
 
 ### 0:15–0:29 — Escalation
 
@@ -52,22 +52,15 @@ The intended audience reaction is:
 - Close shots establish the theft, overhead shots reveal ranger formations, and wider shots show the escape objective.
 - Hard micro-cuts and short impact flashes replace slow dissolves during gameplay.
 - Letterboxing, restrained shake, exposure polish, and animated typography unify footage from four levels.
-- Slow motion is omitted because none of the current animation beats gains enough impact from it.
+- Slow motion is reserved for the game's earned close-call beat; the trailer keeps its main chase cutting fast so the escalation never stalls.
 - Menus, tutorials, countdowns, ordinary walking, and result screens are excluded.
 
 ## Production truth
 
-The scenarios are deterministically staged for camera clarity, but they use the real player, rangers, collectibles, levels, suspicion states, HUD, sounds, and escape flow. The exit receives a brighter trailer-only presentation because the normal flat green marker disappears against the Botanical Gardens grass. That change improves readability without advertising a mechanic the game does not have.
+The scenarios are deterministically staged for camera clarity, but they use the real player, rangers, collectibles, levels, suspicion states, HUD, sounds, and escape-zone assets. The final crossing, flash, and escape sting are trailer-scripted after monitoring is disabled so the exact frame remains reproducible. The exit receives a brighter trailer-only presentation because the normal flat green marker disappears against the Botanical Gardens grass. These presentation choices improve readability without advertising a mechanic the game does not have.
 
 ## Honest next upgrade
 
-This is the strongest trailer the current mechanics and animations can support. A future cut can move beyond the present visual ceiling only after the game gains more reactive comedy. The highest-value additions would be:
+The game now contains the earlier missing ingredients: ranger misses and wrong-pigeon captures, flock panic and regrouping, readable food snatches, staged capture reactions, and a signature environmental event in every park. The current cut deliberately uses only a few of them so it remains a hook rather than a feature checklist.
 
-- a ranger stumble or missed grab during a near escape;
-- a flock-wide panic scatter when suspicion turns red;
-- a clearer peck, food-grab, or carry animation;
-- a caught reaction that is funny enough to use as a rapid failure montage;
-- one environmental chain reaction unique to each later level;
-- replay or free-camera support for cleaner moving tracking shots.
-
-Until those moments exist in gameplay, adding more footage would dilute the trailer rather than strengthen it.
+The next trailer upgrade should come from captured player stories rather than additional scripted exposition: a compact failure montage, one Perfect Alibi payoff, and a wrong-pigeon grab that reads clearly at normal viewing size. A replay/free-camera tool and final authored character/prop assets would improve cinematography more than another pacing rewrite. Until those are ready, the 33-second cut remains the release-candidate trailer.

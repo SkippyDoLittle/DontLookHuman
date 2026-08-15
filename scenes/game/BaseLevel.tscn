@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://park_chaos_controller.gd" id="7_chaos"]
 [ext_resource type="Script" path="res://session_telemetry.gd" id="8_telemetry"]
 [ext_resource type="Script" path="res://park_ambience_director.gd" id="9_ambience"]
+[ext_resource type="Theme" path="res://assets/ui/park_ui_theme.tres" id="10_theme"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_n"]
 content_margin_left = 12.0
@@ -86,7 +87,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.04, 0.07, 0.04, 1)
+color = Color(0.018, 0.075, 0.059, 1)
 
 [node name="StartLabel" type="Label" parent="TitleScreen"]
 anchors_preset = 8
@@ -98,7 +99,11 @@ offset_left = -200.0
 offset_top = -60.0
 offset_right = 200.0
 offset_bottom = 60.0
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 26
 text = "READY?\n\nPress SPACE / A to begin"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -122,7 +127,23 @@ script = ExtResource("5_pause")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0, 0.02, 0, 0.88)
+mouse_filter = 2
+color = Color(0.006, 0.035, 0.027, 0.92)
+
+[node name="PauseCard" type="Panel" parent="PauseMenu"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -225.0
+offset_top = -345.0
+offset_right = 225.0
+offset_bottom = 345.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("10_theme")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PauseMenu"]
 anchors_preset = 8
@@ -131,23 +152,27 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -270.0
+offset_top = -330.0
 offset_right = 200.0
-offset_bottom = 270.0
+offset_bottom = 330.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme = ExtResource("10_theme")
+theme_override_constants/separation = 6
 
 [node name="PausedLabel" type="Label" parent="PauseMenu/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.95, 0.75, 1)
+theme_override_colors/font_color = Color(0.957, 0.906, 0.765, 1)
+theme_override_colors/font_shadow_color = Color(0, 0.02, 0.015, 0.95)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
 theme_override_font_sizes/font_size = 36
 text = "PAUSED"
 horizontal_alignment = 1
 
 [node name="Divider" type="Label" parent="PauseMenu/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 theme_override_font_sizes/font_size = 14
 text = "──────────────────────────────────"
 horizontal_alignment = 1
@@ -155,12 +180,9 @@ horizontal_alignment = 1
 [node name="ResumeButton" type="Button" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "RESUME  (Escape)"
+focus_neighbor_bottom = NodePath("../AudioButton")
 
 [node name="Spacer" type="Control" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 10)
@@ -169,12 +191,10 @@ layout_mode = 2
 [node name="AudioButton" type="Button" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
-text = "AUDIO  ▶"
+text = "SETTINGS"
+focus_neighbor_top = NodePath("../ResumeButton")
+focus_neighbor_bottom = NodePath("../ControlsButton")
 
 [node name="AudioPanel" type="VBoxContainer" parent="PauseMenu/VBoxContainer"]
 visible = false
@@ -183,7 +203,7 @@ theme_override_constants/separation = 6
 
 [node name="MusicLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_colors/font_color = Color(0.91, 0.92, 0.82, 1)
 theme_override_font_sizes/font_size = 16
 text = "Music Volume"
 
@@ -193,10 +213,12 @@ layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 1.0
+focus_neighbor_top = NodePath("../../AudioButton")
+focus_neighbor_bottom = NodePath("../AmbientSlider")
 
 [node name="AmbientLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_colors/font_color = Color(0.91, 0.92, 0.82, 1)
 theme_override_font_sizes/font_size = 16
 text = "Park Ambience Volume"
 
@@ -206,10 +228,12 @@ layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 1.0
+focus_neighbor_top = NodePath("../MusicSlider")
+focus_neighbor_bottom = NodePath("../SFXSlider")
 
 [node name="SFXLabel" type="Label" parent="PauseMenu/VBoxContainer/AudioPanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.92, 0.75, 1)
+theme_override_colors/font_color = Color(0.91, 0.92, 0.82, 1)
 theme_override_font_sizes/font_size = 16
 text = "Sound Effects Volume"
 
@@ -219,16 +243,23 @@ layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 1.0
+focus_neighbor_top = NodePath("../AmbientSlider")
+focus_neighbor_bottom = NodePath("../ReducedMotionCheck")
+
+[node name="ReducedMotionCheck" type="CheckButton" parent="PauseMenu/VBoxContainer/AudioPanel"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Reduce Motion & Flashes"
+focus_neighbor_top = NodePath("../SFXSlider")
+focus_neighbor_bottom = NodePath("../../ControlsButton")
 
 [node name="ControlsButton" type="Button" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "CONTROLS"
+focus_neighbor_top = NodePath("../AudioButton")
+focus_neighbor_bottom = NodePath("../MainMenuButton")
 
 [node name="Spacer2" type="Control" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 10)
@@ -236,7 +267,7 @@ layout_mode = 2
 
 [node name="Divider2" type="Label" parent="PauseMenu/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.5, 0.3, 1)
+theme_override_colors/font_color = Color(0.847, 0.604, 0.169, 0.88)
 theme_override_font_sizes/font_size = 14
 text = "──────────────────────────────────"
 horizontal_alignment = 1
@@ -244,22 +275,17 @@ horizontal_alignment = 1
 [node name="MainMenuButton" type="Button" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.98, 0.85, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "MAIN MENU"
+focus_neighbor_top = NodePath("../ControlsButton")
+focus_neighbor_bottom = NodePath("../QuitButton")
 
 [node name="QuitButton" type="Button" parent="PauseMenu/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.88, 0.78, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pause_n")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pause_p")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pause_h")
 text = "QUIT"
+focus_neighbor_top = NodePath("../MainMenuButton")
 
 [node name="HowToPlayScreen" type="CanvasLayer" parent="."]
 layer = 15
