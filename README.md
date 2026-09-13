@@ -5,7 +5,7 @@ Don't Look Human is a short 3D behavior-stealth game built with Godot 4. You pla
 ![Don't Look Human store artwork](assets/branding/store_capsule.png)
 
 ## Gameplay
-https://trevorskeens13gmailcom.itch.io/dontlookhuman
+https://skipscode.itch.io/dontlookhuman
 
 Steal every food item, manage ranger suspicion by blending into the flock, and reach the glowing exit before time runs out. The five-level campaign gradually introduces crowds, water hazards, overlapping patrols, denser navigation, and limited cover.
 
